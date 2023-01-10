@@ -1,6 +1,7 @@
 import { Body, ClassSerializerInterceptor, Controller, Post, UseInterceptors } from '@nestjs/common';
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { AuthService } from "./auth.service";
+import { AuthCredentialsDto } from "./dto/auth-credential.dto";
 
 @Controller('auth')
 export class AuthController {
@@ -13,6 +14,7 @@ export class AuthController {
 	}
 
 	@Post("/signin")
-	signIn(@Body() createUserDto: CreateUserDto) {
+	signIn(@Body() authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string; }> {
+		return this.authService.signIn(authCredentialsDto);
 	}
 }
