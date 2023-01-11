@@ -27,8 +27,9 @@ export class UsersService {
 		return user;
 	}
 
-	findAll() {
-		return `This action returns all users`;
+	async find(): Promise<User[]> {
+		const users = this.usersRepository.find();
+		return users;
 	}
 
 	findOne(id: number) {

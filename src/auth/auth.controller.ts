@@ -2,6 +2,7 @@ import { Body, ClassSerializerInterceptor, Controller, Post, UseInterceptors } f
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { AuthService } from "./auth.service";
 import { AuthCredentialsDto } from "./dto/auth-credential.dto";
+import { User } from "src/users/entities/user.entity";
 
 @Controller('auth')
 export class AuthController {
@@ -9,7 +10,7 @@ export class AuthController {
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@Post("/signup")
-	signUp(@Body() createUserDto: CreateUserDto) {
+	signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
 		return this.authService.signUp(createUserDto);
 	}
 
