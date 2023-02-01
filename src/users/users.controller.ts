@@ -1,27 +1,35 @@
-import { Controller, Get, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete, UseGuards, Query, ParseArrayPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from "./entities/user.entity";
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
 	constructor(private readonly usersService: UsersService) { }
 
-	@UseGuards(JwtAuthGuard)
 	@Get()
-	findAll(): Promise<User[]> {
-		return this.usersService.find();
+	find(
+		@Query("email") email?,
+		@Query("nickname") nickname?,
+		@Query("roleIds", new ParseArrayPipe({ optional: true })) roleIds?: string[],
+	): Promise<User[]> {
+		return this.usersService.find(email, nickname, roleIds);
 	}
 
 	@Get('/:id')
 	findOne(@Param('id') id: string) {
-		return this.usersService.findOne(+id);
+		return this.usersService.findOne(id);
 	}
 
 	@Patch('/:id')
-	update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-		return this.usersService.update(+id, updateUserDto);
+	update(
+		@Param('id') id: string,
+		@Body() updateUserDto: UpdateUserDto,
+		@Query("roleIds", new ParseArrayPipe({ optional: true })) roleIds?: string[],
+	) {
+		return this.usersService.update(id, updateUserDto, roleIds);
 	}
 
 	@Delete('/:id')

@@ -8,16 +8,17 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "src/users/entities/user.entity";
 import { ConfigModule } from "@nestjs/config";
 import { JwtStrategy } from "./strategies/jwt.strategy";
+import { Role } from "src/roles/entities/role.entity";
 
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
-		TypeOrmModule.forFeature([User]),
+		TypeOrmModule.forFeature([User, Role]),
 		PassportModule,
 		JwtModule.register({
 			secret: process.env.JWT_SECRET,
 			signOptions: {
-				expiresIn: 3600
+				expiresIn: 3600 * 24
 			}
 		}),
 		UsersModule,

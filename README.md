@@ -1,3 +1,35 @@
+# Product Requirement Document
+
+### auth
+
+- [x] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/hasAdmin` request to check if at least one user exists, if at least one user already exists, return `400` bad request, redirect to the sign in page.
+      If front end send a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request. If not exists, create an `admin` role, and assign the role to the current user.
+- [ ] Users need the permission to create a new user
+- [ ] Users must sign in to apply any operations
+
+## users
+
+- [ ] Conditionally find users by query email, nickname, or roleIds, roleIds delimited by comma `','`, **or** relationship.
+- [ ] Find a user by ID
+- [ ] Delete a user
+
+## roles
+
+- [ ] Find all roles
+- [ ] Copy role
+- [ ] `admin` has full permissions and can not be changed
+- [ ] `admin` user can not delete himself
+- [ ] `admin` can only has one user
+
+## permissions
+
+- [ ] Default user permission
+- [ ] Create users
+- [ ] Create roles
+- [ ] Create
+
+# NestJS
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>

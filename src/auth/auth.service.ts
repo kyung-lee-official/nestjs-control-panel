@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { User } from "src/users/entities/user.entity";
 import { UsersService } from "src/users/users.service";
@@ -8,6 +8,8 @@ import { Repository } from "typeorm";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { JwtPayload } from "./jwt-payload.interface";
+import { Role } from "src/roles/entities/role.entity";
+import { Permissions } from "src/permissions/permissions.enum";
 
 @Injectable()
 export class AuthService {
@@ -15,8 +17,36 @@ export class AuthService {
 		private usersService: UsersService,
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
+		@InjectRepository(Role)
+		private rolesRepository: Repository<Role>,
 		private jwtService: JwtService
 	) { }
+
+	async hasAdmin(): Promise<{ hasAdmin: boolean; }> {
+		const users = await this.usersRepository.find();
+		if (users.length > 0) {
+			return { hasAdmin: true };
+		} else {
+			return { hasAdmin: false };
+		}
+	}
+
+	async seed(createUserDto: CreateUserDto): Promise<User> {
+		const users = await this.usersRepository.find();
+		let user;
+		if (users.length > 0) {
+			throw new BadRequestException("System already seeded.");
+		} else {
+			user = await this.usersService.create(createUserDto);
+		}
+		let role = this.rolesRepository.create({ role: "admin" });
+		const permissions = Object.values(Permissions);
+		role.permissions = permissions;
+		role = await this.rolesRepository.save(role);
+		user.roles = [role];
+		user = await this.usersRepository.save(user);
+		return user;
+	}
 
 	async signUp(createUserDto: CreateUserDto): Promise<User> {
 		const user = await this.usersService.create(createUserDto);

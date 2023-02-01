@@ -1,26 +1,84 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { InjectRepository } from "@nestjs/typeorm";
+import { In, Repository } from "typeorm";
+import { Role } from "./entities/role.entity";
 
 @Injectable()
 export class RolesService {
-  create(createRoleDto: CreateRoleDto) {
-    return 'This action adds a new role';
-  }
+	constructor(
+		@InjectRepository(Role)
+		private rolesRepository: Repository<Role>
+	) { }
+	async create(createRoleDto: CreateRoleDto): Promise<Role> {
+		const role = this.rolesRepository.create(createRoleDto);
+		try {
+			console.log("role", role);
+			await this.rolesRepository.save(role);
+			return role;
+		} catch (error) {
+			if (error.code === "23505") {
+				throw new ConflictException("Role already exists");
+			}
+		}
+	}
 
-  findAll() {
-    return `This action returns all roles`;
-  }
+	async find(strIds?: string[]): Promise<Role[]> {
+		let ids: number[];
+		if (strIds) {
+			ids = strIds.map((id: string) => {
+				const parseResult = parseInt(id);
+				if (Number.isNaN(parseResult)) {
+					throw new BadRequestException("The values of ids must be numeric");
+				}
+				return parseResult;
+			});
+		}
 
-  findOne(id: number) {
-    return `This action returns a #${id} role`;
-  }
+		let roles: Role[];
+		if (ids) {
+			roles = await this.rolesRepository.find({
+				where: {
+					id: In(ids)
+				},
+				relations: ["users"]
+			});
+			return roles;
+		} else {
+			roles = await this.rolesRepository.find({
+				relations: ["users"]
+			});
+			return roles;
+		}
+	}
 
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return `This action updates a #${id} role`;
-  }
+	async findOne(id: number): Promise<Role> {
+		const user = await this.rolesRepository.findOne({
+			where: {
+				id: id
+			},
+			relations: ["users"]
+		});
+		return user;
+	}
 
-  remove(id: number) {
-    return `This action removes a #${id} role`;
-  }
+	async update(id: number, updateRoleDto: Partial<UpdateRoleDto>) {
+		const role = await this.findOne(id);
+		if (!role) {
+			throw new NotFoundException("Role not found");
+		}
+		Object.assign(role, updateRoleDto);
+
+		try {
+			const result = await this.rolesRepository.save(role);
+			return result;
+		} catch (error) {
+			throw error;
+		}
+	}
+
+	remove(id: number) {
+		return `This action removes a #${id} role`;
+	}
 }
