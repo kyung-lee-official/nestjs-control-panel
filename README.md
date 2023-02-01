@@ -3,8 +3,8 @@
 ### auth
 
 - [x] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/hasAdmin` request to check if at least one user exists, if at least one user already exists, return `400` bad request, redirect to the sign in page.
-      If front end send a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request. If not exists, create an `admin` role, and assign the role to the current user.
-- [ ] Users need the permission to create a new user
+      If front end send a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request. If no user exists, create an `admin` role, and assign the role to the current user.
+- [x] Users need the permission to create a new user
 - [ ] Users must sign in to apply any operations
 
 ## users
