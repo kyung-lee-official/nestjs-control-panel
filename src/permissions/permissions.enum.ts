@@ -1,10 +1,18 @@
 export enum Permissions {
 	/* User permissions */
 	CREATE_USER = "CREATE_USER",
-	FIND_USERS = "FIND_USERS",
-	FIND_ME = "FIND_ME",
+	GET_USERS = "GET_USERS",
+	GET_USER = "GET_USER",
+	GET_ME = "GET_ME",
+	UPDATE_USER = "UPDATE_USER",
+	UPDATE_ME = "UPDATE_ME",
+	DELETE_USER = "DELETE_USER",
+
 	/* Role permissions */
 	GET_ROLES = "GET_ROLES",
+	UPDATE_ROLE = "UPDATE_ROLE",
+	DELETE_ROLE = "GET_ROLES",
+
 	/* Permission permissions */
 	GET_PERMISSIONS = "GET_PERMISSIONS"
 }

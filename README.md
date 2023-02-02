@@ -2,26 +2,29 @@
 
 ### auth
 
-- [x] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/hasAdmin` request to check if at least one user exists, if at least one user already exists, return `400` bad request, redirect to the sign in page.
-      If front end send a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request. If no user exists, create an `admin` role, and assign the role to the current user.
-- [x] Create a new user, `CREATE_USER` permission required.
+- [x] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/hasAdmin` request to check if at least one user exists, if at least one user already exists, return `{ "hasAdmin": true }`, frontend then redirects to the sign in page.
+      If frontend sends a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request. If no user exists, create a new user, `email` saved as lower case.Create an `admin` role, and assign the role to the current user.
+- [x] Create a new user, `email` saved as lower case, `CREATE_USER` permission required.
 - [x] Users must sign in to apply any operations after the system is seeded.
 
 ## users
 
-- [ ] Conditionally find users by query email, nickname, or roleIds. roleIds delimited by comma `','`, use **or** relationship. `GET_USERS` required.
-- [ ] Find a user by ID
-- [ ] Delete a user by ID, permission required.
+- [x] Conditionally find users by query email (case insensitive), nickname, or roleIds. roleIds delimited by comma `','`, use **or** relationship. `GET_USERS` permission required.
+- [x] Find a user by id, `GET_USER | GET_ME` permission required.
+- [ ] Update a user by id, `UPDATE_USER | UPDATE_ME` permission required.
+- [ ] Delete a user by id, `DELETE_USER` permission required.
 
 ## roles
 
 - [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` role required.
 - [x] Find all roles, `GET_ROLES` permission required.
 - [x] Find a role by id, `GET_ROLES` permission required.
+- [ ] Update a role by id, `UPDATE_ROLE` permission required.
 - [ ] Copy role
-- [ ] `admin` has full permissions and can not be changed
-- [ ] `admin` user can not delete himself
-- [ ] `admin` can only has one user
+- [ ] Delete role by id, `DELETE_ROLE` permission required.
+- [ ] `admin` has full permissions and can not be changed.
+- [ ] `admin` user can not delete himself.
+- [ ] `admin` can only has one user.
 
 ## permissions
 

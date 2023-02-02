@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from "@nestjs/typeorm/dist/common";
@@ -7,17 +7,25 @@ import { User } from "./entities/user.entity";
 import * as bcrypt from "bcrypt";
 import { Role } from "src/roles/entities/role.entity";
 import { RolesService } from "src/roles/roles.service";
+import { REQUEST } from "@nestjs/core";
+import { Permissions } from "src/permissions/permissions.enum";
+import { ForbiddenException } from "@nestjs/common/exceptions";
+import { PermissionsService } from "src/permissions/permissions.service";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class UsersService {
 	constructor(
+		@Inject(REQUEST)
+		private request: any,
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
-		private rolesService: RolesService
+		private rolesService: RolesService,
+		private permissionsService: PermissionsService
 	) { }
 
 	async create(createUserDto: CreateUserDto): Promise<User> {
-		const { email, password, nickname } = createUserDto;
+		let { email, password, nickname } = createUserDto;
+		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
 		const user = this.usersRepository.create({
@@ -33,7 +41,7 @@ export class UsersService {
 		const queryBuilder = this.usersRepository.createQueryBuilder("user")
 			.leftJoinAndSelect("user.roles", "roles");
 		if (email) {
-			queryBuilder.where("user.email = :email", { email: email });
+			queryBuilder.where("user.email = :email", { email: email.toLowerCase() });
 		}
 		if (nickname) {
 			queryBuilder.andWhere(
@@ -61,13 +69,36 @@ export class UsersService {
 	}
 
 	async findOne(id: string): Promise<User> {
-		const user = await this.usersRepository.findOne({
+		let requester = this.request.user;
+		requester = await this.usersRepository.findOne({
 			where: {
-				id: id
+				id: requester.id
 			},
 			relations: ["roles"]
 		});
-		return user;
+		const requesterPermissions = await this.permissionsService.getPermissionsByUserId(requester.id);
+		if (requesterPermissions.includes(Permissions.GET_USER)) {
+			const user = await this.usersRepository.findOne({
+				where: {
+					id: id
+				},
+				relations: ["roles"]
+			});
+			return user;
+		}
+		if (requesterPermissions.includes(Permissions.GET_ME)) {
+			if (requester.id === id) {
+				const user = await this.usersRepository.findOne({
+					where: {
+						id: id
+					},
+					relations: ["roles"]
+				});
+				return user;
+			} else {
+				throw new ForbiddenException();
+			}
+		}
 	}
 
 	async update(

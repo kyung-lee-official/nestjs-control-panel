@@ -43,6 +43,7 @@ export class RolesController {
 		return this.rolesService.findOne(+id);
 	}
 
+	@UseInterceptors(ClassSerializerInterceptor)
 	@Patch(':id')
 	updateRoleById(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
 		return this.rolesService.update(+id, updateRoleDto);

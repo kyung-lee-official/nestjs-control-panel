@@ -9,6 +9,7 @@ import { User } from "src/users/entities/user.entity";
 import { ConfigModule } from "@nestjs/config";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { Role } from "src/roles/entities/role.entity";
+import { PermissionsModule } from "src/permissions/permissions.module";
 
 @Module({
 	imports: [
@@ -22,6 +23,7 @@ import { Role } from "src/roles/entities/role.entity";
 			}
 		}),
 		UsersModule,
+		PermissionsModule
 	],
 	controllers: [AuthController],
 	providers: [

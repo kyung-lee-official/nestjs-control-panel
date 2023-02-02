@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { PermissionsService } from './permissions.service';
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 
@@ -10,10 +10,5 @@ export class PermissionsController {
 	@Get()
 	find() {
 		return this.permissionsService.find();
-	}
-
-	@Get(':id')
-	findOne(@Param('id') id: string) {
-		return this.permissionsService.findOne(+id);
 	}
 }
