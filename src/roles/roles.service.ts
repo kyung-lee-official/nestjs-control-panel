@@ -4,6 +4,7 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 import { Role } from "./entities/role.entity";
+import { Permissions } from "src/permissions/permissions.enum";
 
 @Injectable()
 export class RolesService {
@@ -11,6 +12,19 @@ export class RolesService {
 		@InjectRepository(Role)
 		private rolesRepository: Repository<Role>
 	) { }
+
+	async updateAdminRole(): Promise<Role> {
+		const permissions = Object.values(Permissions);
+		let adminRole = await this.rolesRepository.findOne({
+			where: {
+				role: "admin"
+			}
+		});
+		adminRole.permissions = permissions;
+		adminRole = await this.rolesRepository.save(adminRole);
+		return adminRole;
+	}
+
 	async create(createRoleDto: CreateRoleDto): Promise<Role> {
 		const role = this.rolesRepository.create(createRoleDto);
 		try {

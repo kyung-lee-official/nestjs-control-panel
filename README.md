@@ -9,12 +9,13 @@
 
 ## users
 
-- [ ] Conditionally find users by query email, nickname, or roleIds, roleIds delimited by comma `','`, **or** relationship.
+- [ ] Conditionally find users by query email, nickname, or roleIds. roleIds delimited by comma `','`, use **or** relationship. `GET_USERS` required.
 - [ ] Find a user by ID
 - [ ] Delete a user by ID, permission required.
 
 ## roles
 
+- [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` role required.
 - [x] Find all roles, `GET_ROLES` permission required.
 - [x] Find a role by id, `GET_ROLES` permission required.
 - [ ] Copy role
@@ -27,7 +28,6 @@
 - [ ] Default user permission
 - [ ] Create users
 - [ ] Create roles
-- [ ] Create
 
 # NestJS
 
