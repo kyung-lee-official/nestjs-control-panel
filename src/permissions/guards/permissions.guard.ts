@@ -31,9 +31,12 @@ export class PermissionsGuard implements CanActivate {
 		const permissionArrayOfOwnedRoles = user.roles?.map((role) => {
 			return role.permissions;
 		});
-		const allPermissionsOfUser = permissionArrayOfOwnedRoles?.reduce((accumulator, currentValue) => {
-			return accumulator.concat(currentValue);
-		});
+		let allPermissionsOfUser = [];
+		if (permissionArrayOfOwnedRoles.length > 0) {
+			allPermissionsOfUser = permissionArrayOfOwnedRoles.reduce((accumulator, currentValue) => {
+				return accumulator.concat(currentValue);
+			});
+		}
 		/* At least has one required permission */
 		const hasRequiredPermission = requiredPermissions.some((requiredPermission) => {
 			return allPermissionsOfUser?.includes(requiredPermission);

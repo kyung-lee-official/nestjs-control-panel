@@ -4,18 +4,19 @@
 
 - [x] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/hasAdmin` request to check if at least one user exists, if at least one user already exists, return `400` bad request, redirect to the sign in page.
       If front end send a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request. If no user exists, create an `admin` role, and assign the role to the current user.
-- [x] Users need the permission to create a new user
-- [ ] Users must sign in to apply any operations
+- [x] Create a new user, `CREATE_USER` permission required.
+- [x] Users must sign in to apply any operations after the system is seeded.
 
 ## users
 
 - [ ] Conditionally find users by query email, nickname, or roleIds, roleIds delimited by comma `','`, **or** relationship.
 - [ ] Find a user by ID
-- [ ] Delete a user
+- [ ] Delete a user by ID, permission required.
 
 ## roles
 
-- [ ] Find all roles
+- [x] Find all roles, `GET_ROLES` permission required.
+- [x] Find a role by id, `GET_ROLES` permission required.
 - [ ] Copy role
 - [ ] `admin` has full permissions and can not be changed
 - [ ] `admin` user can not delete himself

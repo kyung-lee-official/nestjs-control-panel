@@ -3,7 +3,7 @@ import { PermissionsService } from './permissions.service';
 import { PermissionsController } from './permissions.controller';
 
 @Module({
-  controllers: [PermissionsController],
-  providers: [PermissionsService]
+	controllers: [PermissionsController],
+	providers: [PermissionsService]
 })
-export class PermissionsModule {}
+export class PermissionsModule { }

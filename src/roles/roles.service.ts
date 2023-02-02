@@ -14,7 +14,6 @@ export class RolesService {
 	async create(createRoleDto: CreateRoleDto): Promise<Role> {
 		const role = this.rolesRepository.create(createRoleDto);
 		try {
-			console.log("role", role);
 			await this.rolesRepository.save(role);
 			return role;
 		} catch (error) {
@@ -24,10 +23,10 @@ export class RolesService {
 		}
 	}
 
-	async find(strIds?: string[]): Promise<Role[]> {
+	async find(roleIds?: string[]): Promise<Role[]> {
 		let ids: number[];
-		if (strIds) {
-			ids = strIds.map((id: string) => {
+		if (roleIds) {
+			ids = roleIds.map((id: string) => {
 				const parseResult = parseInt(id);
 				if (Number.isNaN(parseResult)) {
 					throw new BadRequestException("The values of ids must be numeric");
@@ -54,13 +53,13 @@ export class RolesService {
 	}
 
 	async findOne(id: number): Promise<Role> {
-		const user = await this.rolesRepository.findOne({
+		const role = await this.rolesRepository.findOne({
 			where: {
 				id: id
 			},
 			relations: ["users"]
 		});
-		return user;
+		return role;
 	}
 
 	async update(id: number, updateRoleDto: Partial<UpdateRoleDto>) {

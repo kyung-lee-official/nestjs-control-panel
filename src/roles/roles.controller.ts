@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { Role } from "./entities/role.entity";
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
+import { RequiredPermissions } from "src/permissions/decorators/required-permissions.decorator";
+import { Permissions } from "src/permissions/permissions.enum";
+import { PermissionsGuard } from "src/permissions/guards/permissions.guard";
 
 @UseGuards(JwtAuthGuard)
 @Controller('roles')
@@ -15,11 +18,17 @@ export class RolesController {
 		return this.rolesService.create(createRoleDto);
 	}
 
+	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.GET_ROLES)
 	@Get()
 	find(): Promise<Role[]> {
 		return this.rolesService.find();
 	}
 
+	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.GET_ROLES)
 	@Get(':id')
 	findOne(@Param('id') id: string) {
 		return this.rolesService.findOne(+id);
