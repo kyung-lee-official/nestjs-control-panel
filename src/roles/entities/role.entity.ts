@@ -14,7 +14,7 @@ export class Role {
 	permissions?: Permissions[];
 
 	@CreateDateColumn()
-	createdAt: Date;
+	createdDate: Date;
 
 	@UpdateDateColumn()
 	updatedDate: Date;

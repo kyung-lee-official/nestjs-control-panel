@@ -18,7 +18,7 @@ export class User {
 	password: string;
 
 	@CreateDateColumn()
-	createdAt: Date;
+	createdDate: Date;
 
 	@UpdateDateColumn()
 	updatedDate: Date;
