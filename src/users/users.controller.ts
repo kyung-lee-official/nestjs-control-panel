@@ -80,6 +80,8 @@ export class UsersController {
 		return this.usersService.updateUserPassword(id, updateUserPasswordDto);
 	}
 
+	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.DELETE_ROLE)
 	@Delete('/:id')
 	remove(@Param('id') id: string) {
 		return this.usersService.remove(id);

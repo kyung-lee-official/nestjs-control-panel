@@ -15,7 +15,7 @@
 - [x] Update email by user id, `UPDATE_EMAIL | UPDATE_MY_EMAIL` permission required.
 - [x] Update roles by user id, `UPDATE_USER_ROLES` permission required.
 - [x] Update password by user id, `UPDATE_PASSWORD | UPDATE_MY_PASSWORD` permission required.
-- [ ] Delete a user by id, `DELETE_USER` permission required.
+- [x] Delete a user by id, `DELETE_USER` permission required.
 
 ## roles
 
