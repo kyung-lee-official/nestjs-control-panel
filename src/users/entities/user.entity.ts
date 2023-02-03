@@ -1,6 +1,6 @@
 import { Exclude } from "class-transformer";
 import { Role } from "src/roles/entities/role.entity";
-import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class User {
@@ -16,6 +16,12 @@ export class User {
 	@Column()
 	@Exclude()
 	password: string;
+
+	@CreateDateColumn()
+	createdAt: Date;
+
+	@UpdateDateColumn()
+	updatedDate: Date;
 
 	@ManyToMany(
 		(type) => {
