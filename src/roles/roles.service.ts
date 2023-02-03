@@ -13,7 +13,7 @@ export class RolesService {
 		private rolesRepository: Repository<Role>
 	) { }
 
-	async updateAdminRole(): Promise<Role> {
+	async updateAdminPermissions(): Promise<Role> {
 		const permissions = Object.values(Permissions);
 		let adminRole = await this.rolesRepository.findOne({
 			where: {

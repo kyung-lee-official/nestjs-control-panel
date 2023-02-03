@@ -1,6 +1,6 @@
 # Product Requirement Document
 
-### auth
+## auth
 
 - [x] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/hasAdmin` request to check if at least one user exists, if at least one user already exists, return `{ "hasAdmin": true }`, frontend then redirects to the sign in page.
       If frontend sends a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request. If no user exists, create a new user, `email` saved as lower case.Create an `admin` role, and assign the role to the current user.
@@ -11,7 +11,10 @@
 
 - [x] Conditionally find users by query email (case insensitive), nickname, or roleIds. roleIds delimited by comma `','`, use **or** relationship. `GET_USERS` permission required.
 - [x] Find a user by id, `GET_USER | GET_ME` permission required.
-- [ ] Update a user by id, `UPDATE_USER | UPDATE_ME` permission required.
+- [x] Update a user by id, can update `nickname`, `UPDATE_USER | UPDATE_ME` permission required.
+- [X] Update email by user id, `UPDATE_EMAIL | UPDATE_MY_EMAIL` permission required.
+- [ ] Update roles by user id, `UPDATE_USER_ROLES` permission required.
+- [ ] Update password by user id, `UPDATE_PASSWORD | UPDATE_MY_PASSWORD` permission required.
 - [ ] Delete a user by id, `DELETE_USER` permission required.
 
 ## roles

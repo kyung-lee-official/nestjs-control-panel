@@ -11,6 +11,7 @@ import { REQUEST } from "@nestjs/core";
 import { Permissions } from "src/permissions/permissions.enum";
 import { ForbiddenException } from "@nestjs/common/exceptions";
 import { PermissionsService } from "src/permissions/permissions.service";
+import { UpdateUserEmailDto } from "./dto/update-user-email.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class UsersService {
@@ -70,12 +71,6 @@ export class UsersService {
 
 	async findOne(id: string): Promise<User> {
 		let requester = this.request.user;
-		requester = await this.usersRepository.findOne({
-			where: {
-				id: requester.id
-			},
-			relations: ["roles"]
-		});
 		const requesterPermissions = await this.permissionsService.getPermissionsByUserId(requester.id);
 		if (requesterPermissions.includes(Permissions.GET_USER)) {
 			const user = await this.usersRepository.findOne({
@@ -104,23 +99,80 @@ export class UsersService {
 	async update(
 		id: string,
 		updateUserDto: Partial<UpdateUserDto>,
-		roleIds?: string[]
 	): Promise<User> {
-		const user = await this.findOne(id);
-		if (!user) {
-			throw new NotFoundException("User not found");
+		let requester = this.request.user;
+		const requesterPermissions = await this.permissionsService.getPermissionsByUserId(requester.id);
+		if (requesterPermissions.includes(Permissions.UPDATE_USER)) {
+			const user = await this.findOne(id);
+			if (!user) {
+				throw new NotFoundException("User not found");
+			}
+			Object.assign(user, updateUserDto);
+			// if (roleIds) {
+			// 	const roles: Role[] = await this.rolesService.find(roleIds);
+			// 	user.roles = roles;
+			// }
+			try {
+				const result = await this.usersRepository.save(user);
+				return result;
+			} catch (error) {
+				throw error;
+			}
 		}
-		Object.assign(user, updateUserDto);
+		if (requesterPermissions.includes(Permissions.UPDATE_ME)) {
+			if (requester.id === id) {
+				const user = await this.findOne(id);
+				if (!user) {
+					throw new NotFoundException("User not found");
+				}
+				Object.assign(user, updateUserDto);
+				try {
+					const result = await this.usersRepository.save(user);
+					return result;
+				} catch (error) {
+					throw error;
+				}
+			} else {
+				throw new ForbiddenException();
+			}
+		}
+	}
 
-		if (roleIds) {
-			const roles: Role[] = await this.rolesService.find(roleIds);
-			user.roles = roles;
+	async updateUserEmail(
+		id: string,
+		updateUserEmailDto: Partial<UpdateUserEmailDto>,
+	): Promise<User> {
+		let requester = this.request.user;
+		const requesterPermissions = await this.permissionsService.getPermissionsByUserId(requester.id);
+		if (requesterPermissions.includes(Permissions.UPDATE_EMAIL)) {
+			const user = await this.findOne(id);
+			if (!user) {
+				throw new NotFoundException("User not found");
+			}
+			Object.assign(user, updateUserEmailDto);
+			try {
+				const result = await this.usersRepository.save(user);
+				return result;
+			} catch (error) {
+				throw error;
+			}
 		}
-		try {
-			const result = await this.usersRepository.save(user);
-			return result;
-		} catch (error) {
-			throw error;
+		if (requesterPermissions.includes(Permissions.UPDATE_MY_EMAIL)) {
+			if (requester.id === id) {
+				const user = await this.findOne(id);
+				if (!user) {
+					throw new NotFoundException("User not found");
+				}
+				Object.assign(user, updateUserEmailDto);
+				try {
+					const result = await this.usersRepository.save(user);
+					return result;
+				} catch (error) {
+					throw error;
+				}
+			} else {
+				throw new ForbiddenException();
+			}
 		}
 	}
 

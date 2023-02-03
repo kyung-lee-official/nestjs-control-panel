@@ -17,9 +17,9 @@ export class RolesController {
 
 	@UseGuards(RolesGuard)
 	@RequiredRoles("admin")
-	@Get("/updateAdminRole")
-	updateAdminRole(): Promise<Role> {
-		return this.rolesService.updateAdminRole();
+	@Get("/updateAdminPermissions")
+	updateAdminPermissions(): Promise<Role> {
+		return this.rolesService.updateAdminPermissions();
 	}
 
 	@Post()
