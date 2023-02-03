@@ -20,6 +20,7 @@
 ## roles
 
 - [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` role required.
+- [x] Create a role, `CREATE_ROLE` permission required.
 - [x] Find all roles, `GET_ROLES` permission required.
 - [x] Find a role by id, `GET_ROLES` permission required.
 - [ ] Update a role by id, `UPDATE_ROLE` permission required.

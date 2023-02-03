@@ -22,6 +22,8 @@ export class RolesController {
 		return this.rolesService.updateAdminPermissions();
 	}
 
+	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.CREATE_ROLE)
 	@Post()
 	create(@Body() createRoleDto: CreateRoleDto) {
 		return this.rolesService.create(createRoleDto);
