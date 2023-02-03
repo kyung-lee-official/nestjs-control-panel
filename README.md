@@ -12,9 +12,9 @@
 - [x] Conditionally find users by query email (case insensitive), nickname, or roleIds. roleIds delimited by comma `','`, use **or** relationship. `GET_USERS` permission required.
 - [x] Find a user by id, `GET_USER | GET_ME` permission required.
 - [x] Update a user by id, can update `nickname`, `UPDATE_USER | UPDATE_ME` permission required.
-- [X] Update email by user id, `UPDATE_EMAIL | UPDATE_MY_EMAIL` permission required.
-- [X] Update roles by user id, `UPDATE_USER_ROLES` permission required.
-- [ ] Update password by user id, `UPDATE_PASSWORD | UPDATE_MY_PASSWORD` permission required.
+- [x] Update email by user id, `UPDATE_EMAIL | UPDATE_MY_EMAIL` permission required.
+- [x] Update roles by user id, `UPDATE_USER_ROLES` permission required.
+- [x] Update password by user id, `UPDATE_PASSWORD | UPDATE_MY_PASSWORD` permission required.
 - [ ] Delete a user by id, `DELETE_USER` permission required.
 
 ## roles

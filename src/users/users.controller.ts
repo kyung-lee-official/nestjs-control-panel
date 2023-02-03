@@ -8,6 +8,7 @@ import { Permissions } from "src/permissions/permissions.enum";
 import { PermissionsGuard } from "src/permissions/guards/permissions.guard";
 import { UpdateUserEmailDto } from "./dto/update-user-email.dto";
 import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
+import { UpdateUserPasswordDto } from "./dto/update-user-password.dto";
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -66,6 +67,17 @@ export class UsersController {
 		@Body() updateUserRolesDto: UpdateUserRolesDto,
 	): Promise<User> {
 		return this.usersService.updateUserRoles(id, updateUserRolesDto);
+	}
+
+	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.UPDATE_PASSWORD, Permissions.UPDATE_MY_PASSWORD)
+	@Patch('/password/:id')
+	updateUserPassword(
+		@Param('id') id: string,
+		@Body() updateUserPasswordDto: UpdateUserPasswordDto,
+	): Promise<User> {
+		return this.usersService.updateUserPassword(id, updateUserPasswordDto);
 	}
 
 	@Delete('/:id')

@@ -8,10 +8,11 @@ import * as bcrypt from "bcrypt";
 import { RolesService } from "src/roles/roles.service";
 import { REQUEST } from "@nestjs/core";
 import { Permissions } from "src/permissions/permissions.enum";
-import { ForbiddenException } from "@nestjs/common/exceptions";
+import { BadRequestException, ForbiddenException, UnauthorizedException } from "@nestjs/common/exceptions";
 import { PermissionsService } from "src/permissions/permissions.service";
 import { UpdateUserEmailDto } from "./dto/update-user-email.dto";
 import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
+import { UpdateUserPasswordDto } from "./dto/update-user-password.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class UsersService {
@@ -188,6 +189,60 @@ export class UsersService {
 			return result;
 		} catch (error) {
 			throw error;
+		}
+	}
+
+	async updateUserPassword(
+		id: string,
+		updateUserPasswordDto: UpdateUserPasswordDto,
+	): Promise<User> {
+		let requester = this.request.user;
+		const requesterPermissions = await this.permissionsService.getPermissionsByUserId(requester.id);
+		if (requesterPermissions.includes(Permissions.UPDATE_PASSWORD)) {
+			let user = await this.findOne(id);
+			if (!user) {
+				throw new NotFoundException("User not found");
+			} else {
+				const { oldPassword, newPassword } = updateUserPasswordDto;
+				const isOldPasswordCorrect: boolean = await bcrypt.compare(oldPassword, user.password);
+				if (isOldPasswordCorrect) {
+					if (oldPassword === newPassword) {
+						throw new BadRequestException("The new password cannot be the same as the old password");
+					}
+					const salt = await bcrypt.genSalt();
+					const hashedPassword = await bcrypt.hash(newPassword, salt);
+					user.password = hashedPassword;
+					user = await this.usersRepository.save(user);
+					return user;
+				} else {
+					throw new UnauthorizedException();
+				}
+			}
+		}
+		if (requesterPermissions.includes(Permissions.UPDATE_MY_PASSWORD)) {
+			if (requester.id === id) {
+				let user = await this.findOne(id);
+				if (!user) {
+					throw new NotFoundException("User not found");
+				} else {
+					const { oldPassword, newPassword } = updateUserPasswordDto;
+					const isOldPasswordCorrect: boolean = await bcrypt.compare(oldPassword, user.password);
+					if (isOldPasswordCorrect) {
+						if (oldPassword === newPassword) {
+							throw new BadRequestException("The new password cannot be the same as the old password");
+						}
+						const salt = await bcrypt.genSalt();
+						const hashedPassword = await bcrypt.hash(newPassword, salt);
+						user.password = hashedPassword;
+						user = await this.usersRepository.save(user);
+						return user;
+					} else {
+						throw new UnauthorizedException();
+					}
+				}
+			} else {
+				throw new ForbiddenException();
+			}
 		}
 	}
 
