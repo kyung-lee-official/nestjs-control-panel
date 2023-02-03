@@ -5,13 +5,13 @@ import { InjectRepository } from "@nestjs/typeorm/dist/common";
 import { Repository } from "typeorm";
 import { User } from "./entities/user.entity";
 import * as bcrypt from "bcrypt";
-import { Role } from "src/roles/entities/role.entity";
 import { RolesService } from "src/roles/roles.service";
 import { REQUEST } from "@nestjs/core";
 import { Permissions } from "src/permissions/permissions.enum";
 import { ForbiddenException } from "@nestjs/common/exceptions";
 import { PermissionsService } from "src/permissions/permissions.service";
 import { UpdateUserEmailDto } from "./dto/update-user-email.dto";
+import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class UsersService {
@@ -108,10 +108,6 @@ export class UsersService {
 				throw new NotFoundException("User not found");
 			}
 			Object.assign(user, updateUserDto);
-			// if (roleIds) {
-			// 	const roles: Role[] = await this.rolesService.find(roleIds);
-			// 	user.roles = roles;
-			// }
 			try {
 				const result = await this.usersRepository.save(user);
 				return result;
@@ -140,7 +136,7 @@ export class UsersService {
 
 	async updateUserEmail(
 		id: string,
-		updateUserEmailDto: Partial<UpdateUserEmailDto>,
+		updateUserEmailDto: UpdateUserEmailDto,
 	): Promise<User> {
 		let requester = this.request.user;
 		const requesterPermissions = await this.permissionsService.getPermissionsByUserId(requester.id);
@@ -173,6 +169,25 @@ export class UsersService {
 			} else {
 				throw new ForbiddenException();
 			}
+		}
+	}
+
+	async updateUserRoles(
+		id: string,
+		updateUserRolesDto: UpdateUserRolesDto,
+	): Promise<User> {
+		const user = await this.findOne(id);
+		if (!user) {
+			throw new NotFoundException("User not found");
+		}
+		const roleIds = updateUserRolesDto.roles;
+		const roles = await this.rolesService.find(roleIds);
+		user.roles = roles;
+		try {
+			const result = await this.usersRepository.save(user);
+			return result;
+		} catch (error) {
+			throw error;
 		}
 	}
 

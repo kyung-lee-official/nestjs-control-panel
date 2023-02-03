@@ -37,15 +37,14 @@ export class RolesService {
 		}
 	}
 
-	async find(roleIds?: string[]): Promise<Role[]> {
+	async find(roleIds?: number[]): Promise<Role[]> {
 		let ids: number[];
 		if (roleIds) {
-			ids = roleIds.map((id: string) => {
-				const parseResult = parseInt(id);
-				if (Number.isNaN(parseResult)) {
+			ids = roleIds.map((id: number) => {
+				if (Number.isNaN(id)) {
 					throw new BadRequestException("The values of ids must be numeric");
 				}
-				return parseResult;
+				return id;
 			});
 		}
 
