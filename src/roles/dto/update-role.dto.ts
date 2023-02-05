@@ -1,4 +1,4 @@
-import { IsArray, IsEnum, IsOptional } from "class-validator";
+import { IsArray, IsEnum, IsOptional, IsUUID } from "class-validator";
 import { Permissions } from "src/permissions/permissions.enum";
 
 export class UpdateRoleDto {
@@ -8,5 +8,6 @@ export class UpdateRoleDto {
 	permissions: Permissions[];
 
 	@IsOptional()
+	@IsUUID("all", { each: true })
 	userIds: string[];
 }

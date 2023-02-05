@@ -35,7 +35,7 @@ export class AuthService {
 		const users = await this.usersRepository.find();
 		let user;
 		if (users.length > 0) {
-			throw new BadRequestException("System already seeded.");
+			throw new BadRequestException("System already seeded");
 		} else {
 			user = await this.usersService.create(createUserDto);
 		}

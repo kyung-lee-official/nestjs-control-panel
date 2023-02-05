@@ -26,16 +26,14 @@
 - [x] Find all roles, `GET_ROLES` permission required.
 - [x] Find a role by id, `GET_ROLES` permission required.
 - [x] Update a role by id, `UPDATE_ROLE` permission required.
-- [ ] Delete role by id, `DELETE_ROLE` permission required.
-- [ ] `admin` has full permissions and can not be changed.
-- [ ] `admin` user can not delete himself.
-- [ ] `admin` can only has one user.
+- [x] Delete role by id, reject if the role has users, `DELETE_ROLE` permission required.
+- [x] `admin` role has full permissions and can not be changed or deleted.
+- [x] `admin` role can only has one user.
+- [x] a `admin` user can not be deleted.
 
 ## permissions
 
-- [ ] Default user permission
-- [ ] Create users
-- [ ] Create roles
+- [ ] Find all permissions.
 
 # NestJS
 

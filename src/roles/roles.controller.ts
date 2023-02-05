@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, ClassSerializerInterceptor, ParseIntPipe } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -59,7 +59,7 @@ export class RolesController {
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.DELETE_ROLE)
 	@Delete(':id')
-	remove(@Param('id') id: string) {
-		return this.rolesService.remove(+id);
+	remove(@Param('id', new ParseIntPipe()) id: number) {
+		return this.rolesService.remove(id);
 	}
 }

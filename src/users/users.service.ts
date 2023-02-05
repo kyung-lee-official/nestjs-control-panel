@@ -24,7 +24,7 @@ export class UsersService {
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
 		@Inject(forwardRef(() => {
-		  return RolesService
+			return RolesService;
 		}))
 		private rolesService: RolesService,
 		private permissionsService: PermissionsService
@@ -199,6 +199,11 @@ export class UsersService {
 		}
 		const roleIds = updateUserRolesDto.roles;
 		const roles = await this.rolesService.find(roleIds);
+		for (const role of roles) {
+			if (role.role === "admin") {
+				throw new BadRequestException("Role \"admin\" can only has one user");
+			}
+		}
 		user.roles = roles;
 		try {
 			const result = await this.usersRepository.save(user);
@@ -262,10 +267,21 @@ export class UsersService {
 		}
 	}
 
-	async remove(id: string): Promise<void> {
-		const result = await this.usersRepository.delete({ id: id });
-		if (result.affected === 0) {
-			throw new NotFoundException(`Task with ID ${id} not found.`);
+	async remove(id: string): Promise<any> {
+		const user = await this.findOne(id);
+		if (!user) {
+			throw new NotFoundException("User not found");
+		}
+		for (const role of user.roles) {
+			if (role.role === "admin") {
+				throw new BadRequestException("Can not delete an \"admin\" user");
+			}
+		}
+		try {
+			const result = await this.usersRepository.delete({ id: id });
+			return result;
+		} catch (error) {
+			throw error;
 		}
 	}
 }

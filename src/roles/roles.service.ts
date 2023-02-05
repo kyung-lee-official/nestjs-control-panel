@@ -87,6 +87,9 @@ export class RolesService {
 		if (!role) {
 			throw new NotFoundException("Role not found");
 		}
+		if (role.role === "admin") {
+			throw new BadRequestException("Can't update role \"admin\"");
+		}
 		const { permissions, userIds } = updateRoleDto;
 		if (permissions) {
 			role.permissions = permissions;
@@ -96,14 +99,30 @@ export class RolesService {
 			role.users = users;
 		}
 		try {
-			const result = await this.rolesRepository.save(role);
+			await this.rolesRepository.save(role);
+			const result = await this.findOne(id);
 			return result;
 		} catch (error) {
 			throw error;
 		}
 	}
 
-	remove(id: number) {
-		return `This action removes a #${id} role`;
+	async remove(id: number): Promise<any> {
+		const role = await this.findOne(id);
+		if (!role) {
+			throw new BadRequestException(`Role with ID ${id} not found`);
+		}
+		if (role.role === "admin") {
+			throw new BadRequestException("Can not delete role \"admin\"");
+		}
+		if (role.users.length > 0) {
+			throw new BadRequestException("Can not delete a role that has users");
+		}
+		try {
+			const result = await this.rolesRepository.delete(id);
+			return result;
+		} catch (error) {
+			throw error;
+		}
 	}
 }
