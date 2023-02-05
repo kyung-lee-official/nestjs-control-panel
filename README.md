@@ -33,7 +33,7 @@
 
 ## permissions
 
-- [ ] Find all permissions.
+- [x] Find all permissions.
 
 # NestJS
 
