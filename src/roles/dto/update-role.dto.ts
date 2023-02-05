@@ -8,5 +8,5 @@ export class UpdateRoleDto {
 	permissions: Permissions[];
 
 	@IsOptional()
-	users: string[];
+	userIds: string[];
 }

@@ -1,16 +1,23 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 import { Role } from "./entities/role.entity";
 import { Permissions } from "src/permissions/permissions.enum";
+import { UsersService } from "src/users/users.service";
+import { FindUsersByIdsDto } from "src/users/dto/find-users-by-ids.dto";
+import { forwardRef } from "@nestjs/common/utils";
 
 @Injectable()
 export class RolesService {
 	constructor(
 		@InjectRepository(Role)
-		private rolesRepository: Repository<Role>
+		private rolesRepository: Repository<Role>,
+		@Inject(forwardRef(() => {
+			return UsersService;
+		}))
+		private usersService: UsersService
 	) { }
 
 	async updateAdminPermissions(): Promise<Role> {
@@ -80,8 +87,14 @@ export class RolesService {
 		if (!role) {
 			throw new NotFoundException("Role not found");
 		}
-		Object.assign(role, updateRoleDto);
-
+		const { permissions, userIds } = updateRoleDto;
+		if (permissions) {
+			role.permissions = permissions;
+		}
+		if (userIds) {
+			const users = await this.usersService.findUsersByIds({ ids: userIds } as FindUsersByIdsDto);
+			role.users = users;
+		}
 		try {
 			const result = await this.rolesRepository.save(role);
 			return result;

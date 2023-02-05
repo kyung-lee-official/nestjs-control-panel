@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from "@nestjs/typeorm/dist/common";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { User } from "./entities/user.entity";
 import * as bcrypt from "bcrypt";
 import { RolesService } from "src/roles/roles.service";
@@ -13,6 +13,8 @@ import { PermissionsService } from "src/permissions/permissions.service";
 import { UpdateUserEmailDto } from "./dto/update-user-email.dto";
 import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
 import { UpdateUserPasswordDto } from "./dto/update-user-password.dto";
+import { FindUsersByIdsDto } from "./dto/find-users-by-ids.dto";
+import { forwardRef } from "@nestjs/common/utils";
 
 @Injectable({ scope: Scope.REQUEST })
 export class UsersService {
@@ -21,6 +23,9 @@ export class UsersService {
 		private request: any,
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
+		@Inject(forwardRef(() => {
+		  return RolesService
+		}))
 		private rolesService: RolesService,
 		private permissionsService: PermissionsService
 	) { }
@@ -67,6 +72,17 @@ export class UsersService {
 				return false;
 			});
 		}
+		return users;
+	}
+
+	async findUsersByIds(findUsersByIdsDto: FindUsersByIdsDto): Promise<User[]> {
+		const { ids } = findUsersByIdsDto;
+		const users = await this.usersRepository.find({
+			where: {
+				id: In(ids)
+			},
+			relations: ["roles"]
+		});
 		return users;
 	}
 

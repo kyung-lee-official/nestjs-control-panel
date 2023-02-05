@@ -19,7 +19,7 @@ import { PermissionsModule } from './permissions/permissions.module';
 			password: process.env.DATABASE_PASSWORD,
 			database: process.env.DATABASE,
 			autoLoadEntities: true,
-			synchronize: true
+			synchronize: false
 		}),
 		UsersModule,
 		AuthModule,

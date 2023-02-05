@@ -9,6 +9,7 @@ import { PermissionsGuard } from "src/permissions/guards/permissions.guard";
 import { UpdateUserEmailDto } from "./dto/update-user-email.dto";
 import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
 import { UpdateUserPasswordDto } from "./dto/update-user-password.dto";
+import { FindUsersByIdsDto } from "./dto/find-users-by-ids.dto";
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -29,6 +30,16 @@ export class UsersController {
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.GET_USERS)
+	@Get("ids")
+	findUsersByIds(
+		@Body() findUsersByIdsDto: FindUsersByIdsDto,
+	): Promise<User[]> {
+		return this.usersService.findUsersByIds(findUsersByIdsDto);
+	}
+
+	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_USER, Permissions.GET_ME)
 	@Get('/:id')
 	findOne(@Param('id') id: string): Promise<User> {
@@ -42,7 +53,6 @@ export class UsersController {
 	update(
 		@Param('id') id: string,
 		@Body() updateUserDto: UpdateUserDto,
-		// @Query("roleIds", new ParseArrayPipe({ optional: true })) roleIds?: string[],
 	): Promise<User> {
 		return this.usersService.update(id, updateUserDto);
 	}

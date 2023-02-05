@@ -17,7 +17,7 @@ export enum Permissions {
 	CREATE_ROLE = "CREATE_ROLE",
 	GET_ROLES = "GET_ROLES",
 	UPDATE_ROLE = "UPDATE_ROLE",
-	DELETE_ROLE = "GET_ROLES",
+	DELETE_ROLE = "DELETE_ROLE",
 
 	/* Permission permissions */
 	GET_PERMISSIONS = "GET_PERMISSIONS"

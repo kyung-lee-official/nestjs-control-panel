@@ -10,6 +10,7 @@
 ## users
 
 - [x] Conditionally find users by query email (case insensitive), nickname, or roleIds. roleIds delimited by comma `','`, use **or** relationship. `GET_USERS` permission required.
+- [x] Find users by ids, `GET_USERS` permission required.
 - [x] Find a user by id, `GET_USER | GET_ME` permission required.
 - [x] Update a user by id, can update `nickname`, `UPDATE_USER | UPDATE_ME` permission required.
 - [x] Update email by user id, `UPDATE_EMAIL | UPDATE_MY_EMAIL` permission required.
@@ -21,10 +22,10 @@
 
 - [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` role required.
 - [x] Create a role, `CREATE_ROLE` permission required.
+- [ ] Create a role by copying permissions of an existing role, `CREATE_ROLE` permission required.
 - [x] Find all roles, `GET_ROLES` permission required.
 - [x] Find a role by id, `GET_ROLES` permission required.
-- [ ] Update a role by id, `UPDATE_ROLE` permission required.
-- [ ] Copy role
+- [x] Update a role by id, `UPDATE_ROLE` permission required.
 - [ ] Delete role by id, `DELETE_ROLE` permission required.
 - [ ] `admin` has full permissions and can not be changed.
 - [ ] `admin` user can not delete himself.

@@ -46,11 +46,18 @@ export class RolesController {
 	}
 
 	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.UPDATE_ROLE)
 	@Patch(':id')
-	updateRoleById(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
+	updateRoleById(
+		@Param('id') id: string,
+		@Body() updateRoleDto: UpdateRoleDto
+	) {
 		return this.rolesService.update(+id, updateRoleDto);
 	}
 
+	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.DELETE_ROLE)
 	@Delete(':id')
 	remove(@Param('id') id: string) {
 		return this.rolesService.remove(+id);
