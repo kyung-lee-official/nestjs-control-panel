@@ -7,6 +7,10 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { DiscordDrawCampaignsModule } from './discord-draw-campaigns/discord-draw-campaigns.module';
+import { DiscordDrawRecordsModule } from './discord-draw-records/discord-draw-records.module';
+import { ChituboxOrdersModule } from './chitubox-orders/chitubox-orders.module';
+import { ChituboxManualFeedbacksModule } from "./chitubox-manual-feedbacks/chitubox-manual-feedbacks.module";
 
 @Module({
 	imports: [
@@ -19,12 +23,16 @@ import { PermissionsModule } from './permissions/permissions.module';
 			password: process.env.DATABASE_PASSWORD,
 			database: process.env.DATABASE,
 			autoLoadEntities: true,
-			synchronize: false
+			synchronize: true
 		}),
 		UsersModule,
 		AuthModule,
 		RolesModule,
 		PermissionsModule,
+		DiscordDrawCampaignsModule,
+		DiscordDrawRecordsModule,
+		ChituboxOrdersModule,
+		ChituboxManualFeedbacksModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
