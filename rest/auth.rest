@@ -1,0 +1,28 @@
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt5dW5nQGNiZC0zZC5jb20iLCJpYXQiOjE2NzU3NTYyNTgsImV4cCI6MTY3NTg0MjY1OH0.ICtWu9uEc5W13aE0aXzRJGJWWydj6y8U3X1eV4q3dRo
+
+### Check has admin
+GET http://localhost:3001/auth/hasAdmin
+
+### Seed
+POST http://localhost:3001/auth/seed
+Content-Type: application/x-www-form-urlencoded
+
+email=kyung@cbd-3d.com
+&nickname=Kyung
+&password=hdkmQ@m98M83
+
+### Sign up
+POST http://localhost:3001/auth/signup
+Content-Type: application/x-www-form-urlencoded
+Authorization: {{token}}
+
+email=zxcv@cbd-3d.com
+&nickname=zxcv
+&password=hdkmQ@m98M83
+
+### Sign in
+POST http://localhost:3001/auth/signin
+Content-Type: application/x-www-form-urlencoded
+
+email=kyung@cbd-3d.com
+&password=hdkmQ@m98M83

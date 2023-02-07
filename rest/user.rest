@@ -1,0 +1,61 @@
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt5dW5nQGNiZC0zZC5jb20iLCJpYXQiOjE2NzU3NTYyNTgsImV4cCI6MTY3NTg0MjY1OH0.ICtWu9uEc5W13aE0aXzRJGJWWydj6y8U3X1eV4q3dRo
+
+### Find users
+GET http://localhost:3001/users
+	# ?email=KyUnG@cbd-3d.com
+	# &nickname=Kyung
+	# &roleIds=10
+Authorization: {{token}}
+
+### Find users by ids
+GET http://localhost:3001/users/ids
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+	"ids": [
+		"8b9136f6-902d-4799-b5c2-5f6caebac8b6",
+		"1f20ae40-c57c-4ff8-b244-8741cb2dfcfe"
+	]
+}
+
+### Find a user
+GET http://localhost:3001/users/8b9136f6-902d-4799-b5c2-5f6caebac8b6
+Content-Type: application/json
+Authorization: {{token}}
+
+### Update a user profile
+PATCH http://localhost:3001/users/profile/8b9136f6-902d-4799-b5c2-5f6caebac8b6
+Content-Type: application/x-www-form-urlencoded
+Authorization: {{token}}
+
+nickname=Kyung
+
+### Update a user email
+PATCH http://localhost:3001/users/email/8b9136f6-902d-4799-b5c2-5f6caebac8b6
+Content-Type: application/x-www-form-urlencoded
+Authorization: {{token}}
+
+email=kyung@cbd-3d.com
+
+### Update user roles
+PATCH http://localhost:3001/users/roles/1f20ae40-c57c-4ff8-b244-8741cb2dfcfe
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+	"roles": [
+	]
+}
+
+### Update user password
+PATCH http://localhost:3001/users/email/8b9136f6-902d-4799-b5c2-5f6caebac8b6
+Content-Type: application/x-www-form-urlencoded
+Authorization: {{token}}
+
+oldPassword=hdkmQ@m98M82
+&newPassword=hdkmQ@m98M83
+
+### Delete a user
+DELETE http://localhost:3001/users/da46993e-ca6e-4ed4-94d7-29380e9f71bc
+Authorization: {{token}}

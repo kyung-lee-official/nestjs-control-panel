@@ -14,18 +14,18 @@ export class ChituboxManualFeedbacksController {
 		return this.chituboxManualFeedbacksService.create(createChituboxManualFeedbackDto, ip);
 	}
 
-	@Get()
-	findAll() {
-		return this.chituboxManualFeedbacksService.findAll();
-	}
+	// @Get()
+	// findAll() {
+	// 	return this.chituboxManualFeedbacksService.findAll();
+	// }
 
-	@Get(':id')
-	findOne(@Param('id') id: string) {
-		return this.chituboxManualFeedbacksService.findOne(+id);
-	}
+	// @Get(':id')
+	// findOne(@Param('id') id: string) {
+	// 	return this.chituboxManualFeedbacksService.findOne(+id);
+	// }
 
-	@Delete(':id')
-	remove(@Param('id') id: string) {
-		return this.chituboxManualFeedbacksService.remove(+id);
-	}
+	// @Delete(':id')
+	// remove(@Param('id') id: string) {
+	// 	return this.chituboxManualFeedbacksService.remove(+id);
+	// }
 }
