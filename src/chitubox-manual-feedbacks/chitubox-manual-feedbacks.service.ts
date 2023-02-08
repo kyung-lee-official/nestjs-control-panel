@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateChituboxManualFeedbackDto } from './dto/create-chitubox-manual-feedback.dto';
 import { InjectRepository } from "@nestjs/typeorm";
 import { ChituboxManualFeedback } from "./entities/chitubox-manual-feedback-record.entity";
-import { Between, Repository } from "typeorm";
+import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
 import { FindChituboxManualFeedbackDto } from "./dto/find-chitubox-manual-feedback.dto";
 import * as dayjs from "dayjs";
 
@@ -27,11 +27,12 @@ export class ChituboxManualFeedbacksService {
 		}
 	}
 
+	/** 
+	 * Since the server timezone is always UTC (use `timedatectl` command to check), 
+	 * the front end need to convert dates to UTC before sending the request. 
+	 */
 	async find(findChituboxManualFeedbackDto: FindChituboxManualFeedbackDto): Promise<ChituboxManualFeedback[]> {
 		const { startDate, endDate } = findChituboxManualFeedbackDto;
-		console.log(dayjs(startDate).toDate());
-		console.log(dayjs(endDate).toDate());
-
 		if (startDate && endDate) {
 			if (dayjs(endDate).isBefore(dayjs(startDate))) {
 				throw new BadRequestException("endDate cannot be earlier than startDate");
@@ -44,14 +45,24 @@ export class ChituboxManualFeedbacksService {
 					)
 				}
 			});
-			console.log(feedbacks);
-
 			return feedbacks;
 		} else if (startDate) {
-			const feedbacks = await this.feedbacksRepository.find();
+			const feedbacks = await this.feedbacksRepository.find({
+				where: {
+					createdDate: MoreThanOrEqual(
+						dayjs(startDate).toDate()
+					)
+				}
+			});
 			return feedbacks;
 		} else if (endDate) {
-			const feedbacks = await this.feedbacksRepository.find();
+			const feedbacks = await this.feedbacksRepository.find({
+				where: {
+					createdDate: LessThanOrEqual(
+						dayjs(endDate).add(1, "day").toDate()
+					)
+				}
+			});
 			return feedbacks;
 		} else {
 			const feedbacks = await this.feedbacksRepository.find();

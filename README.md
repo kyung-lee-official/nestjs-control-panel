@@ -112,4 +112,17 @@ type DiscordDrawCampaignRules = {
 - ip
 - country
 
-* [ ] Create a feedback.
+* [x] Create a feedback.
+* [x] Find feedbacks by `startDate` and `endDate`.
+
+# Env
+```
+DATABASE=
+DATABASE_HOST=
+DATABASE_PORT=
+DATABASE_USERNAME=
+DATABASE_PASSWORD=
+JWT_SECRET=
+TZ=UTC
+AUTHORIZATION="Bearer xxx"
+```
