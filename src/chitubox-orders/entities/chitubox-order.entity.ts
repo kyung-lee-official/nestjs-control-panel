@@ -17,6 +17,6 @@ export class ChituboxOrder {
 	@Column()
 	email: string;
 
-	@Column({ type: "time without time zone" })
+	@Column({ type: "timestamp with time zone" })
 	paidDate: Date;
 }

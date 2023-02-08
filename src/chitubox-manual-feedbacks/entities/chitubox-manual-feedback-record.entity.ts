@@ -1,13 +1,13 @@
-import { Column, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ChituboxManualFeedbackPayload } from "../chitubox-manual-feedback-payload.enum";
-import { ChituboxManualUrl } from "../chitubox-manual-url.enum";
 
+@Entity()
 export class ChituboxManualFeedback {
-	@PrimaryGeneratedColumn()
+	@PrimaryGeneratedColumn({ type: "bigint" })
 	id: number;
 
 	@Column()
-	url: ChituboxManualUrl;
+	url: string;
 
 	@Column()
 	payload: ChituboxManualFeedbackPayload;
@@ -17,4 +17,10 @@ export class ChituboxManualFeedback {
 
 	@Column()
 	country: string;
+
+	@CreateDateColumn({ type: "timestamp with time zone" })
+	createdDate: Date;
+
+	@UpdateDateColumn({ type: "timestamp with time zone" })
+	updatedDate: Date;
 }

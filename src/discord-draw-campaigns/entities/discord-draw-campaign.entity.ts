@@ -18,19 +18,19 @@ export class DiscordDrawCampaign {
 	/**
 	 * nullable, only required when rule type is `N_CHANCES`
 	 */
-	@Column({ nullable: true, type: "time without time zone" })
+	@Column({ nullable: true, type: "timestamp with time zone" })
 	drawStartDate: Date;
 
 	/**
 	 * nullable, only required when rule type is `N_CHANCES`
 	 */
-	@Column({ nullable: true, type: "time without time zone" })
+	@Column({ nullable: true, type: "timestamp with time zone" })
 	drawEndDate: Date;
 
-	@Column({ type: "time without time zone" })
+	@Column({ type: "timestamp with time zone" })
 	paidStartDate: Date;
 
-	@Column({ type: "time without time zone" })
+	@Column({ type: "timestamp with time zone" })
 	paidEndDate: Date;
 
 	@OneToMany(
@@ -45,9 +45,9 @@ export class DiscordDrawCampaign {
 	)
 	chituboxOrders: ChituboxOrder[];
 
-	@CreateDateColumn()
+	@CreateDateColumn({ type: "timestamp with time zone" })
 	createdDate: Date;
 
-	@UpdateDateColumn()
+	@UpdateDateColumn({ type: "timestamp with time zone" })
 	updatedDate: Date;
 }

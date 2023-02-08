@@ -1,0 +1,2 @@
+### Get IP country
+GET https://api.country.is/9.9.9.9

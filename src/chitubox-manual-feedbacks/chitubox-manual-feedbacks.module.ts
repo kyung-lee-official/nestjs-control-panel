@@ -3,10 +3,12 @@ import { ChituboxManualFeedbacksService } from './chitubox-manual-feedbacks.serv
 import { ChituboxManualFeedbacksController } from './chitubox-manual-feedback.controller';
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ChituboxManualFeedback } from "./entities/chitubox-manual-feedback-record.entity";
+import { PermissionsModule } from "src/permissions/permissions.module";
 
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([ChituboxManualFeedback]),
+		PermissionsModule,
 	],
 	controllers: [ChituboxManualFeedbacksController],
 	providers: [ChituboxManualFeedbacksService]

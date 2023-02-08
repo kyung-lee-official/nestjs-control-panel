@@ -8,3 +8,13 @@ Content-Type: application/json
 	"url": "manual.chitubox.com",
 	"payload": "USEFUL"
 }
+
+### Find feedbacks
+GET http://localhost:3001/chitubox-manual-feedbacks
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+	"startDate": "2023-02-05",
+	"endDate": "2023-02-08"
+}

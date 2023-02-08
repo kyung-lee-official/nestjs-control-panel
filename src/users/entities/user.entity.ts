@@ -17,10 +17,10 @@ export class User {
 	@Exclude()
 	password: string;
 
-	@CreateDateColumn()
+	@CreateDateColumn({ type: "timestamp with time zone" })
 	createdDate: Date;
 
-	@UpdateDateColumn()
+	@UpdateDateColumn({ type: "timestamp with time zone" })
 	updatedDate: Date;
 
 	@ManyToMany(
