@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateChituboxManualFeedbackDto } from './dto/create-chitubox-manual-feedback.dto';
 import { InjectRepository } from "@nestjs/typeorm";
 import { ChituboxManualFeedback } from "./entities/chitubox-manual-feedback-record.entity";
 import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
 import { FindChituboxManualFeedbackDto } from "./dto/find-chitubox-manual-feedback.dto";
 import * as dayjs from "dayjs";
+import axios from "axios";
 
 @Injectable()
 export class ChituboxManualFeedbacksService {
@@ -15,16 +16,20 @@ export class ChituboxManualFeedbacksService {
 
 	async create(createChituboxManualFeedbackDto: CreateChituboxManualFeedbackDto, ip: string): Promise<ChituboxManualFeedback> {
 		const { url, payload } = createChituboxManualFeedbackDto;
-		const res = await fetch(`https://api.country.is/9.9.9.9`, { method: "GET" });
-		// const res = await fetch(`https://api.country.is/${ip}`, { method: "GET" });
+		let res;
 		try {
-			const country = await res.json();
-			const feedback = this.feedbacksRepository.create({ url, payload, ip, country: country.country });
-			await this.feedbacksRepository.save(feedback);
-			return feedback;
+			res = await axios.get(`https://api.country.is/9.9.9.9`);
+			// const res = await axios.get(`https://api.country.is/${ip}`);
 		} catch (error) {
-			throw error;
+			throw new InternalServerErrorException("Country API error");
 		}
+		const { country } = res.data;
+		if (!country) {
+			throw new InternalServerErrorException("Country API error");
+		}
+		const feedback = this.feedbacksRepository.create({ url, payload, ip, country: country });
+		await this.feedbacksRepository.save(feedback);
+		return feedback;
 	}
 
 	/** 
@@ -41,7 +46,7 @@ export class ChituboxManualFeedbacksService {
 				where: {
 					createdDate: Between(
 						dayjs(startDate).toDate(),
-						dayjs(endDate).add(1, "day").toDate()
+						dayjs(endDate).toDate()
 					)
 				}
 			});
@@ -59,7 +64,7 @@ export class ChituboxManualFeedbacksService {
 			const feedbacks = await this.feedbacksRepository.find({
 				where: {
 					createdDate: LessThanOrEqual(
-						dayjs(endDate).add(1, "day").toDate()
+						dayjs(endDate).toDate()
 					)
 				}
 			});

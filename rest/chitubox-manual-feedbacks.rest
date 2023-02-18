@@ -14,8 +14,8 @@ Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 {
-	"startDate": "2023-02-08",
-	"endDate": "2023-02-08"
+	"startDate": "2023-02-08T00:00:00.000Z",
+	"endDate": "2023-02-08T23:59:59.999Z"
 }
 
 ### Find feedbacks with startDate
@@ -25,7 +25,7 @@ Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 {
-	"startDate": "2023-02-07"
+	"startDate": "2023-02-07T00:00:00.000Z"
 }
 
 ### Find feedbacks with endDate
@@ -35,5 +35,5 @@ Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 {
-	"endDate": "2023-02-07"
+	"endDate": "2023-02-07T23:59:59.999Z"
 }
