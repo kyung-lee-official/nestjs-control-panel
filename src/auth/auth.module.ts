@@ -10,6 +10,7 @@ import { ConfigModule } from "@nestjs/config";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { Role } from "src/roles/entities/role.entity";
 import { PermissionsModule } from "src/permissions/permissions.module";
+import { GoogleOAuth20Strategy } from "./strategies/google-oauth20.strategy";
 
 @Module({
 	imports: [
@@ -28,7 +29,8 @@ import { PermissionsModule } from "src/permissions/permissions.module";
 	controllers: [AuthController],
 	providers: [
 		AuthService,
-		JwtStrategy
+		JwtStrategy,
+		GoogleOAuth20Strategy
 	]
 })
 export class AuthModule { }

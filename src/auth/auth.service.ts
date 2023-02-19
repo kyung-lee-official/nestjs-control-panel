@@ -68,4 +68,15 @@ export class AuthService {
 			throw new UnauthorizedException("Please check your sign in credentials");
 		}
 	}
+
+	googleSignIn(req) {
+		if (!req.user) {
+			return 'No user from google';
+		}
+
+		return {
+			message: 'User information from google',
+			user: req.user
+		};
+	}
 }
