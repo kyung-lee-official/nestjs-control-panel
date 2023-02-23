@@ -26,10 +26,18 @@
 - [x] Find all roles, `GET_ROLES` permission required.
 - [x] Find a role by id, `GET_ROLES` permission required.
 - [x] Update a role by id, `UPDATE_ROLE` permission required.
-- [x] Delete role by id, reject if the role has users, `DELETE_ROLE` permission required.
+- [x] Delete a role by id, reject if the role has users, `DELETE_ROLE` permission required.
 - [x] `admin` role has full permissions and can not be changed or deleted.
 - [x] `admin` role can only has one user.
 - [x] a `admin` user can not be deleted.
+
+## groups
+
+- [x] Create a group, `CREATE_GROUP` permission required.
+- [x] Find all groups, `GET_GROUPS` permission required.
+- [x] Find a group by id, `GET_GROUPS` permission required.
+- [x] Update a group by id, `UPDATE_GROUP` permission required.
+- [x] Delete a group by id, reject if the group has users, `DELETE_GROUP` permission required.
 
 ## permissions
 

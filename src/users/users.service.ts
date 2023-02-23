@@ -8,7 +8,7 @@ import * as bcrypt from "bcrypt";
 import { RolesService } from "src/roles/roles.service";
 import { REQUEST } from "@nestjs/core";
 import { Permissions } from "src/permissions/permissions.enum";
-import { BadRequestException, ForbiddenException, UnauthorizedException } from "@nestjs/common/exceptions";
+import { BadRequestException, ForbiddenException, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common/exceptions";
 import { PermissionsService } from "src/permissions/permissions.service";
 import { UpdateUserEmailDto } from "./dto/update-user-email.dto";
 import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
@@ -81,7 +81,11 @@ export class UsersService {
 			where: {
 				id: In(ids)
 			},
-			relations: ["roles"]
+			relations: [
+				"roles",
+				"groups",
+				"ownedGroups"
+			]
 		});
 		return users;
 	}
@@ -94,8 +98,15 @@ export class UsersService {
 				where: {
 					id: id
 				},
-				relations: ["roles"]
+				relations: [
+					"roles",
+					"groups",
+					"ownedGroups"
+				]
 			});
+			if (!user) {
+				throw new NotFoundException("User not found");
+			}
 			return user;
 		}
 		if (requesterPermissions.includes(Permissions.GET_ME)) {
@@ -104,8 +115,15 @@ export class UsersService {
 					where: {
 						id: id
 					},
-					relations: ["roles"]
+					relations: [
+						"roles",
+						"groups",
+						"ownedGroups"
+					]
 				});
+				if (!user) {
+					throw new NotFoundException("User not found");
+				}
 				return user;
 			} else {
 				throw new ForbiddenException();
@@ -277,11 +295,10 @@ export class UsersService {
 				throw new BadRequestException("Can not delete an \"admin\" user");
 			}
 		}
-		try {
-			const result = await this.usersRepository.delete({ id: id });
-			return result;
-		} catch (error) {
-			throw error;
+		const result = await this.usersRepository.delete({ id: id });
+		if (!result.affected) {
+			throw new ServiceUnavailableException("Failed to delete the user");
 		}
+		return result;
 	}
 }

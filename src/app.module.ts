@@ -11,6 +11,7 @@ import { DiscordDrawCampaignsModule } from './discord-draw-campaigns/discord-dra
 import { DiscordDrawRecordsModule } from './discord-draw-records/discord-draw-records.module';
 import { ChituboxOrdersModule } from './chitubox-orders/chitubox-orders.module';
 import { ChituboxManualFeedbacksModule } from "./chitubox-manual-feedbacks/chitubox-manual-feedbacks.module";
+import { GroupsModule } from './groups/groups.module';
 
 @Module({
 	imports: [
@@ -28,6 +29,7 @@ import { ChituboxManualFeedbacksModule } from "./chitubox-manual-feedbacks/chitu
 		UsersModule,
 		AuthModule,
 		RolesModule,
+		GroupsModule,
 		PermissionsModule,
 		DiscordDrawCampaignsModule,
 		DiscordDrawRecordsModule,

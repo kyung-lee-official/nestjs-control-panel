@@ -19,6 +19,12 @@ export enum Permissions {
 	UPDATE_ROLE = "UPDATE_ROLE",
 	DELETE_ROLE = "DELETE_ROLE",
 
+	/* Group permissions */
+	CREATE_GROUP = "CREATE_GROUP",
+	GET_GROUPS = "GET_GROUPS",
+	UPDATE_GROUP = "UPDATE_GROUP",
+	DELETE_GROUP = "DELETE_GROUP",
+
 	/* Permission permissions */
 	GET_PERMISSIONS = "GET_PERMISSIONS",
 

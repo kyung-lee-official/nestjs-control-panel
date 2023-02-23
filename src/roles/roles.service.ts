@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { InjectRepository } from "@nestjs/typeorm";
@@ -118,11 +118,10 @@ export class RolesService {
 		if (role.users.length > 0) {
 			throw new BadRequestException("Can not delete a role that has users");
 		}
-		try {
-			const result = await this.rolesRepository.delete(id);
-			return result;
-		} catch (error) {
-			throw error;
+		const result = await this.rolesRepository.delete(id);
+		if (!result.affected) {
+			throw new ServiceUnavailableException("Failed to delete the role");
 		}
+		return result;
 	}
 }
