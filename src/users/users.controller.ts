@@ -10,15 +10,18 @@ import { UpdateUserEmailDto } from "./dto/update-user-email.dto";
 import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
 import { UpdateUserPasswordDto } from "./dto/update-user-password.dto";
 import { FindUsersByIdsDto } from "./dto/find-users-by-ids.dto";
+import { GroupsGuard } from "src/groups/guards/groups.guard";
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-	constructor(private readonly usersService: UsersService) { }
+	constructor(
+		private readonly usersService: UsersService,
+	) { }
 
 	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(GroupsGuard)
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.GET_USERS)
 	@Get()
 	find(
 		@Query("email") email?,

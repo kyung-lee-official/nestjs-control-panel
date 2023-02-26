@@ -8,7 +8,7 @@ import { Permissions } from "../permissions.enum";
 export class PermissionsGuard implements CanActivate {
 	constructor(
 		private reflector: Reflector,
-		private permissionService: PermissionsService
+		private permissionsService: PermissionsService
 	) { }
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -20,7 +20,7 @@ export class PermissionsGuard implements CanActivate {
 			return true;
 		}
 		let { user } = context.switchToHttp().getRequest();
-		const allPermissionsOfUser = await this.permissionService.getPermissionsByUserId(user.id);
+		const allPermissionsOfUser = await this.permissionsService.getPermissionsByUserId(user.id);
 
 		/* At least has one required permission */
 		const hasRequiredPermission = requiredPermissions.some((requiredPermission: Permissions) => {

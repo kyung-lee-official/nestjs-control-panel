@@ -7,6 +7,8 @@ import { Role } from "src/roles/entities/role.entity";
 import { PermissionsModule } from "src/permissions/permissions.module";
 import { forwardRef } from "@nestjs/common/utils";
 import { RolesModule } from "src/roles/roles.module";
+import { GroupsModule } from "src/groups/groups.module";
+import { CaslModule } from "src/casl/casl.module";
 
 @Module({
 	imports: [
@@ -14,7 +16,12 @@ import { RolesModule } from "src/roles/roles.module";
 		forwardRef(() => {
 			return RolesModule;
 		}),
-		PermissionsModule
+		forwardRef(() => {
+			return GroupsModule;
+		}),
+		forwardRef(() => CaslModule),
+		CaslModule,
+		PermissionsModule,
 	],
 	controllers: [UsersController],
 	providers: [UsersService],

@@ -12,6 +12,7 @@ import { DiscordDrawRecordsModule } from './discord-draw-records/discord-draw-re
 import { ChituboxOrdersModule } from './chitubox-orders/chitubox-orders.module';
 import { ChituboxManualFeedbacksModule } from "./chitubox-manual-feedbacks/chitubox-manual-feedbacks.module";
 import { GroupsModule } from './groups/groups.module';
+import { CaslModule } from './casl/casl.module';
 
 @Module({
 	imports: [
@@ -35,6 +36,7 @@ import { GroupsModule } from './groups/groups.module';
 		DiscordDrawRecordsModule,
 		ChituboxOrdersModule,
 		ChituboxManualFeedbacksModule,
+		CaslModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

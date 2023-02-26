@@ -15,6 +15,7 @@ import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
 import { UpdateUserPasswordDto } from "./dto/update-user-password.dto";
 import { FindUsersByIdsDto } from "./dto/find-users-by-ids.dto";
 import { forwardRef } from "@nestjs/common/utils";
+import { Actions, CaslAbilityFactory } from "src/casl/casl-ability.factory/casl-ability.factory";
 
 @Injectable({ scope: Scope.REQUEST })
 export class UsersService {
@@ -27,7 +28,11 @@ export class UsersService {
 			return RolesService;
 		}))
 		private rolesService: RolesService,
-		private permissionsService: PermissionsService
+		private permissionsService: PermissionsService,
+		@Inject(forwardRef(() => {
+			return CaslAbilityFactory;
+		}))
+		private caslAbilityFactory: CaslAbilityFactory
 	) { }
 
 	async create(createUserDto: CreateUserDto): Promise<User> {
@@ -45,34 +50,38 @@ export class UsersService {
 	}
 
 	async find(email?, nickname?, roleIds?): Promise<User[]> {
-		const queryBuilder = this.usersRepository.createQueryBuilder("user")
-			.leftJoinAndSelect("user.roles", "roles");
-		if (email) {
-			queryBuilder.where("user.email = :email", { email: email.toLowerCase() });
-		}
-		if (nickname) {
-			queryBuilder.andWhere(
-				"(LOWER(user.nickname) LIKE LOWER(:nickname))", { nickname: `%${nickname}%` }
-			);
-		}
-		let users = await queryBuilder.getMany();
-		if (roleIds) {
-			roleIds = roleIds.map((roleId) => {
-				return parseInt(roleId);
-			});
-			users = users.filter((user) => {
-				const userRoleIds = user.roles.map((role) => {
-					return role.id;
+		let requester = this.request.user;
+		const requesterPermissions = await this.permissionsService.getPermissionsByUserId(requester.id);
+		if (requesterPermissions.includes(Permissions.GET_USER)) {
+			const queryBuilder = this.usersRepository.createQueryBuilder("user")
+				.leftJoinAndSelect("user.roles", "roles");
+			if (email) {
+				queryBuilder.where("user.email = :email", { email: email.toLowerCase() });
+			}
+			if (nickname) {
+				queryBuilder.andWhere(
+					"(LOWER(user.nickname) LIKE LOWER(:nickname))", { nickname: `%${nickname}%` }
+				);
+			}
+			let users = await queryBuilder.getMany();
+			if (roleIds) {
+				roleIds = roleIds.map((roleId) => {
+					return parseInt(roleId);
 				});
-				for (const roleId of roleIds) {
-					if (userRoleIds.includes(roleId)) {
-						return true;
+				users = users.filter((user) => {
+					const userRoleIds = user.roles.map((role) => {
+						return role.id;
+					});
+					for (const roleId of roleIds) {
+						if (userRoleIds.includes(roleId)) {
+							return true;
+						}
 					}
-				}
-				return false;
-			});
+					return false;
+				});
+			}
+			return users;
 		}
-		return users;
 	}
 
 	async findUsersByIds(findUsersByIdsDto: FindUsersByIdsDto): Promise<User[]> {
@@ -93,6 +102,7 @@ export class UsersService {
 	async findOne(id: string): Promise<User> {
 		let requester = this.request.user;
 		const requesterPermissions = await this.permissionsService.getPermissionsByUserId(requester.id);
+		const ability = await this.caslAbilityFactory.defineAbilityFor(requester);
 		if (requesterPermissions.includes(Permissions.GET_USER)) {
 			const user = await this.usersRepository.findOne({
 				where: {
@@ -107,6 +117,7 @@ export class UsersService {
 			if (!user) {
 				throw new NotFoundException("User not found");
 			}
+			console.log(ability.can(Actions.READ, user));
 			return user;
 		}
 		if (requesterPermissions.includes(Permissions.GET_ME)) {
