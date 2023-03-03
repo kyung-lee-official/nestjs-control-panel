@@ -1,24 +1,31 @@
 # Product Requirement Document
 
+## server-settings
+
+- [ ] Allow or block public sign ups.
+
 ## auth
 
-- [x] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/hasAdmin` request to check if at least one user exists, if at least one user already exists, return `{ "hasAdmin": true }`, frontend then redirects to the sign in page.
-      If frontend sends a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request. If no user exists, create a new user, `email` saved as lower case.Create an `admin` role, and assign the role to the current user.
-- [x] Create a new user, `email` saved as lower case, `CREATE_USER` permission required.
+- [ ] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/hasAdmin` request to check if at least one user exists, if at least one user already exists, return `{ "hasAdmin": true }`, frontend then redirects to the sign in page.
+      If frontend sends a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request.
+      If no user exists, create a new user, `email` saved as lower case. Create an `admin` role, and assign the role to the user. Create an `everyone` group, and assign the user as the group owner.
+- [ ] Create a new user, `email` saved as lower case, `CREATE_USER` permission required， and assign the user to the `everyone` group.
 - [x] Users must sign in to apply any operations after the system is seeded.
 
 ## users
 
 - [x] Conditionally find users by query email (case insensitive), nickname, or roleIds. roleIds delimited by comma `','`, use **or** relationship. `GET_USERS` permission required.
 - [x] Find users by ids, `GET_USERS` permission required.
-- [x] Find a user by id, `GET_USER | GET_ME` permission required.
+- [x] Find a user by id, `GET_USERS | GET_ME` permission required.
 - [x] Update a user by id, can update `nickname`, `UPDATE_USER | UPDATE_ME` permission required.
-- [x] Update email by user id, `UPDATE_EMAIL | UPDATE_MY_EMAIL` permission required.
-- [x] Update roles by user id, `UPDATE_USER_ROLES` permission required.
-- [x] Update password by user id, `UPDATE_PASSWORD | UPDATE_MY_PASSWORD` permission required.
+- [x] Update email by user id, `UPDATE_USER | UPDATE_ME` permission required.
+- [x] Update roles by user id, `UPDATE_USER` permission required.
+- [x] Update password by user id, `UPDATE_USER | UPDATE_ME` permission required.
 - [x] Delete a user by id, `DELETE_USER` permission required.
 
 ## roles
+
+`role` name must be unique.
 
 - [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` role required.
 - [x] Create a role, `CREATE_ROLE` permission required.
@@ -27,9 +34,10 @@
 - [x] Find a role by id, `GET_ROLES` permission required.
 - [x] Update a role by id, `UPDATE_ROLE` permission required.
 - [x] Delete a role by id, reject if the role has users, `DELETE_ROLE` permission required.
-- [x] `admin` role has full permissions and can not be changed or deleted.
+- [x] `admin` role has full permissions can not be deleted. `admin` role's permissions can not be changed.
 - [x] `admin` role can only has one user.
-- [x] a `admin` user can not be deleted.
+- [ ] `admin` role ownership (role doesn't have an "ownership" concept, but the implementation must follow the rule that the `admin` role can only have one user) can be transferred to another user, this action can only be performed by the `admin` role user.
+- [x] The `admin` user can not be deleted.
 
 ## groups
 
@@ -40,6 +48,16 @@
 - [x] Delete a group by id, reject if the group has users, `DELETE_GROUP` permission required.
 
 ## permissions
+
+`@UseGuards(PermissionsGuard)` and `@RequiredPermissions(Permissions.ACT_SOMETHING)` help filter out requesters without required permissions.
+
+CASL adds fields and conditions to the existing permission system to realize complex rules.
+
+- Realize field-specific rules: https://casl.js.org/v6/en/guide/restricting-fields
+
+- Realize grouping, so requesters can only access resources belongs them. For example, the requestee must belongs to at least one group that is **owned** by the requester.
+
+Other permission rule logic must be implemented in corresponding services. For example, the `admin` role must have a user. When changing roles of a user, if the user belongs to the `admin` role, we can't simply remove the user from `admin`. Also, we can't add the `admin` role to a user without removing the current `admin` user.
 
 - [x] Find all permissions.
 

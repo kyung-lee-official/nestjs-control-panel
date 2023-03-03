@@ -13,7 +13,7 @@ export class GroupsGuard implements CanActivate {
 		let { user } = context.switchToHttp().getRequest();
 		user = await this.usersService.findOne(user.id);
 		const isAdmin = user.roles.some((role) => {
-			return role.role === "admin";
+			return role.name === "admin";
 		});
 		if (isAdmin) {
 			return true;

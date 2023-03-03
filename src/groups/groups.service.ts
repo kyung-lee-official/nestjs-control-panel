@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { InjectRepository } from "@nestjs/typeorm";
@@ -15,6 +15,11 @@ export class GroupsService {
 	) { }
 
 	async create(createGroupDto: CreateGroupDto): Promise<Group> {
+		const { name } = createGroupDto;
+		const dbGroup = await this.groupsRepository.findOne({ where: { name: name } });
+		if (dbGroup) {
+			throw new ConflictException("Group name already exists");
+		}
 		const group = await this.groupsRepository.create(createGroupDto);
 		await this.groupsRepository.save(group);
 		return group;
@@ -24,9 +29,7 @@ export class GroupsService {
 		const groups = await this.groupsRepository.find({
 			relations: {
 				owner: true,
-				users: {
-					roles: true,
-				}
+				users: true
 			}
 		});
 		return groups;
@@ -68,14 +71,14 @@ export class GroupsService {
 			if (!userIds.includes(ownerId)) {
 				throw new BadRequestException("Group owner must be a member of the group");
 			}
-			const foundUsers = await this.usersService.findUsersByIds({ ids: userIds });
-			const foundUserIds = foundUsers.map((user) => {
+			const dbUsers = await this.usersService.findUsersByIds({ ids: userIds });
+			const dbUserIds = dbUsers.map((user) => {
 				return user.id;
 			});
-			if (foundUserIds.includes(ownerId)) {
+			if (dbUserIds.includes(ownerId)) {
 				const owner = await this.usersService.findOne(ownerId);
 				group.owner = owner;
-				group.users = foundUsers;
+				group.users = dbUsers;
 			} else {
 				throw new BadRequestException("Group owner must be a member of the group");
 			}
@@ -90,15 +93,15 @@ export class GroupsService {
 				throw new BadRequestException("Group owner must be a member of the group");
 			}
 		} else if (userIds) {
-			const foundUsers = await this.usersService.findUsersByIds({ ids: userIds });
+			const dbUsers = await this.usersService.findUsersByIds({ ids: userIds });
 			if (!group.owner) {
-				group.users = foundUsers;
+				group.users = dbUsers;
 			} else {
-				const foundUserIds = foundUsers.map((user) => {
+				const dbUserIds = dbUsers.map((user) => {
 					return user.id;
 				});
-				if (foundUserIds.includes(ownerId)) {
-					group.users = foundUsers;
+				if (dbUserIds.includes(ownerId)) {
+					group.users = dbUsers;
 				} else {
 					throw new BadRequestException("Group owner must be a member of the group");
 				}

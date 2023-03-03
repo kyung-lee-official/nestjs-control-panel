@@ -24,7 +24,7 @@ export class RolesService {
 		const permissions = Object.values(Permissions);
 		let adminRole = await this.rolesRepository.findOne({
 			where: {
-				role: "admin"
+				name: "admin"
 			}
 		});
 		adminRole.permissions = permissions;
@@ -87,7 +87,7 @@ export class RolesService {
 		if (!role) {
 			throw new NotFoundException("Role not found");
 		}
-		if (role.role === "admin") {
+		if (role.name === "admin") {
 			throw new BadRequestException("Can't update role \"admin\"");
 		}
 		const { permissions, userIds } = updateRoleDto;
@@ -112,7 +112,7 @@ export class RolesService {
 		if (!role) {
 			throw new BadRequestException(`Role with ID ${id} not found`);
 		}
-		if (role.role === "admin") {
+		if (role.name === "admin") {
 			throw new BadRequestException("Can not delete role \"admin\"");
 		}
 		if (role.users.length > 0) {

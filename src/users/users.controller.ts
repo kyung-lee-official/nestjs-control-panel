@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch, Param, Delete, UseGuards, Query, ParseArrayPipe, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param, Delete, UseGuards, Query, ParseArrayPipe, UseInterceptors, ClassSerializerInterceptor, Post } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from "./entities/user.entity";
@@ -10,7 +10,8 @@ import { UpdateUserEmailDto } from "./dto/update-user-email.dto";
 import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
 import { UpdateUserPasswordDto } from "./dto/update-user-password.dto";
 import { FindUsersByIdsDto } from "./dto/find-users-by-ids.dto";
-import { GroupsGuard } from "src/groups/guards/groups.guard";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserGroupsDto } from "./dto/update-user-groups.dto";
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -20,8 +21,16 @@ export class UsersController {
 	) { }
 
 	@UseInterceptors(ClassSerializerInterceptor)
-	@UseGuards(GroupsGuard)
 	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.CREATE_USER)
+	@Post("/create")
+	create(@Body() createUserDto: CreateUserDto): Promise<User> {
+		return this.usersService.create(createUserDto);
+	}
+
+	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.GET_USERS)
 	@Get()
 	find(
 		@Query("email") email?,
@@ -43,7 +52,7 @@ export class UsersController {
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.GET_USER, Permissions.GET_ME)
+	@RequiredPermissions(Permissions.GET_USERS, Permissions.GET_ME)
 	@Get('/:id')
 	findOne(@Param('id') id: string): Promise<User> {
 		return this.usersService.findOne(id);
@@ -62,7 +71,7 @@ export class UsersController {
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.UPDATE_EMAIL, Permissions.UPDATE_MY_EMAIL)
+	@RequiredPermissions(Permissions.UPDATE_USER, Permissions.UPDATE_ME)
 	@Patch('/email/:id')
 	updateUserEmail(
 		@Param('id') id: string,
@@ -73,7 +82,7 @@ export class UsersController {
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.UPDATE_USER_ROLES)
+	@RequiredPermissions(Permissions.UPDATE_USER)
 	@Patch('/roles/:id')
 	updateUserRoles(
 		@Param('id') id: string,
@@ -84,13 +93,34 @@ export class UsersController {
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.UPDATE_PASSWORD, Permissions.UPDATE_MY_PASSWORD)
+	@RequiredPermissions(Permissions.UPDATE_USER)
+	@Patch('/roles/:id')
+	updateUserGroups(
+		@Param('id') id: string,
+		@Body() updateUserGroupsDto: UpdateUserGroupsDto,
+	): Promise<User> {
+		return this.usersService.updateUserGroups(id, updateUserGroupsDto);
+	}
+
+	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.UPDATE_USER, Permissions.UPDATE_ME)
 	@Patch('/password/:id')
 	updateUserPassword(
 		@Param('id') id: string,
 		@Body() updateUserPasswordDto: UpdateUserPasswordDto,
 	): Promise<User> {
 		return this.usersService.updateUserPassword(id, updateUserPasswordDto);
+	}
+
+	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.TRANSFER_ADMIN)
+	@Patch('/transferAdmin/:id')
+	transferAdmim(
+		@Param('id') id: string,
+	): Promise<User> {
+		return this.usersService.transferAdmim(id);
 	}
 
 	@UseGuards(PermissionsGuard)

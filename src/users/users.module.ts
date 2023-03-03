@@ -5,21 +5,12 @@ import { TypeOrmModule } from "@nestjs/typeorm/dist";
 import { User } from "./entities/user.entity";
 import { Role } from "src/roles/entities/role.entity";
 import { PermissionsModule } from "src/permissions/permissions.module";
-import { forwardRef } from "@nestjs/common/utils";
-import { RolesModule } from "src/roles/roles.module";
-import { GroupsModule } from "src/groups/groups.module";
 import { CaslModule } from "src/casl/casl.module";
+import { Group } from "src/groups/entities/group.entity";
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([User, Role]),
-		forwardRef(() => {
-			return RolesModule;
-		}),
-		forwardRef(() => {
-			return GroupsModule;
-		}),
-		forwardRef(() => CaslModule),
+		TypeOrmModule.forFeature([User, Role, Group]),
 		CaslModule,
 		PermissionsModule,
 	],

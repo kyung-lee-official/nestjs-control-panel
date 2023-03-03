@@ -11,6 +11,7 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
 import { Role } from "src/roles/entities/role.entity";
 import { PermissionsModule } from "src/permissions/permissions.module";
 import { GoogleOAuth20Strategy } from "./strategies/google-oauth20.strategy";
+import { CaslModule } from "src/casl/casl.module";
 
 @Module({
 	imports: [
@@ -24,6 +25,7 @@ import { GoogleOAuth20Strategy } from "./strategies/google-oauth20.strategy";
 			}
 		}),
 		UsersModule,
+		CaslModule,
 		PermissionsModule
 	],
 	controllers: [AuthController],

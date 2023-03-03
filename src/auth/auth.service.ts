@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { User } from "src/users/entities/user.entity";
 import { UsersService } from "src/users/users.service";
@@ -10,15 +10,20 @@ import * as bcrypt from "bcrypt";
 import { JwtPayload } from "./jwt-payload.interface";
 import { Role } from "src/roles/entities/role.entity";
 import { Permissions } from "src/permissions/permissions.enum";
+import { REQUEST } from "@nestjs/core";
+import { CaslAbilityFactory } from "src/casl/casl-ability.factory/casl-ability.factory";
 
 @Injectable()
 export class AuthService {
 	constructor(
+		@Inject(REQUEST)
+		private request: any,
 		private usersService: UsersService,
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
 		@InjectRepository(Role)
 		private rolesRepository: Repository<Role>,
+		private caslAbilityFactory: CaslAbilityFactory,
 		private jwtService: JwtService
 	) { }
 
@@ -39,7 +44,7 @@ export class AuthService {
 		} else {
 			user = await this.usersService.create(createUserDto);
 		}
-		let role = this.rolesRepository.create({ role: "admin" });
+		let role = this.rolesRepository.create({ name: "admin" });
 		const permissions = Object.values(Permissions);
 		role.permissions = permissions;
 		role = await this.rolesRepository.save(role);

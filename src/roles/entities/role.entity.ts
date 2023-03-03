@@ -8,7 +8,7 @@ export class Role {
 	id: number;
 
 	@Column({ unique: true })
-	role: string;
+	name: string;
 
 	@Column("simple-array", { nullable: true })
 	permissions?: Permissions[];

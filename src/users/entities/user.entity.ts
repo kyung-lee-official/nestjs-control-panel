@@ -18,6 +18,9 @@ export class User {
 	@Exclude()
 	password: string;
 
+	// @Column()
+	// isActive: boolean;
+
 	@ManyToMany(
 		(type) => {
 			return Role;

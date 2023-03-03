@@ -1,3 +1,14 @@
+### Create a user
+POST http://localhost:3001/users/create
+Content-Type: application/json
+Authorization: {{$dotenv AUTHORIZATION}}
+
+{
+	"email": "qwer@cbd-3d.com",
+	"nickname": "Qwer",
+	"password": "hdkmQ@m98M83"
+}
+
 ### Find users
 GET http://localhost:3001/users
 	# ?email=KyUnG@cbd-3d.com
@@ -37,21 +48,21 @@ Authorization: {{$dotenv AUTHORIZATION}}
 email=kyung@cbd-3d.com
 
 ### Update user roles
-PATCH http://localhost:3001/users/roles/1f20ae40-c57c-4ff8-b244-8741cb2dfcfe
+PATCH http://localhost:3001/users/roles/8b9136f6-902d-4799-b5c2-5f6caebac8b6
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 {
-	"roles": [
+	"roleIds": [
 	]
 }
 
 ### Update user password
-PATCH http://localhost:3001/users/email/8b9136f6-902d-4799-b5c2-5f6caebac8b6
+PATCH http://localhost:3001/users/password/8b9136f6-902d-4799-b5c2-5f6caebac8b6
 Content-Type: application/x-www-form-urlencoded
 Authorization: {{$dotenv AUTHORIZATION}}
 
-oldPassword=hdkmQ@m98M82
+oldPassword=hdkmQ@m98M83
 &newPassword=hdkmQ@m98M83
 
 ### Delete a user

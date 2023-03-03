@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Permissions } from "./permissions.enum";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -23,7 +23,10 @@ export class PermissionsService {
 			},
 			relations: ["roles"]
 		});
-		const permissionArrayOfOwnedRoles = user.roles?.map((role) => {
+		if (!user) {
+			throw new NotFoundException("User not exists");
+		}
+		const permissionArrayOfOwnedRoles = user.roles.map((role) => {
 			return role.permissions;
 		});
 		let allPermissionsOfUser = [];

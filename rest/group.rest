@@ -4,7 +4,7 @@ POST http://localhost:3001/groups
 Content-Type: application/x-www-form-urlencoded
 Authorization: {{$dotenv AUTHORIZATION}}
 
-name=设计
+name=everyone
 
 ### Find groups
 GET http://localhost:3001/groups
@@ -15,16 +15,18 @@ GET http://localhost:3001/groups/6
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Update a group
-PATCH http://localhost:3001/groups/7
+PATCH http://localhost:3001/groups/8
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 {
-	"name": "设计",
+	"name": "everyone",
 	"ownerId": "8b9136f6-902d-4799-b5c2-5f6caebac8b6",
 	"userIds": [
 		"8b9136f6-902d-4799-b5c2-5f6caebac8b6",
-		"59f73769-1794-4389-a731-8a774cb58bc0"
+		"59f73769-1794-4389-a731-8a774cb58bc0",
+		"1f20ae40-c57c-4ff8-b244-8741cb2dfcfe",
+		"663e6397-d15d-4fdb-813f-2ef99b2973f2"
 	]
 }
 

@@ -3,7 +3,6 @@ import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { AuthService } from "./auth.service";
 import { AuthCredentialsDto } from "./dto/auth-credential.dto";
 import { User } from "src/users/entities/user.entity";
-import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { RequiredPermissions } from "src/permissions/decorators/required-permissions.decorator";
 import { Permissions } from "src/permissions/permissions.enum";
 import { PermissionsGuard } from "src/permissions/guards/permissions.guard";
@@ -25,7 +24,6 @@ export class AuthController {
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
-	@UseGuards(JwtAuthGuard)
 	@RequiredPermissions(Permissions.CREATE_USER)
 	@Post("/signup")
 	signUp(@Body() createUserDto: CreateUserDto): Promise<User> {

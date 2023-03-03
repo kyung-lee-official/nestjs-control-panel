@@ -29,7 +29,7 @@ export class RolesGuard implements CanActivate {
 			relations: ["roles"]
 		});
 		const rolesOfUser: string[] = user.roles?.map((role) => {
-			return role.role;
+			return role.name;
 		});
 
 		/* At least has one required role */

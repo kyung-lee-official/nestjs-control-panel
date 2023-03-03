@@ -17,8 +17,8 @@ export class GoogleOAuth20Strategy extends PassportStrategy(Strategy, "google") 
 		const { name, emails, photos } = profile;
 		const user = {
 			email: emails[0].value,
-			firstName: name.givenName,
-			lastName: name.familyName,
+			givenName: name.givenName,
+			familyName: name.familyName,
 			picture: photos[0].value,
 			accessToken
 		};
