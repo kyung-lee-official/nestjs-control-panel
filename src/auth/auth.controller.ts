@@ -12,9 +12,9 @@ import { GoogleOAuth20AuthGuard } from "./guards/google-oauth20.guard";
 export class AuthController {
 	constructor(private authService: AuthService) { }
 
-	@Get("/hasAdmin")
-	hasAdmin(): Promise<{ hasAdmin: boolean; }> {
-		return this.authService.hasAdmin();
+	@Get("/isSeeded")
+	isSeeded(): Promise<{ isSeeded: boolean; }> {
+		return this.authService.isSeeded();
 	}
 
 	@Post("/seed")

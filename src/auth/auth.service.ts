@@ -12,6 +12,7 @@ import { Role } from "src/roles/entities/role.entity";
 import { Permissions } from "src/permissions/permissions.enum";
 import { REQUEST } from "@nestjs/core";
 import { CaslAbilityFactory } from "src/casl/casl-ability.factory/casl-ability.factory";
+import { Group } from "src/groups/entities/group.entity";
 
 @Injectable()
 export class AuthService {
@@ -23,32 +24,38 @@ export class AuthService {
 		private usersRepository: Repository<User>,
 		@InjectRepository(Role)
 		private rolesRepository: Repository<Role>,
+		@InjectRepository(Group)
+		private groupsRepository: Repository<Group>,
 		private caslAbilityFactory: CaslAbilityFactory,
 		private jwtService: JwtService
 	) { }
 
-	async hasAdmin(): Promise<{ hasAdmin: boolean; }> {
-		const users = await this.usersRepository.find();
+	async isSeeded(): Promise<{ isSeeded: boolean; }> {
+		const userQb = this.usersRepository.createQueryBuilder("user");
+		userQb.limit(3);
+		const users = await userQb.getMany();
 		if (users.length > 0) {
-			return { hasAdmin: true };
+			return { isSeeded: true };
 		} else {
-			return { hasAdmin: false };
+			return { isSeeded: false };
 		}
 	}
 
 	async seed(createUserDto: CreateUserDto): Promise<User> {
-		const users = await this.usersRepository.find();
-		let user;
+		const userQb = this.usersRepository.createQueryBuilder("user");
+		userQb.limit(3);
+		const users = await userQb.getMany();
 		if (users.length > 0) {
 			throw new BadRequestException("System already seeded");
-		} else {
-			user = await this.usersService.create(createUserDto);
 		}
 		let role = this.rolesRepository.create({ name: "admin" });
-		const permissions = Object.values(Permissions);
-		role.permissions = permissions;
+		role.permissions = Object.values(Permissions); /* Full permissions */
 		role = await this.rolesRepository.save(role);
+		let group = this.groupsRepository.create({ name: "everyone" });
+		group = await this.groupsRepository.save(group);
+		let user = await this.usersService.create(createUserDto);
 		user.roles = [role];
+		user.groups = [group];
 		user = await this.usersRepository.save(user);
 		return user;
 	}

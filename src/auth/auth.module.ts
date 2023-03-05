@@ -12,11 +12,12 @@ import { Role } from "src/roles/entities/role.entity";
 import { PermissionsModule } from "src/permissions/permissions.module";
 import { GoogleOAuth20Strategy } from "./strategies/google-oauth20.strategy";
 import { CaslModule } from "src/casl/casl.module";
+import { Group } from "src/groups/entities/group.entity";
 
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
-		TypeOrmModule.forFeature([User, Role]),
+		TypeOrmModule.forFeature([User, Role, Group]),
 		PassportModule,
 		JwtModule.register({
 			secret: process.env.JWT_SECRET,

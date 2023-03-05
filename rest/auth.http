@@ -1,5 +1,5 @@
-### Check has admin
-GET http://localhost:3001/auth/hasAdmin
+### Check is seeded
+GET http://localhost:3001/auth/isSeeded
 
 ### Seed
 POST http://localhost:3001/auth/seed

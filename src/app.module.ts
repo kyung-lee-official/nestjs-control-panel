@@ -13,6 +13,7 @@ import { ChituboxOrdersModule } from './chitubox-orders/chitubox-orders.module';
 import { ChituboxManualFeedbacksModule } from "./chitubox-manual-feedbacks/chitubox-manual-feedbacks.module";
 import { GroupsModule } from './groups/groups.module';
 import { CaslModule } from './casl/casl.module';
+import { PaypalModule } from './paypal/paypal.module';
 
 @Module({
 	imports: [
@@ -37,6 +38,7 @@ import { CaslModule } from './casl/casl.module';
 		ChituboxOrdersModule,
 		ChituboxManualFeedbacksModule,
 		CaslModule,
+		PaypalModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

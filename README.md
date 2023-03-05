@@ -3,17 +3,19 @@
 ## server-settings
 
 - [ ] Allow or block public sign ups.
+- [ ] Allow or block Google sign ups.
 
 ## auth
 
-- [ ] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/hasAdmin` request to check if at least one user exists, if at least one user already exists, return `{ "hasAdmin": true }`, frontend then redirects to the sign in page.
+- [ ] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/isSeeded` request to check if at least one user exists, if at least one user already exists, return `{ "isSeeded": true }`, frontend then redirects to the sign in page.
       If frontend sends a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request.
       If no user exists, create a new user, `email` saved as lower case. Create an `admin` role, and assign the role to the user. Create an `everyone` group, and assign the user as the group owner.
-- [ ] Create a new user, `email` saved as lower case, `CREATE_USER` permission required， and assign the user to the `everyone` group.
+- [ ] Sign up a new user, `email` saved as lower case, `CREATE_USER` permission required， and assign the user to the `everyone` group.
 - [x] Users must sign in to apply any operations after the system is seeded.
 
 ## users
 
+- [ ] Create a new user, `email` saved as lower case, `CREATE_USER` permission required， and assign the user to the `everyone` group.
 - [x] Conditionally find users by query email (case insensitive), nickname, or roleIds. roleIds delimited by comma `','`, use **or** relationship. `GET_USERS` permission required.
 - [x] Find users by ids, `GET_USERS` permission required.
 - [x] Find a user by id, `GET_USERS | GET_ME` permission required.

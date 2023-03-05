@@ -1,0 +1,71 @@
+@base = https://api-m.sandbox.paypal.com
+
+### Authentication
+POST {{base}}/v1/oauth2/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic {{$dotenv PAYPAL_CLIENT_ID}}:{{$dotenv PAYPAL_SECRET}}
+
+grant_type=client_credentials
+
+# Catalog Products
+### List products
+GET {{base}}v1/catalogs/products
+	?page_size=3
+	&page=1
+	&total_required=true
+Content-Type: application/json
+Authorization: {{$dotenv PAYPAL_ACCESS_TOKEN}}
+
+# Order
+### Test
+POST http://localhost:3001/paypal
+
+### Create order
+POST {{base}}/v2/checkout/orders
+Content-Type: application/json
+Authorization: {{$dotenv PAYPAL_ACCESS_TOKEN}}
+# Paypal-Request-Id: 7b92603e-77ed-4896-8e78-5dea2050476a
+
+{
+	"intent": "CAPTURE",
+	"purchase_units": [
+		{
+			"amount": {
+				"currency_code": "USD",
+				"value": "1.89"
+			}
+		}
+	]
+	# "payment_source": {
+	# 	"paypal": {
+	# 		"experience_context": {
+	# 			"payment_method_preference": "IMMEDIATE_PAYMENT_REQUIRED",
+	# 			"payment_method_selected": "PAYPAL",
+	# 			"brand_name": "EXAMPLE INC",
+	# 			"locale": "en-US",
+	# 			"landing_page": "LOGIN",
+	# 			"shipping_preference": "SET_PROVIDED_ADDRESS",
+	# 			"user_action": "PAY_NOW",
+	# 			"return_url": "https://localhost:3000/returnUrl",
+	# 			"cancel_url": "https://localhost:3000/cancelUrl"
+	# 		}
+	# 	}
+	# }
+}
+
+### Show order details
+GET {{base}}/v2/checkout/orders/22U91369HG854745B
+Content-Type: application/json
+Authorization: {{$dotenv PAYPAL_ACCESS_TOKEN}}
+
+### Authorize payment for order
+POST {{base}}/v2/checkout/orders/8YD90383WY359015K/authorize
+Content-Type: application/json
+Authorization: {{$dotenv PAYPAL_ACCESS_TOKEN}}
+Paypal-Request-Id: 7b92603e-77ed-4896-8e78-5dea2050476a
+
+### Capture payment for order
+POST {{base}}/v2/checkout/orders/6H6843099A804572G/capture
+Content-Type: application/json
+Authorization: {{$dotenv PAYPAL_ACCESS_TOKEN}}
+# Paypal-Request-Id: 7b92603e-77ed-4896-8e78-5dea2050476a
