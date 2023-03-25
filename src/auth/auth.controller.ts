@@ -1,12 +1,11 @@
-import { Body, ClassSerializerInterceptor, Controller, Get, Post, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Post, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { AuthService } from "./auth.service";
 import { AuthCredentialsDto } from "./dto/auth-credential.dto";
 import { User } from "src/users/entities/user.entity";
-import { RequiredPermissions } from "src/permissions/decorators/required-permissions.decorator";
-import { Permissions } from "src/permissions/permissions.enum";
-import { PermissionsGuard } from "src/permissions/guards/permissions.guard";
 import { GoogleOAuth20AuthGuard } from "./guards/google-oauth20.guard";
+import { AllowPublicSignUpGuard } from "src/server-settings/guards/allow-public-sign-up.guard";
+import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 
 @Controller('auth')
 export class AuthController {
@@ -15,6 +14,9 @@ export class AuthController {
 	@Get("/isSeeded")
 	isSeeded(): Promise<{ isSeeded: boolean; }> {
 		return this.authService.isSeeded();
+		return new Promise((resolve, reject) => {
+			resolve({ isSeeded: false });
+		});
 	}
 
 	@Post("/seed")
@@ -23,8 +25,7 @@ export class AuthController {
 	}
 
 	@UseInterceptors(ClassSerializerInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.CREATE_USER)
+	@UseGuards(AllowPublicSignUpGuard)
 	@Post("/signup")
 	signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
 		return this.authService.signUp(createUserDto);
@@ -33,6 +34,15 @@ export class AuthController {
 	@Post("/signin")
 	signIn(@Body() authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string; }> {
 		return this.authService.signIn(authCredentialsDto);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Get("/isSignedIn")
+	isSignedIn(): Promise<{ isSignedIn: boolean; }> {
+		return this.authService.isSignedIn();
+		return new Promise((resolve, reject) => {
+			resolve({ isSignedIn: true });
+		});
 	}
 
 	@Get("/google")

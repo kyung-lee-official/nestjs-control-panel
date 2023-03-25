@@ -62,7 +62,7 @@ export class UsersService {
 	 * @param roleIds user's role ids
 	 * @returns user
 	 */
-	async find(email?, nickname?, roleIds?): Promise<User[]> {
+	async find(email?: string, nickname?: string, roleIds?): Promise<User[]> {
 		const requester = this.request.user;
 		const dbRequester = await this.usersRepository.findOne({ where: { id: requester.id } });
 		const requesterOwnedGroupIds: number[] = dbRequester.ownedGroups.map((group) => {
@@ -226,7 +226,6 @@ export class UsersService {
 			const userRoleIds = user.roles.map((role) => {
 				return role.id;
 			});
-			console.log(userRoleIds);
 			if (userRoleIds.includes(adminRole.id)) {
 				/* Requestee has 'admin' role */
 				roles.push(adminRole);
@@ -295,16 +294,16 @@ export class UsersService {
 		}
 		try {
 			ForbiddenError.from(ability).throwUnlessCan(Actions.DELETE, user);
-			const result = await this.usersRepository.delete({ id: id });
-			if (!result.affected) {
-				throw new ServiceUnavailableException("Failed to delete the user");
-			}
-			return result;
 		} catch (error) {
 			if (error instanceof ForbiddenError) {
 				throw new ForbiddenException(error.message);
 			}
 			throw error;
 		}
+		const result = await this.usersRepository.delete({ id: id });
+		if (!result.affected) {
+			throw new ServiceUnavailableException("Failed to delete the user");
+		}
+		return result;
 	}
 }

@@ -9,25 +9,29 @@ import { User } from "src/users/entities/user.entity";
 import { ConfigModule } from "@nestjs/config";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { Role } from "src/roles/entities/role.entity";
-import { PermissionsModule } from "src/permissions/permissions.module";
 import { GoogleOAuth20Strategy } from "./strategies/google-oauth20.strategy";
-import { CaslModule } from "src/casl/casl.module";
 import { Group } from "src/groups/entities/group.entity";
+import { ServerSetting } from "src/server-settings/entities/server-setting.entity";
 
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
-		TypeOrmModule.forFeature([User, Role, Group]),
+		TypeOrmModule.forFeature([
+			User,
+			Role,
+			Group,
+			ServerSetting
+		]),
 		PassportModule,
 		JwtModule.register({
 			secret: process.env.JWT_SECRET,
 			signOptions: {
-				expiresIn: 3600 * 24
+				// expiresIn: 60 * 60 * 24
+				expiresIn: 60 * 10 * 1
 			}
 		}),
 		UsersModule,
-		CaslModule,
-		PermissionsModule
+		ServerSetting
 	],
 	controllers: [AuthController],
 	providers: [

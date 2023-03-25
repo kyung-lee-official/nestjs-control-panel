@@ -2,7 +2,7 @@
 
 ## server-settings
 
-- [ ] Allow or block public sign ups.
+- [x] Allow or block public sign ups.
 - [ ] Allow or block Google sign ups.
 
 ## auth
@@ -12,6 +12,7 @@
       If no user exists, create a new user, `email` saved as lower case. Create an `admin` role, and assign the role to the user. Create an `everyone` group, and assign the user as the group owner.
 - [ ] Sign up a new user, `email` saved as lower case, `CREATE_USER` permission required， and assign the user to the `everyone` group.
 - [x] Users must sign in to apply any operations after the system is seeded.
+- [x] Check if sign-up is available
 
 ## users
 

@@ -1,4 +1,8 @@
 export enum Permissions {
+	/* Server settings */
+	GET_SERVER_SETTING = "GET_SERVER_SETTING",
+	UPDATE_SERVER_SETTING = "UPDATE_SERVER_SETTING",
+
 	/* Auth permissions */
 	CREATE_USER = "CREATE_USER",
 

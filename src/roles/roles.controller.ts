@@ -33,8 +33,8 @@ export class RolesController {
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_ROLES)
 	@Get()
-	find(): Promise<Role[]> {
-		return this.rolesService.find();
+	find(roleIds?: number[]): Promise<Role[]> {
+		return this.rolesService.find(roleIds);
 	}
 
 	@UseInterceptors(ClassSerializerInterceptor)
@@ -52,8 +52,8 @@ export class RolesController {
 	updateRoleById(
 		@Param('id') id: string,
 		@Body() updateRoleDto: UpdateRoleDto
-	) {
-		return this.rolesService.update(+id, updateRoleDto);
+	): Promise<Role> {
+		return this.rolesService.updateRoleById(+id, updateRoleDto);
 	}
 
 	@UseGuards(PermissionsGuard)

@@ -1,26 +1,40 @@
 ### Check is seeded
-GET http://localhost:3001/auth/isSeeded
+GET {{$dotenv SERVER_HOST}}/auth/isSeeded
 
 ### Seed
-POST http://localhost:3001/auth/seed
-Content-Type: application/x-www-form-urlencoded
+POST {{$dotenv SERVER_HOST}}/auth/seed
+Content-Type: application/json
 
-email=kyung@cbd-3d.com
-&nickname=Kyung
-&password=hdkmQ@m98M83
+{
+	"email": "kyung@cbd-3d.com",
+	"nickname": "Kyung",
+	"password": "hdkmQ@m98M83"
+}
+
+### Check is sign-up available
+GET {{$dotenv SERVER_HOST}}/auth/isSignUpAvailable
 
 ### Sign up
-POST http://localhost:3001/auth/signup
-Content-Type: application/x-www-form-urlencoded
+POST {{$dotenv SERVER_HOST}}/auth/signup
+Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
-email=zxcv@cbd-3d.com
-&nickname=zxcv
-&password=hdkmQ@m98M83
+{
+	"email": "zxcv4@cbd-3d.com",
+	"nickname": "zxcv4",
+	"password": "hdkmQ@m98M83"
+}
 
 ### Sign in
-POST http://localhost:3001/auth/signin
-Content-Type: application/x-www-form-urlencoded
+POST {{$dotenv SERVER_HOST}}/auth/signin
+Content-Type: application/json
 
-email=kyung@cbd-3d.com
-&password=hdkmQ@m98M83
+{
+	"email": "kyung.lee.official@gmail.com",
+	"password": "hdkmQ@m98M83"
+}
+
+### Check is signed in
+GET {{$dotenv SERVER_HOST}}/auth/isSignedIn
+Content-Type: application/json
+Authorization: {{$dotenv AUTHORIZATION}}

@@ -1,23 +1,25 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException, Scope, ServiceUnavailableException } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
 import { Role } from "./entities/role.entity";
 import { Permissions } from "src/permissions/permissions.enum";
-import { UsersService } from "src/users/users.service";
-import { FindUsersByIdsDto } from "src/users/dto/find-users-by-ids.dto";
-import { forwardRef } from "@nestjs/common/utils";
+import { User } from "src/users/entities/user.entity";
+import { REQUEST } from "@nestjs/core";
+import { Actions, CaslAbilityFactory } from "src/casl/casl-ability.factory/casl-ability.factory";
+import { ForbiddenError } from "@casl/ability";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class RolesService {
 	constructor(
+		@Inject(REQUEST)
+		private request: any,
 		@InjectRepository(Role)
 		private rolesRepository: Repository<Role>,
-		@Inject(forwardRef(() => {
-			return UsersService;
-		}))
-		private usersService: UsersService
+		@InjectRepository(User)
+		private usersRepository: Repository<User>,
+		private caslAbilityFactory: CaslAbilityFactory
 	) { }
 
 	async updateAdminPermissions(): Promise<Role> {
@@ -33,7 +35,17 @@ export class RolesService {
 	}
 
 	async create(createRoleDto: CreateRoleDto): Promise<Role> {
+		const requester = this.request.user;
+		const ability = await this.caslAbilityFactory.defineAbilityFor(requester.id);
 		const role = this.rolesRepository.create(createRoleDto);
+		try {
+			ForbiddenError.from(ability).throwUnlessCan(Actions.CREATE, role);
+		} catch (error) {
+			if (error instanceof ForbiddenError) {
+				throw new BadRequestException(error.message);
+			}
+			throw error;
+		}
 		try {
 			await this.rolesRepository.save(role);
 			return role;
@@ -54,7 +66,6 @@ export class RolesService {
 				return id;
 			});
 		}
-
 		let roles: Role[];
 		if (ids) {
 			roles = await this.rolesRepository.find({
@@ -73,47 +84,55 @@ export class RolesService {
 	}
 
 	async findOne(id: number): Promise<Role> {
-		const role = await this.rolesRepository.findOne({
-			where: {
-				id: id
-			},
-			relations: ["users"]
-		});
-		return role;
-	}
-
-	async update(id: number, updateRoleDto: Partial<UpdateRoleDto>) {
-		const role = await this.findOne(id);
+		const role = await this.rolesRepository.findOne({ where: { id: id }, relations: ["users"] });
 		if (!role) {
 			throw new NotFoundException("Role not found");
 		}
-		if (role.name === "admin") {
-			throw new BadRequestException("Can't update role \"admin\"");
+		return role;
+	}
+
+	async updateRoleById(id: number, updateRoleDto: Partial<UpdateRoleDto>): Promise<Role> {
+		const requester = this.request.user;
+		const ability = await this.caslAbilityFactory.defineAbilityFor(requester.id);
+		const role = await this.rolesRepository.findOne({ where: { id: id } });
+		if (!role) {
+			throw new NotFoundException("Role not found");
+		}
+		try {
+			ForbiddenError.from(ability).throwUnlessCan(Actions.UPDATE, role);
+		} catch (error) {
+			if (error instanceof ForbiddenError) {
+				throw new BadRequestException(error.message);
+			}
+			throw error;
 		}
 		const { permissions, userIds } = updateRoleDto;
 		if (permissions) {
 			role.permissions = permissions;
 		}
 		if (userIds) {
-			const users = await this.usersService.findUsersByIds({ ids: userIds } as FindUsersByIdsDto);
+			const users = await this.usersRepository.find({ where: { id: In(userIds) } });
 			role.users = users;
 		}
-		try {
-			await this.rolesRepository.save(role);
-			const result = await this.findOne(id);
-			return result;
-		} catch (error) {
-			throw error;
-		}
+		await this.rolesRepository.save(role);
+		const dbRole = await this.rolesRepository.findOne({ where: { id: id } });
+		return dbRole;
 	}
 
 	async remove(id: number): Promise<any> {
-		const role = await this.findOne(id);
+		const requester = this.request.user;
+		const ability = await this.caslAbilityFactory.defineAbilityFor(requester.id);
+		const role = await this.rolesRepository.findOne({ where: { id: id } });
 		if (!role) {
 			throw new BadRequestException(`Role with ID ${id} not found`);
 		}
-		if (role.name === "admin") {
-			throw new BadRequestException("Can not delete role \"admin\"");
+		try {
+			ForbiddenError.from(ability).throwUnlessCan(Actions.DELETE, role);
+		} catch (error) {
+			if (error instanceof ForbiddenError) {
+				throw new BadRequestException(error.message);
+			}
+			throw error;
 		}
 		if (role.users.length > 0) {
 			throw new BadRequestException("Can not delete a role that has users");

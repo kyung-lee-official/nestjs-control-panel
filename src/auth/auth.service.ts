@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { User } from "src/users/entities/user.entity";
 import { UsersService } from "src/users/users.service";
@@ -11,8 +11,8 @@ import { JwtPayload } from "./jwt-payload.interface";
 import { Role } from "src/roles/entities/role.entity";
 import { Permissions } from "src/permissions/permissions.enum";
 import { REQUEST } from "@nestjs/core";
-import { CaslAbilityFactory } from "src/casl/casl-ability.factory/casl-ability.factory";
 import { Group } from "src/groups/entities/group.entity";
+import { ServerSetting } from "src/server-settings/entities/server-setting.entity";
 
 @Injectable()
 export class AuthService {
@@ -26,7 +26,8 @@ export class AuthService {
 		private rolesRepository: Repository<Role>,
 		@InjectRepository(Group)
 		private groupsRepository: Repository<Group>,
-		private caslAbilityFactory: CaslAbilityFactory,
+		@InjectRepository(ServerSetting)
+		private settingsRepository: Repository<ServerSetting>,
 		private jwtService: JwtService
 	) { }
 
@@ -79,6 +80,10 @@ export class AuthService {
 		} else {
 			throw new UnauthorizedException("Please check your sign in credentials");
 		}
+	}
+
+	async isSignedIn(): Promise<{ isSignedIn: boolean; }> {
+		return { isSignedIn: true };
 	}
 
 	googleSignIn(req) {

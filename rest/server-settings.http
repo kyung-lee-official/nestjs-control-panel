@@ -1,0 +1,28 @@
+### Create admin permissions
+# DANGER!
+POST {{$dotenv SERVER_HOST}}/server-settings
+Content-Type: application/json
+Authorization: {{$dotenv AUTHORIZATION}}
+
+{
+	"allowPublicSignUp": true,
+	"allowGoogleSignUp": true
+}
+
+### Check is sign up available
+GET {{$dotenv SERVER_HOST}}/server-settings/isSignUpAvailable
+Content-Type: application/json
+
+### Get admin permissions
+GET {{$dotenv SERVER_HOST}}/server-settings
+Authorization: {{$dotenv AUTHORIZATION}}
+
+### Update admin permissions
+PATCH {{$dotenv SERVER_HOST}}/server-settings
+Content-Type: application/json
+Authorization: {{$dotenv AUTHORIZATION}}
+
+{
+	"allowPublicSignUp": true,
+	"allowGoogleSignUp": true
+}

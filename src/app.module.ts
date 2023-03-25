@@ -14,6 +14,7 @@ import { ChituboxManualFeedbacksModule } from "./chitubox-manual-feedbacks/chitu
 import { GroupsModule } from './groups/groups.module';
 import { CaslModule } from './casl/casl.module';
 import { PaypalModule } from './paypal/paypal.module';
+import { ServerSettingsModule } from './server-settings/server-settings.module';
 
 @Module({
 	imports: [
@@ -39,6 +40,7 @@ import { PaypalModule } from './paypal/paypal.module';
 		ChituboxManualFeedbacksModule,
 		CaslModule,
 		PaypalModule,
+		ServerSettingsModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

@@ -92,8 +92,39 @@ export class CaslAbilityFactory {
 				.because("Can't delete an admin user");
 		}
 		/* Role permissions */
+		if (requesterPermissions.includes(Permissions.CREATE_ROLE)) {
+			can(Actions.CREATE, Role);
+			cannot(Actions.CREATE, Role, { name: "admin" })
+				.because("Can't create \"admin\" role");
+		}
+		if (requesterPermissions.includes(Permissions.UPDATE_ROLE)) {
+			can(Actions.UPDATE, Role);
+			cannot(Actions.UPDATE, Role, { name: "admin" })
+				.because("Can't update \"admin\" role");
+		}
+		if (requesterPermissions.includes(Permissions.DELETE_ROLE)) {
+			can(Actions.DELETE, Role);
+			cannot(Actions.DELETE, Role, { name: "admin" })
+				.because("Can't delete \"admin\" role");
+		}
 		/* Group permissions */
+		if (requesterPermissions.includes(Permissions.CREATE_GROUP)) {
+			can(Actions.CREATE, Group);
+			cannot(Actions.CREATE, Group, { name: "everyone" })
+				.because("Can't create \"everyone\" group");
+		}
+		if (requesterPermissions.includes(Permissions.UPDATE_GROUP)) {
+			can(Actions.UPDATE, Group);
+			cannot(Actions.UPDATE, Group, { name: "everyone" })
+				.because("Can't update \"everyone\" group");
+		}
+		if (requesterPermissions.includes(Permissions.DELETE_GROUP)) {
+			can(Actions.DELETE, Group);
+			cannot(Actions.DELETE, Group, { name: "everyone" })
+				.because("Can't delete \"everyone\" group");
+		}
 		/* Permission permissions */
+
 		const ability = build({
 			detectSubjectType: (object) => {
 				return object.constructor as ExtractSubjectType<Subjects>;

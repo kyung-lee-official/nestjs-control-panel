@@ -14,7 +14,6 @@ export class PaypalController {
 
 	@Post("/completeOrder")
 	completeOrder(@Body() createPaypalDto: CompletePaypalOrderDto) {
-		console.log(createPaypalDto);
 		return this.paypalService.completeOrder(createPaypalDto);
 	}
 

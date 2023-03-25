@@ -1,3 +1,3 @@
 ### Get all permissions
-GET http://localhost:3001/permissions
+GET {{$dotenv SERVER_HOST}}/permissions
 Authorization: {{$dotenv AUTHORIZATION}}
