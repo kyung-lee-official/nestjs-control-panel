@@ -64,7 +64,10 @@ export class UsersService {
 	 */
 	async find(email?: string, nickname?: string, roleIds?): Promise<User[]> {
 		const requester = this.request.user;
-		const dbRequester = await this.usersRepository.findOne({ where: { id: requester.id } });
+		const dbRequester = await this.usersRepository.findOne({
+			where: { id: requester.id },
+			relations: ["ownedGroups"]
+		});
 		const requesterOwnedGroupIds: number[] = dbRequester.ownedGroups.map((group) => {
 			return group.id;
 		});
@@ -80,7 +83,7 @@ export class UsersService {
 				"(LOWER(user.nickname) LIKE LOWER(:nickname))", { nickname: `%${nickname}%` }
 			);
 		}
-		userQb.andWhere("groups.id IN (:...groupIds)", { groupIds: requesterOwnedGroupIds });
+		userQb.andWhere("(groups.id IN (:...groupIds))", { groupIds: requesterOwnedGroupIds });
 		let users = await userQb.getMany();
 		if (roleIds) {
 			roleIds = roleIds.map((roleId) => {
@@ -126,6 +129,19 @@ export class UsersService {
 			}
 		}
 		return users;
+	}
+
+	async findMe(): Promise<User> {
+		const requester = this.request.user;
+		const dbRequester = await this.usersRepository.findOne({
+			where: { id: requester.id },
+			relations: [
+				"roles",
+				"groups",
+				"ownedGroups"
+			]
+		});
+		return dbRequester;
 	}
 
 	async findOne(id: string): Promise<User> {

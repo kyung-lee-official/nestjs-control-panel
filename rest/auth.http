@@ -11,9 +11,6 @@ Content-Type: application/json
 	"password": "hdkmQ@m98M83"
 }
 
-### Check is sign-up available
-GET {{$dotenv SERVER_HOST}}/auth/isSignUpAvailable
-
 ### Sign up
 POST {{$dotenv SERVER_HOST}}/auth/signup
 Content-Type: application/json

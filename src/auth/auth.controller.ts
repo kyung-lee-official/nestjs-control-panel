@@ -14,9 +14,6 @@ export class AuthController {
 	@Get("/isSeeded")
 	isSeeded(): Promise<{ isSeeded: boolean; }> {
 		return this.authService.isSeeded();
-		return new Promise((resolve, reject) => {
-			resolve({ isSeeded: false });
-		});
 	}
 
 	@Post("/seed")
@@ -40,9 +37,6 @@ export class AuthController {
 	@Get("/isSignedIn")
 	isSignedIn(): Promise<{ isSignedIn: boolean; }> {
 		return this.authService.isSignedIn();
-		return new Promise((resolve, reject) => {
-			resolve({ isSignedIn: true });
-		});
 	}
 
 	@Get("/google")

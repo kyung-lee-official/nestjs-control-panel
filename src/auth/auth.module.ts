@@ -27,7 +27,7 @@ import { ServerSetting } from "src/server-settings/entities/server-setting.entit
 			secret: process.env.JWT_SECRET,
 			signOptions: {
 				// expiresIn: 60 * 60 * 24
-				expiresIn: 60 * 10 * 1
+				expiresIn: 60 * 60 * 2
 			}
 		}),
 		UsersModule,

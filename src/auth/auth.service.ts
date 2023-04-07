@@ -43,20 +43,27 @@ export class AuthService {
 	}
 
 	async seed(createUserDto: CreateUserDto): Promise<User> {
+		const serverSettings = this.settingsRepository.create({
+			allowPublicSignUp: false,
+			allowGoogleSignUp: false
+		});
+		await this.settingsRepository.save(serverSettings);
+
 		const userQb = this.usersRepository.createQueryBuilder("user");
 		userQb.limit(3);
 		const users = await userQb.getMany();
 		if (users.length > 0) {
-			throw new BadRequestException("System already seeded");
+			throw new BadRequestException("Server already seeded");
 		}
 		let role = this.rolesRepository.create({ name: "admin" });
 		role.permissions = Object.values(Permissions); /* Full permissions */
 		role = await this.rolesRepository.save(role);
-		let group = this.groupsRepository.create({ name: "everyone" });
-		group = await this.groupsRepository.save(group);
+		let everyoneGroup = this.groupsRepository.create({ name: "everyone" });
+		everyoneGroup = await this.groupsRepository.save(everyoneGroup);
 		let user = await this.usersService.create(createUserDto);
 		user.roles = [role];
-		user.groups = [group];
+		user.groups = [everyoneGroup];
+		user.ownedGroups = [everyoneGroup];
 		user = await this.usersRepository.save(user);
 		return user;
 	}

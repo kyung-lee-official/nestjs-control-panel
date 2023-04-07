@@ -28,6 +28,11 @@ Authorization: {{$dotenv AUTHORIZATION}}
 	]
 }
 
+### Find me
+GET {{$dotenv SERVER_HOST}}/users/me
+Content-Type: application/json
+Authorization: {{$dotenv AUTHORIZATION}}
+
 ### Find a user
 GET {{$dotenv SERVER_HOST}}/users/8b9136f6-902d-4799-b5c2-5f6caebac8b6
 Content-Type: application/json

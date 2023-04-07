@@ -1,5 +1,5 @@
-### Create admin permissions
-# DANGER!
+### Create server settings
+# DANGER! This should only be triggered during the server seeding.
 POST {{$dotenv SERVER_HOST}}/server-settings
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
@@ -13,16 +13,16 @@ Authorization: {{$dotenv AUTHORIZATION}}
 GET {{$dotenv SERVER_HOST}}/server-settings/isSignUpAvailable
 Content-Type: application/json
 
-### Get admin permissions
+### Get server settings
 GET {{$dotenv SERVER_HOST}}/server-settings
 Authorization: {{$dotenv AUTHORIZATION}}
 
-### Update admin permissions
+### Update server settings
 PATCH {{$dotenv SERVER_HOST}}/server-settings
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 {
 	"allowPublicSignUp": true,
-	"allowGoogleSignUp": true
+	"allowGoogleSignUp": false
 }
