@@ -26,6 +26,9 @@ export class ChituboxManualFeedbacksService {
 		let res: any;
 		try {
 			// res = await axios.get(`https://api.country.is/9.9.9.9`);
+			if (ip.startsWith("::ffff:")) {
+				ip = ip.slice(7);
+			}
 			res = await axios.get(`https://api.country.is/${ip}`);
 		} catch (error) {
 			throw new InternalServerErrorException("Country API error");
