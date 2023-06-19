@@ -9,7 +9,7 @@ grant_type=client_credentials
 
 # Catalog Products
 ### List products
-GET {{base}}v1/catalogs/products
+GET {{base}}/v1/catalogs/products
 	?page_size=3
 	&page=1
 	&total_required=true

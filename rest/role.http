@@ -18,11 +18,12 @@ GET {{$dotenv SERVER_HOST}}/roles/17
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Update role by id
-PATCH {{$dotenv SERVER_HOST}}/roles/11
-Content-Type: application/application/json
+PATCH {{$dotenv SERVER_HOST}}/roles/4
+Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 {
+	"name": "New Name",
 	"permissions": [
 		"GET_ROLES",
 		"GET_PERMISSIONS",

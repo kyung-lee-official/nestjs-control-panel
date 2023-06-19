@@ -40,14 +40,14 @@ export class GroupsController {
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_GROUP)
 	@Patch(':id')
-	update(@Param('id') id: GroupIdPipe, @Body() updateGroupDto: UpdateGroupDto) {
+	update(@Param('id', GroupIdPipe) id: string, @Body() updateGroupDto: UpdateGroupDto) {
 		return this.groupsService.update(+id, updateGroupDto);
 	}
 
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.DELETE_GROUP)
 	@Delete(':id')
-	remove(@Param('id') id: GroupIdPipe) {
+	remove(@Param('id', GroupIdPipe) id: string) {
 		return this.groupsService.remove(+id);
 	}
 }

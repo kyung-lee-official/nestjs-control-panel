@@ -106,7 +106,10 @@ export class RolesService {
 			}
 			throw error;
 		}
-		const { permissions, userIds } = updateRoleDto;
+		const { name, permissions, userIds } = updateRoleDto;
+		if (role.name!== "admin" && name !== "admin" && name && name !== "") {
+			role.name = name;
+		}
 		if (permissions) {
 			role.permissions = permissions;
 		}
