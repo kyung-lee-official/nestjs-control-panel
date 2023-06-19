@@ -22,11 +22,11 @@ export class ChituboxManualFeedbacksService {
 		createChituboxManualFeedbackDto: CreateChituboxManualFeedbackDto,
 		ip: string
 	): Promise<ChituboxManualFeedback> {
-		const { url, payload } = createChituboxManualFeedbackDto;
-		let res;
+		const { pageId, url, payload } = createChituboxManualFeedbackDto;
+		let res: any;
 		try {
-			res = await axios.get(`https://api.country.is/9.9.9.9`);
-			// const res = await axios.get(`https://api.country.is/${ip}`);
+			// res = await axios.get(`https://api.country.is/9.9.9.9`);
+			res = await axios.get(`https://api.country.is/${ip}`);
 		} catch (error) {
 			throw new InternalServerErrorException("Country API error");
 		}
@@ -35,10 +35,11 @@ export class ChituboxManualFeedbacksService {
 			throw new InternalServerErrorException("Country API error");
 		}
 		const feedback = this.feedbacksRepository.create({
+			pageId,
 			url,
 			payload,
 			ip,
-			country: country,
+			country: country || "Unknown",
 		});
 		await this.feedbacksRepository.save(feedback);
 		return feedback;

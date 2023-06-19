@@ -3,7 +3,8 @@ POST {{$dotenv SERVER_HOST}}/chitubox-manual-feedbacks
 Content-Type: application/json
 
 {
-	"url": "manual.chitubox.com",
+	"pageId": "/en-US/chitubox-basic/v2.0.0/introduction",
+	"url": "manual.chitubox.com/en-US/docs/chitubox-basic/latest/introduction",
 	"payload": "USEFUL"
 }
 

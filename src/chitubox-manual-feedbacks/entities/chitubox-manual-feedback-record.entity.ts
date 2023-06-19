@@ -13,6 +13,9 @@ export class ChituboxManualFeedback {
 	id: number;
 
 	@Column()
+	pageId: string;
+
+	@Column()
 	url: string;
 
 	@Column()
