@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, TestingModule } from "@nestjs/testing";
 import { ChituboxManualFeedbacksService } from "./chitubox-manual-feedbacks.service";
 
-describe('ChituboxManualFeedbacksService', () => {
+describe("ChituboxManualFeedbacksService", () => {
 	let service: ChituboxManualFeedbacksService;
 
 	beforeEach(async () => {
@@ -9,10 +9,12 @@ describe('ChituboxManualFeedbacksService', () => {
 			providers: [ChituboxManualFeedbacksService],
 		}).compile();
 
-		service = module.get<ChituboxManualFeedbacksService>(ChituboxManualFeedbacksService);
+		service = module.get<ChituboxManualFeedbacksService>(
+			ChituboxManualFeedbacksService
+		);
 	});
 
-	it('should be defined', () => {
+	it("should be defined", () => {
 		expect(service).toBeDefined();
 	});
 });

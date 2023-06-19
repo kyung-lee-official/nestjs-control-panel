@@ -4,7 +4,7 @@ import { ChituboxManualFeedbackPayload } from "../chitubox-manual-feedback-paylo
 export class CreateChituboxManualFeedbackDto {
 	@IsUrl()
 	@Matches(/manual\.chitubox\.com/, {
-		message: "Illegal URL"
+		message: "Illegal URL",
 	})
 	url: string;
 

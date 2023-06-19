@@ -1,8 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ChituboxManualFeedbacksService } from './chitubox-manual-feedbacks.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { ChituboxManualFeedbacksService } from "./chitubox-manual-feedbacks.service";
 import { ChituboxManualFeedbacksController } from "./chitubox-manual-feedbacks.controller";
 
-describe('ChituboxManualFeedbacksController', () => {
+describe("ChituboxManualFeedbacksController", () => {
 	let controller: ChituboxManualFeedbacksController;
 
 	beforeEach(async () => {
@@ -11,10 +11,12 @@ describe('ChituboxManualFeedbacksController', () => {
 			providers: [ChituboxManualFeedbacksService],
 		}).compile();
 
-		controller = module.get<ChituboxManualFeedbacksController>(ChituboxManualFeedbacksController);
+		controller = module.get<ChituboxManualFeedbacksController>(
+			ChituboxManualFeedbacksController
+		);
 	});
 
-	it('should be defined', () => {
+	it("should be defined", () => {
 		expect(controller).toBeDefined();
 	});
 });
