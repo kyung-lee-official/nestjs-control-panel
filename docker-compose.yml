@@ -1,0 +1,7 @@
+services:
+    s-nestjs-chitubox-control-panel:
+        image: i-nestjs-chitubox-control-panel
+        container_name: c-nestjs-chitubox-control-panel
+        build: .
+        ports:
+            - "3002:3001"
