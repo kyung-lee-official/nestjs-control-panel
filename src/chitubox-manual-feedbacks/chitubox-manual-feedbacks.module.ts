@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ChituboxManualFeedbacksService } from './chitubox-manual-feedbacks.service';
-import { ChituboxManualFeedbacksController } from './chitubox-manual-feedback.controller';
+import { ChituboxManualFeedbacksController } from './chitubox-manual-feedbacks.controller';
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ChituboxManualFeedback } from "./entities/chitubox-manual-feedback-record.entity";
 import { PermissionsModule } from "src/permissions/permissions.module";

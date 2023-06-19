@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChituboxManualFeedbacksService } from './chitubox-manual-feedbacks.service';
-import { ChituboxManualFeedbacksController } from "./chitubox-manual-feedback.controller";
+import { ChituboxManualFeedbacksController } from "./chitubox-manual-feedbacks.controller";
 
 describe('ChituboxManualFeedbacksController', () => {
 	let controller: ChituboxManualFeedbacksController;
