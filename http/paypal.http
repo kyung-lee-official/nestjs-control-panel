@@ -18,7 +18,7 @@ Authorization: {{$dotenv PAYPAL_ACCESS_TOKEN}}
 
 # Order
 ### Test
-POST {{$dotenv SERVER_HOST}}/paypal
+POST {{$dotenv LOCAL_HOST}}/paypal
 
 ### Create order
 POST {{base}}/v2/checkout/orders

@@ -1,5 +1,5 @@
 ### Create a user
-POST {{$dotenv SERVER_HOST}}/users/create
+POST {{$dotenv LOCAL_HOST}}/users/create
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
@@ -10,14 +10,14 @@ Authorization: {{$dotenv AUTHORIZATION}}
 }
 
 ### Find users
-GET {{$dotenv SERVER_HOST}}/users
+GET {{$dotenv LOCAL_HOST}}/users
 	# ?email=KyUnG@cbd-3d.com
 	# &nickname=Kyung
 	# &roleIds=10
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Find users by ids
-GET {{$dotenv SERVER_HOST}}/users/ids
+GET {{$dotenv LOCAL_HOST}}/users/ids
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
@@ -29,31 +29,31 @@ Authorization: {{$dotenv AUTHORIZATION}}
 }
 
 ### Find me
-GET {{$dotenv SERVER_HOST}}/users/me
+GET {{$dotenv LOCAL_HOST}}/users/me
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Find a user
-GET {{$dotenv SERVER_HOST}}/users/8b9136f6-902d-4799-b5c2-5f6caebac8b6
+GET {{$dotenv LOCAL_HOST}}/users/8b9136f6-902d-4799-b5c2-5f6caebac8b6
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Update a user profile
-PATCH {{$dotenv SERVER_HOST}}/users/profile/8b9136f6-902d-4799-b5c2-5f6caebac8b6
+PATCH {{$dotenv LOCAL_HOST}}/users/profile/8b9136f6-902d-4799-b5c2-5f6caebac8b6
 Content-Type: application/x-www-form-urlencoded
 Authorization: {{$dotenv AUTHORIZATION}}
 
 nickname=Kyung
 
 ### Update a user email
-PATCH {{$dotenv SERVER_HOST}}/users/email/8b9136f6-902d-4799-b5c2-5f6caebac8b6
+PATCH {{$dotenv LOCAL_HOST}}/users/email/8b9136f6-902d-4799-b5c2-5f6caebac8b6
 Content-Type: application/x-www-form-urlencoded
 Authorization: {{$dotenv AUTHORIZATION}}
 
 email=kyung@cbd-3d.com
 
 ### Update user roles
-PATCH {{$dotenv SERVER_HOST}}/users/roles/8b9136f6-902d-4799-b5c2-5f6caebac8b6
+PATCH {{$dotenv LOCAL_HOST}}/users/roles/8b9136f6-902d-4799-b5c2-5f6caebac8b6
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
@@ -63,7 +63,7 @@ Authorization: {{$dotenv AUTHORIZATION}}
 }
 
 ### Update user password
-PATCH {{$dotenv SERVER_HOST}}/users/password/8b9136f6-902d-4799-b5c2-5f6caebac8b6
+PATCH {{$dotenv LOCAL_HOST}}/users/password/8b9136f6-902d-4799-b5c2-5f6caebac8b6
 Content-Type: application/x-www-form-urlencoded
 Authorization: {{$dotenv AUTHORIZATION}}
 
@@ -71,5 +71,5 @@ oldPassword=hdkmQ@m98M83
 &newPassword=hdkmQ@m98M83
 
 ### Delete a user
-DELETE {{$dotenv SERVER_HOST}}/users/da46993e-ca6e-4ed4-94d7-29380e9f71bc
+DELETE {{$dotenv LOCAL_HOST}}/users/da46993e-ca6e-4ed4-94d7-29380e9f71bc
 Authorization: {{$dotenv AUTHORIZATION}}

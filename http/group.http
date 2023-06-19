@@ -1,21 +1,21 @@
 
 ### Create a group
-POST {{$dotenv SERVER_HOST}}/groups
+POST {{$dotenv LOCAL_HOST}}/groups
 Content-Type: application/x-www-form-urlencoded
 Authorization: {{$dotenv AUTHORIZATION}}
 
 name=everyone
 
 ### Find groups
-GET {{$dotenv SERVER_HOST}}/groups
+GET {{$dotenv LOCAL_HOST}}/groups
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Find a group
-GET {{$dotenv SERVER_HOST}}/groups/6
+GET {{$dotenv LOCAL_HOST}}/groups/6
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Update a group
-PATCH {{$dotenv SERVER_HOST}}/groups/8
+PATCH {{$dotenv LOCAL_HOST}}/groups/8
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
@@ -31,5 +31,5 @@ Authorization: {{$dotenv AUTHORIZATION}}
 }
 
 ### Remove a group
-DELETE {{$dotenv SERVER_HOST}}/groups/5
+DELETE {{$dotenv LOCAL_HOST}}/groups/5
 Authorization: {{$dotenv AUTHORIZATION}}

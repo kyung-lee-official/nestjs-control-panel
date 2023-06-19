@@ -1,24 +1,24 @@
 ### Update admin permissions
-GET {{$dotenv SERVER_HOST}}/roles/updateAdminPermissions
+GET {{$dotenv LOCAL_HOST}}/roles/updateAdminPermissions
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Create a role
-POST {{$dotenv SERVER_HOST}}/roles
+POST {{$dotenv LOCAL_HOST}}/roles
 Content-Type: application/x-www-form-urlencoded
 Authorization: {{$dotenv AUTHORIZATION}}
 
 name=研发
 
 ### Find roles
-GET {{$dotenv SERVER_HOST}}/roles
+GET {{$dotenv LOCAL_HOST}}/roles
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Find a role by id
-GET {{$dotenv SERVER_HOST}}/roles/17
+GET {{$dotenv LOCAL_HOST}}/roles/17
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Update role by id
-PATCH {{$dotenv SERVER_HOST}}/roles/4
+PATCH {{$dotenv LOCAL_HOST}}/roles/4
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
@@ -36,5 +36,5 @@ Authorization: {{$dotenv AUTHORIZATION}}
 }
 
 ### Delete a role
-DELETE {{$dotenv SERVER_HOST}}/roles/13
+DELETE {{$dotenv LOCAL_HOST}}/roles/13
 Authorization: {{$dotenv AUTHORIZATION}}

@@ -1,6 +1,6 @@
 ### Create server settings
 # DANGER! This should only be triggered during the server seeding.
-POST {{$dotenv SERVER_HOST}}/server-settings
+POST {{$dotenv LOCAL_HOST}}/server-settings
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
@@ -10,15 +10,15 @@ Authorization: {{$dotenv AUTHORIZATION}}
 }
 
 ### Check is sign up available
-GET {{$dotenv SERVER_HOST}}/server-settings/isSignUpAvailable
+GET {{$dotenv LOCAL_HOST}}/server-settings/isSignUpAvailable
 Content-Type: application/json
 
 ### Get server settings
-GET {{$dotenv SERVER_HOST}}/server-settings
+GET {{$dotenv LOCAL_HOST}}/server-settings
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Update server settings
-PATCH {{$dotenv SERVER_HOST}}/server-settings
+PATCH {{$dotenv LOCAL_HOST}}/server-settings
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 

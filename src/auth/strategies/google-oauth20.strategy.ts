@@ -8,7 +8,7 @@ export class GoogleOAuth20Strategy extends PassportStrategy(Strategy, "google") 
 		super({
 			clientID: process.env.GOOGLE_OAUTH20_CLIENT_ID,
 			clientSecret: process.env.GOOGLE_OAUTH20_SECRET,
-			callbackURL: `${process.env.SERVER_HOST}/auth/google/redirect`,
+			callbackURL: `${process.env.LOCAL_HOST}/auth/google/redirect`,
 			scope: ["email", "profile"]
 		});
 	}

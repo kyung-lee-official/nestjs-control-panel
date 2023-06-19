@@ -1,8 +1,8 @@
 ### Check is seeded
-GET {{$dotenv SERVER_HOST}}/auth/isSeeded
+GET {{$dotenv LOCAL_HOST}}/auth/isSeeded
 
 ### Seed
-POST {{$dotenv SERVER_HOST}}/auth/seed
+POST {{$dotenv LOCAL_HOST}}/auth/seed
 Content-Type: application/json
 
 {
@@ -12,7 +12,7 @@ Content-Type: application/json
 }
 
 ### Sign up
-POST {{$dotenv SERVER_HOST}}/auth/signup
+POST {{$dotenv LOCAL_HOST}}/auth/signup
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
@@ -23,7 +23,7 @@ Authorization: {{$dotenv AUTHORIZATION}}
 }
 
 ### Sign in
-POST {{$dotenv SERVER_HOST}}/auth/signin
+POST {{$dotenv LOCAL_HOST}}/auth/signin
 Content-Type: application/json
 
 {
@@ -32,6 +32,6 @@ Content-Type: application/json
 }
 
 ### Check is signed in
-GET {{$dotenv SERVER_HOST}}/auth/isSignedIn
+GET {{$dotenv LOCAL_HOST}}/auth/isSignedIn
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
