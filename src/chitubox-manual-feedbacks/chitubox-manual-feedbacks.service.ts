@@ -20,9 +20,13 @@ export class ChituboxManualFeedbacksService {
 
 	async create(
 		createChituboxManualFeedbackDto: CreateChituboxManualFeedbackDto,
-		ip: string
+		headers: any
 	): Promise<ChituboxManualFeedback> {
 		const { pageId, url, payload } = createChituboxManualFeedbackDto;
+		let ip = headers["x-real-ip"];
+		if (!ip) {
+			throw new BadRequestException("No IP address found");
+		}
 		let res: any;
 		try {
 			// res = await axios.get(`https://api.country.is/9.9.9.9`);
@@ -45,7 +49,7 @@ export class ChituboxManualFeedbacksService {
 			country: country || "Unknown",
 		});
 		await this.feedbacksRepository.save(feedback);
-		return feedback;
+		return null;
 	}
 
 	/**

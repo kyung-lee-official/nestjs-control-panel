@@ -7,6 +7,7 @@ import {
 	Delete,
 	Ip,
 	UseGuards,
+	Headers,
 } from "@nestjs/common";
 import { ChituboxManualFeedbacksService } from "./chitubox-manual-feedbacks.service";
 import { CreateChituboxManualFeedbackDto } from "./dto/create-chitubox-manual-feedback.dto";
@@ -27,11 +28,11 @@ export class ChituboxManualFeedbacksController {
 	create(
 		@Body()
 		createChituboxManualFeedbackDto: CreateChituboxManualFeedbackDto,
-		@Ip() ip: string
+		@Headers() headers: any
 	): Promise<ChituboxManualFeedback> {
 		return this.chituboxManualFeedbacksService.create(
 			createChituboxManualFeedbackDto,
-			ip
+			headers
 		);
 	}
 
