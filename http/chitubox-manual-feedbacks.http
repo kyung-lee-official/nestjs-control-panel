@@ -1,5 +1,5 @@
 ### Create a feedback
-POST {{$dotenv SERVER_HOST}}/chitubox-manual-feedbacks
+POST {{$dotenv LOCAL_HOST}}/chitubox-manual-feedbacks
 Content-Type: application/json
 
 {
@@ -11,30 +11,18 @@ Content-Type: application/json
 ### Find feedbacks with startDate and endDate
 # Since the server timezone is always UTC (use `timedatectl` command to check), the front end need to convert dates to UTC before sending the request.
 GET {{$dotenv LOCAL_HOST}}/chitubox-manual-feedbacks
-Content-Type: application/json
+	?startDate=2023-02-08T00:00:00.000Z
+	&endDate=2023-02-08T23:59:59.999Z
 Authorization: {{$dotenv AUTHORIZATION}}
-
-{
-	"startDate": "2023-02-08T00:00:00.000Z",
-	"endDate": "2023-02-08T23:59:59.999Z"
-}
 
 ### Find feedbacks with startDate
 # Since the server timezone is always UTC (use `timedatectl` command to check), the front end need to convert dates to UTC before sending the request.
 GET {{$dotenv LOCAL_HOST}}/chitubox-manual-feedbacks
-Content-Type: application/json
+	?startDate=2023-02-08T00:00:00.000Z
 Authorization: {{$dotenv AUTHORIZATION}}
-
-{
-	"startDate": "2023-02-07T00:00:00.000Z"
-}
 
 ### Find feedbacks with endDate
 # Since the server timezone is always UTC (use `timedatectl` command to check), the front end need to convert dates to UTC before sending the request.
 GET {{$dotenv LOCAL_HOST}}/chitubox-manual-feedbacks
-Content-Type: application/json
+	?endDate=2023-02-08T23:59:59.999Z
 Authorization: {{$dotenv AUTHORIZATION}}
-
-{
-	"endDate": "2023-02-07T23:59:59.999Z"
-}

@@ -10,6 +10,7 @@ import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
 import { FindChituboxManualFeedbackDto } from "./dto/find-chitubox-manual-feedback.dto";
 import * as dayjs from "dayjs";
 import axios from "axios";
+import { Iso8601DateRangeDto } from "./dto/iso8601-date-range.dto";
 
 @Injectable()
 export class ChituboxManualFeedbacksService {
@@ -57,9 +58,9 @@ export class ChituboxManualFeedbacksService {
 	 * the front end need to convert dates to UTC before sending the request.
 	 */
 	async find(
-		findChituboxManualFeedbackDto: FindChituboxManualFeedbackDto
+		dateRangeDto: Iso8601DateRangeDto
 	): Promise<ChituboxManualFeedback[]> {
-		const { startDate, endDate } = findChituboxManualFeedbackDto;
+		const { startDate, endDate } = dateRangeDto;
 		if (startDate && endDate) {
 			if (dayjs(endDate).isBefore(dayjs(startDate))) {
 				throw new BadRequestException(
