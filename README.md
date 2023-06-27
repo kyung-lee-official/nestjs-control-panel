@@ -14,6 +14,10 @@
 -   [x] Users must sign in to apply any operations after the server is seeded.
 -   [x] Check if sign-up is available
 
+### Google OAuth
+
+Make sure your dev server is able to connect to Google's OAuth server (use Proxifier if needed).
+
 ## users
 
 -   [ ] Create a new user, `email` saved as lower case, `CREATE_USER` permission required， and assign the user to the `everyone` group.
