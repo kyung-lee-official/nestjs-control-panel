@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import {
+	BadRequestException,
+	Inject,
+	Injectable,
+	InternalServerErrorException,
+	UnauthorizedException,
+} from "@nestjs/common";
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { User } from "src/users/entities/user.entity";
 import { UsersService } from "src/users/users.service";
@@ -29,9 +35,9 @@ export class AuthService {
 		@InjectRepository(ServerSetting)
 		private settingsRepository: Repository<ServerSetting>,
 		private jwtService: JwtService
-	) { }
+	) {}
 
-	async isSeeded(): Promise<{ isSeeded: boolean; }> {
+	async isSeeded(): Promise<{ isSeeded: boolean }> {
 		const userQb = this.usersRepository.createQueryBuilder("user");
 		userQb.limit(3);
 		const users = await userQb.getMany();
@@ -45,7 +51,7 @@ export class AuthService {
 	async seed(createUserDto: CreateUserDto): Promise<User> {
 		const serverSettings = this.settingsRepository.create({
 			allowPublicSignUp: false,
-			allowGoogleSignUp: false
+			allowGoogleSignUp: false,
 		});
 		await this.settingsRepository.save(serverSettings);
 
@@ -73,34 +79,38 @@ export class AuthService {
 		return user;
 	}
 
-	async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string; }> {
+	async signIn(
+		authCredentialsDto: AuthCredentialsDto
+	): Promise<{ accessToken: string }> {
 		const { email, password } = authCredentialsDto;
 		const user = await this.usersRepository.findOne({
 			where: {
-				email: email
-			}
+				email: email,
+			},
 		});
 		if (user && (await bcrypt.compare(password, user.password))) {
 			const payload: JwtPayload = { email };
-			const accessToken: string = await this.jwtService.sign(payload);
+			const accessToken: string = this.jwtService.sign(payload);
 			return { accessToken };
 		} else {
-			throw new UnauthorizedException("Please check your sign in credentials");
+			throw new UnauthorizedException(
+				"Please check your sign in credentials"
+			);
 		}
 	}
 
-	async isSignedIn(): Promise<{ isSignedIn: boolean; }> {
+	async isSignedIn(): Promise<{ isSignedIn: boolean }> {
 		return { isSignedIn: true };
 	}
 
-	googleSignIn(req) {
+	googleSignIn(req: any) {
 		if (!req.user) {
-			return 'No user from google';
+			return "No user from google";
 		}
 
 		return {
-			message: 'User information from google',
-			user: req.user
+			message: "User information from google",
+			user: req.user,
 		};
 	}
 }

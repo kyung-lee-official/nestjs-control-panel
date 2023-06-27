@@ -1,4 +1,14 @@
-import { Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Post, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+	Body,
+	ClassSerializerInterceptor,
+	Controller,
+	Get,
+	NotFoundException,
+	Post,
+	Req,
+	UseGuards,
+	UseInterceptors,
+} from "@nestjs/common";
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { AuthService } from "./auth.service";
 import { AuthCredentialsDto } from "./dto/auth-credential.dto";
@@ -6,13 +16,14 @@ import { User } from "src/users/entities/user.entity";
 import { GoogleOAuth20AuthGuard } from "./guards/google-oauth20.guard";
 import { AllowPublicSignUpGuard } from "src/server-settings/guards/allow-public-sign-up.guard";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { AuthGuard } from "@nestjs/passport";
 
-@Controller('auth')
+@Controller("auth")
 export class AuthController {
-	constructor(private authService: AuthService) { }
+	constructor(private authService: AuthService) {}
 
 	@Get("/isSeeded")
-	isSeeded(): Promise<{ isSeeded: boolean; }> {
+	isSeeded(): Promise<{ isSeeded: boolean }> {
 		return this.authService.isSeeded();
 	}
 
@@ -29,23 +40,25 @@ export class AuthController {
 	}
 
 	@Post("/signin")
-	signIn(@Body() authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string; }> {
+	signIn(
+		@Body() authCredentialsDto: AuthCredentialsDto
+	): Promise<{ accessToken: string }> {
 		return this.authService.signIn(authCredentialsDto);
 	}
 
 	@UseGuards(JwtAuthGuard)
 	@Get("/isSignedIn")
-	isSignedIn(): Promise<{ isSignedIn: boolean; }> {
+	isSignedIn(): Promise<{ isSignedIn: boolean }> {
 		return this.authService.isSignedIn();
 	}
 
 	@Get("/google")
 	@UseGuards(GoogleOAuth20AuthGuard)
-	googleAuth(@Req() req) { }
+	googleAuth(@Req() req: any) {}
 
 	@Get("/google/redirect")
 	@UseGuards(GoogleOAuth20AuthGuard)
-	googleAuthRedirect(@Req() req) {
+	googleAuthRedirect(@Req() req: any) {
 		return this.authService.googleSignIn(req);
 	}
 }
