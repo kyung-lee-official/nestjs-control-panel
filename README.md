@@ -18,6 +18,21 @@
 
 Make sure your dev server is able to connect to Google's OAuth server (use Proxifier if needed).
 
+Example `request.user` send from Google to our server:
+
+```json
+{
+	"message": "User information from google",
+	"user": {
+		"email": "kyung.lee.official@gmail.com",
+		"givenName": "Kyung",
+		"familyName": "Lee",
+		"picture": "https://lh3.googleusercontent.com/a/AAcHTtcWTJrj8osBrYMrYErRMM7g6UmmOWegJpP0PSA5fXxmJw=s96-c",
+		"accessToken": "****.****************************************************************************************************************************************************************************************************************"
+	}
+}
+```
+
 ## users
 
 -   [ ] Create a new user, `email` saved as lower case, `CREATE_USER` permission required， and assign the user to the `everyone` group.

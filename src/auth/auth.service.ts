@@ -103,13 +103,12 @@ export class AuthService {
 		return { isSignedIn: true };
 	}
 
-	googleSignIn(req: any) {
+	async googleSignIn(req: any) {
 		if (!req.user) {
 			return "No user from google";
 		}
 
 		return {
-			message: "User information from google",
 			user: req.user,
 		};
 	}
