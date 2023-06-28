@@ -100,16 +100,19 @@ export class AuthService {
 	}
 
 	async isSignedIn(): Promise<{ isSignedIn: boolean }> {
+		/* JwtAuthGuard already validated the user */
 		return { isSignedIn: true };
 	}
 
 	async googleSignIn(req: any) {
 		if (!req.user) {
-			return "No user from google";
+			throw new InternalServerErrorException("User not found");
+		} else {
+			const payload: JwtPayload = { email: req.user.email };
+			const accessToken: string = this.jwtService.sign(payload);
+			return {
+				accessToken,
+			};
 		}
-
-		return {
-			user: req.user,
-		};
 	}
 }
