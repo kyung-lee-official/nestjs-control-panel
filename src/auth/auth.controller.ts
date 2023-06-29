@@ -3,7 +3,6 @@ import {
 	ClassSerializerInterceptor,
 	Controller,
 	Get,
-	NotFoundException,
 	Post,
 	Req,
 	UseGuards,
@@ -17,6 +16,7 @@ import { GoogleOAuth20AuthGuard } from "./guards/google-oauth20.guard";
 import { AllowPublicSignUpGuard } from "src/server-settings/guards/allow-public-sign-up.guard";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { AuthGuard } from "@nestjs/passport";
+import { VerifyEmailDto } from "./dto/verify-email.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -60,5 +60,17 @@ export class AuthController {
 	@UseGuards(GoogleOAuth20AuthGuard)
 	googleAuthRedirect(@Req() req: any) {
 		return this.authService.googleSignIn(req);
+	}
+
+	@Get("/testSendVerificationEmail")
+	testSendVerificationEmail(): Promise<void> {
+		return this.authService.testSendVerificationEmail();
+	}
+
+	@Post("/verifyEmail")
+	verifyEmail(
+		@Body() verifyEmailDto: VerifyEmailDto
+	): Promise<{ isVerified: boolean }> {
+		return this.authService.verifyEmail(verifyEmailDto);
 	}
 }

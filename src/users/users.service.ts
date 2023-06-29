@@ -1,28 +1,38 @@
-import { Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
 import { InjectRepository } from "@nestjs/typeorm/dist/common";
 import { In, Repository } from "typeorm";
 import { User } from "./entities/user.entity";
 import * as bcrypt from "bcrypt";
 import { REQUEST } from "@nestjs/core";
-import { BadRequestException, ForbiddenException, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common/exceptions";
+import {
+	BadRequestException,
+	ForbiddenException,
+	ServiceUnavailableException,
+	UnauthorizedException,
+} from "@nestjs/common/exceptions";
 import { UpdateUserEmailDto } from "./dto/update-user-email.dto";
 import { UpdateUserRolesDto } from "./dto/update-user-roles.dto";
 import { UpdateUserPasswordDto } from "./dto/update-user-password.dto";
 import { FindUsersByIdsDto } from "./dto/find-users-by-ids.dto";
-import { Actions, CaslAbilityFactory } from "src/casl/casl-ability.factory/casl-ability.factory";
+import {
+	Actions,
+	CaslAbilityFactory,
+} from "src/casl/casl-ability.factory/casl-ability.factory";
 import { ForbiddenError } from "@casl/ability";
 import { Group } from "src/groups/entities/group.entity";
 import { Role } from "src/roles/entities/role.entity";
 import { uniq } from "lodash";
 import { UpdateUserGroupsDto } from "./dto/update-user-groups.dto";
+import { AuthService } from "src/auth/auth.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class UsersService {
 	constructor(
 		@Inject(REQUEST)
 		private request: any,
+		private authService: AuthService,
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
 		@InjectRepository(Role)
@@ -30,11 +40,11 @@ export class UsersService {
 		@InjectRepository(Group)
 		private groupsRepository: Repository<Group>,
 		private caslAbilityFactory: CaslAbilityFactory
-	) { }
+	) {}
 
 	/**
 	 * Create a new user, and assign to the "everyone" group.
-	 * @param createUserDto 
+	 * @param createUserDto
 	 * @returns user
 	 */
 	async create(createUserDto: CreateUserDto): Promise<User> {
@@ -42,20 +52,23 @@ export class UsersService {
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
-		const everyoneGroup = await this.groupsRepository.find({ where: { name: "everyone" } });
+		const everyoneGroup = await this.groupsRepository.find({
+			where: { name: "everyone" },
+		});
 		const user = this.usersRepository.create({
 			email,
 			password: hashedPassword,
 			nickname,
-			groups: everyoneGroup
+			groups: everyoneGroup,
 		});
 		await this.usersRepository.save(user);
+		this.authService.sendVerificationEmail(email);
 		return user;
 	}
 
 	/**
-	 * Find users conditionally. 
-	 * Since CASL only determines "can" or "can not", 
+	 * Find users conditionally.
+	 * Since CASL only determines "can" or "can not",
 	 * this function only returns users belonging to owned groups of the requester only.
 	 * @param email user email
 	 * @param nickname user nickname
@@ -66,12 +79,15 @@ export class UsersService {
 		const requester = this.request.user;
 		const dbRequester = await this.usersRepository.findOne({
 			where: { id: requester.id },
-			relations: ["ownedGroups"]
+			relations: ["ownedGroups"],
 		});
-		const requesterOwnedGroupIds: number[] = dbRequester.ownedGroups.map((group) => {
-			return group.id;
-		});
-		const userQb = this.usersRepository.createQueryBuilder("user")
+		const requesterOwnedGroupIds: number[] = dbRequester.ownedGroups.map(
+			(group) => {
+				return group.id;
+			}
+		);
+		const userQb = this.usersRepository
+			.createQueryBuilder("user")
 			.leftJoinAndSelect("user.roles", "roles")
 			.leftJoinAndSelect("user.groups", "groups")
 			.leftJoinAndSelect("user.ownedGroups", "ownedGroups");
@@ -79,11 +95,13 @@ export class UsersService {
 			userQb.where("user.email = :email", { email: email.toLowerCase() });
 		}
 		if (nickname) {
-			userQb.andWhere(
-				"(LOWER(user.nickname) LIKE LOWER(:nickname))", { nickname: `%${nickname}%` }
-			);
+			userQb.andWhere("(LOWER(user.nickname) LIKE LOWER(:nickname))", {
+				nickname: `%${nickname}%`,
+			});
 		}
-		userQb.andWhere("(groups.id IN (:...groupIds))", { groupIds: requesterOwnedGroupIds });
+		userQb.andWhere("(groups.id IN (:...groupIds))", {
+			groupIds: requesterOwnedGroupIds,
+		});
 		let users = await userQb.getMany();
 		if (roleIds) {
 			roleIds = roleIds.map((roleId) => {
@@ -106,23 +124,23 @@ export class UsersService {
 
 	/**
 	 * Find users by ids. If unknown ids exist in findUsersByIdsDto, ignore them, doesn't throw.
-	 * @param findUsersByIdsDto 
+	 * @param findUsersByIdsDto
 	 * @returns users
 	 */
-	async findUsersByIds(findUsersByIdsDto: FindUsersByIdsDto): Promise<User[]> {
+	async findUsersByIds(
+		findUsersByIdsDto: FindUsersByIdsDto
+	): Promise<User[]> {
 		const requester = this.request.user;
 		const { ids } = findUsersByIdsDto;
 		const users = await this.usersRepository.find({
 			where: {
-				id: In(ids)
+				id: In(ids),
 			},
-			relations: [
-				"roles",
-				"groups",
-				"ownedGroups"
-			]
+			relations: ["roles", "groups", "ownedGroups"],
 		});
-		const ability = await this.caslAbilityFactory.defineAbilityFor(requester.id);
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
 		for (const user of users) {
 			if (!ability.can(Actions.READ, user)) {
 				throw new ForbiddenException();
@@ -135,25 +153,19 @@ export class UsersService {
 		const requester = this.request.user;
 		const dbRequester = await this.usersRepository.findOne({
 			where: { id: requester.id },
-			relations: [
-				"roles",
-				"groups",
-				"ownedGroups"
-			]
+			relations: ["roles", "groups", "ownedGroups"],
 		});
 		return dbRequester;
 	}
 
 	async findOne(id: string): Promise<User> {
 		const requester = this.request.user;
-		const ability = await this.caslAbilityFactory.defineAbilityFor(requester.id);
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
 		const user = await this.usersRepository.findOne({
 			where: { id: id },
-			relations: [
-				"roles",
-				"groups",
-				"ownedGroups"
-			]
+			relations: ["roles", "groups", "ownedGroups"],
 		});
 		if (!user) {
 			throw new NotFoundException("User not found");
@@ -167,13 +179,15 @@ export class UsersService {
 
 	async update(
 		id: string,
-		updateUserDto: Partial<UpdateUserDto>,
+		updateUserDto: Partial<UpdateUserDto>
 	): Promise<User> {
 		const requester = this.request.user;
-		const ability = await this.caslAbilityFactory.defineAbilityFor(requester.id);
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
 		const user = await this.usersRepository.findOne({
 			where: { id: id },
-			relations: ["roles", "groups"]
+			relations: ["roles", "groups"],
 		});
 		if (!user) {
 			throw new NotFoundException("User not found");
@@ -189,13 +203,15 @@ export class UsersService {
 
 	async updateUserEmail(
 		id: string,
-		updateUserEmailDto: UpdateUserEmailDto,
+		updateUserEmailDto: UpdateUserEmailDto
 	): Promise<User> {
 		const requester = this.request.user;
-		const ability = await this.caslAbilityFactory.defineAbilityFor(requester.id);
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
 		const user = await this.usersRepository.findOne({
 			where: { id: id },
-			relations: ["roles", "groups"]
+			relations: ["roles", "groups"],
 		});
 		if (!user) {
 			throw new NotFoundException("User not found");
@@ -215,26 +231,34 @@ export class UsersService {
 	 * If the requestee is an admin user, keep the 'admin' role anyway.
 	 * If updateUserRolesDto contains unknown roleIds, ignore them, doesn't throw.
 	 * @param id user id
-	 * @param updateUserRolesDto 
+	 * @param updateUserRolesDto
 	 * @returns user
 	 */
 	async updateUserRoles(
 		id: string,
-		updateUserRolesDto: UpdateUserRolesDto,
+		updateUserRolesDto: UpdateUserRolesDto
 	): Promise<User> {
 		const requester = this.request.user;
-		const ability = await this.caslAbilityFactory.defineAbilityFor(requester.id);
-		const adminRole = await this.rolesRepository.findOne({ where: { name: "admin" } });
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
+		const adminRole = await this.rolesRepository.findOne({
+			where: { name: "admin" },
+		});
 		let user: User;
 		let roles: Role[];
 		if (updateUserRolesDto.roleIds) {
 			if (updateUserRolesDto.roleIds.includes(adminRole.id)) {
-				throw new ForbiddenException("Can't assign the 'admin' role to other users");
+				throw new ForbiddenException(
+					"Can't assign the 'admin' role to other users"
+				);
 			}
-			roles = await this.rolesRepository.find({ where: { id: In(updateUserRolesDto.roleIds) } });
+			roles = await this.rolesRepository.find({
+				where: { id: In(updateUserRolesDto.roleIds) },
+			});
 			user = await this.usersRepository.findOne({
 				where: { id: id },
-				relations: ["roles"]
+				relations: ["roles"],
 			});
 			if (!user) {
 				throw new NotFoundException("User not found");
@@ -262,27 +286,34 @@ export class UsersService {
 
 	async updateUserGroups(
 		id: string,
-		updateUserGroupsDto: UpdateUserGroupsDto,
+		updateUserGroupsDto: UpdateUserGroupsDto
 	): Promise<User> {
 		return;
 	}
 
 	async updateUserPassword(
 		id: string,
-		updateUserPasswordDto: UpdateUserPasswordDto,
+		updateUserPasswordDto: UpdateUserPasswordDto
 	): Promise<User> {
 		let requester = this.request.user;
-		const ability = await this.caslAbilityFactory.defineAbilityFor(requester.id);
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
 		const user = await this.usersRepository.findOne({ where: { id: id } });
 		if (!user) {
 			throw new NotFoundException("User not found");
 		}
 		if (ability.can(Actions.UPDATE, user, "password")) {
 			const { oldPassword, newPassword } = updateUserPasswordDto;
-			const isOldPasswordCorrect: boolean = await bcrypt.compare(oldPassword, user.password);
+			const isOldPasswordCorrect: boolean = await bcrypt.compare(
+				oldPassword,
+				user.password
+			);
 			if (isOldPasswordCorrect) {
 				if (oldPassword === newPassword) {
-					throw new BadRequestException("The new password cannot be the same as the old password");
+					throw new BadRequestException(
+						"The new password cannot be the same as the old password"
+					);
 				}
 				const salt = await bcrypt.genSalt();
 				const hashedPassword = await bcrypt.hash(newPassword, salt);
@@ -303,7 +334,9 @@ export class UsersService {
 
 	async remove(id: string): Promise<any> {
 		const requester = this.request.user;
-		const ability = await this.caslAbilityFactory.defineAbilityFor(requester.id);
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
 		const user = await this.usersRepository.findOne({ where: { id: id } });
 		if (!user) {
 			throw new NotFoundException("User not found");

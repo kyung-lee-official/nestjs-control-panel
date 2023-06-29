@@ -1,7 +1,6 @@
-import { Module } from '@nestjs/common';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { UsersModule } from "src/users/users.module";
+import { Module } from "@nestjs/common";
+import { AuthController } from "./auth.controller";
+import { AuthService } from "./auth.service";
 import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -16,28 +15,19 @@ import { ServerSetting } from "src/server-settings/entities/server-setting.entit
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
-		TypeOrmModule.forFeature([
-			User,
-			Role,
-			Group,
-			ServerSetting
-		]),
+		TypeOrmModule.forFeature([User, Role, Group, ServerSetting]),
 		PassportModule,
 		JwtModule.register({
 			secret: process.env.JWT_SECRET,
 			signOptions: {
 				// expiresIn: 60 * 60 * 24
-				expiresIn: 60 * 60 * 2
-			}
+				expiresIn: 60 * 60 * 2,
+			},
 		}),
-		UsersModule,
-		ServerSetting
+		ServerSetting,
 	],
 	controllers: [AuthController],
-	providers: [
-		AuthService,
-		JwtStrategy,
-		GoogleOAuth20Strategy
-	]
+	providers: [AuthService, JwtStrategy, GoogleOAuth20Strategy],
+	exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

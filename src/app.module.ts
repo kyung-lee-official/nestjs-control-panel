@@ -15,6 +15,7 @@ import { GroupsModule } from "./groups/groups.module";
 import { CaslModule } from "./casl/casl.module";
 import { PaypalModule } from "./paypal/paypal.module";
 import { ServerSettingsModule } from "./server-settings/server-settings.module";
+import { MailerModule } from "@nestjs-modules/mailer";
 
 @Module({
 	imports: [
@@ -41,6 +42,20 @@ import { ServerSettingsModule } from "./server-settings/server-settings.module";
 		CaslModule,
 		PaypalModule,
 		ServerSettingsModule,
+		MailerModule.forRoot({
+			transport: {
+				host: process.env.SMTP_HOST,
+				port: parseInt(process.env.SMTP_PORT),
+				secure: false,
+				auth: {
+					user: process.env.SMTP_USER,
+					pass: process.env.SMTP_PASSWORD,
+				},
+			},
+			// defaults: {
+			// 	from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_USER}>`,
+			// },
+		}),
 	],
 	controllers: [AppController],
 	providers: [AppService],

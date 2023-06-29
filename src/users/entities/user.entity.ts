@@ -1,7 +1,16 @@
 import { Exclude } from "class-transformer";
 import { Group } from "src/groups/entities/group.entity";
 import { Role } from "src/roles/entities/role.entity";
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+	Column,
+	CreateDateColumn,
+	Entity,
+	JoinTable,
+	ManyToMany,
+	OneToMany,
+	PrimaryGeneratedColumn,
+	UpdateDateColumn,
+} from "typeorm";
 
 @Entity()
 export class User {
@@ -20,6 +29,9 @@ export class User {
 
 	// @Column()
 	// isActive: boolean;
+
+	@Column({ nullable: true })
+	isVerified: boolean;
 
 	@ManyToMany(
 		(type) => {
