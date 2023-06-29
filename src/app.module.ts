@@ -1,24 +1,24 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
+import { Module } from "@nestjs/common";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { UsersModule } from "./users/users.module";
+import { AuthModule } from "./auth/auth.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
-import { RolesModule } from './roles/roles.module';
-import { PermissionsModule } from './permissions/permissions.module';
-import { DiscordDrawCampaignsModule } from './discord-draw-campaigns/discord-draw-campaigns.module';
-import { DiscordDrawRecordsModule } from './discord-draw-records/discord-draw-records.module';
-import { ChituboxOrdersModule } from './chitubox-orders/chitubox-orders.module';
+import { RolesModule } from "./roles/roles.module";
+import { PermissionsModule } from "./permissions/permissions.module";
+import { DiscordDrawCampaignsModule } from "./discord-draw-campaigns/discord-draw-campaigns.module";
+import { DiscordDrawRecordsModule } from "./discord-draw-records/discord-draw-records.module";
+import { ChituboxOrdersModule } from "./chitubox-orders/chitubox-orders.module";
 import { ChituboxManualFeedbacksModule } from "./chitubox-manual-feedbacks/chitubox-manual-feedbacks.module";
-import { GroupsModule } from './groups/groups.module';
-import { CaslModule } from './casl/casl.module';
-import { PaypalModule } from './paypal/paypal.module';
-import { ServerSettingsModule } from './server-settings/server-settings.module';
+import { GroupsModule } from "./groups/groups.module";
+import { CaslModule } from "./casl/casl.module";
+import { PaypalModule } from "./paypal/paypal.module";
+import { ServerSettingsModule } from "./server-settings/server-settings.module";
 
 @Module({
 	imports: [
-		ConfigModule.forRoot({ isGlobal: true, }),
+		ConfigModule.forRoot({ isGlobal: true }),
 		TypeOrmModule.forRoot({
 			type: "postgres",
 			host: process.env.DATABASE_HOST,
@@ -27,7 +27,7 @@ import { ServerSettingsModule } from './server-settings/server-settings.module';
 			password: process.env.DATABASE_PASSWORD,
 			database: process.env.DATABASE,
 			autoLoadEntities: true,
-			synchronize: true
+			synchronize: true,
 		}),
 		UsersModule,
 		AuthModule,
@@ -45,4 +45,4 @@ import { ServerSettingsModule } from './server-settings/server-settings.module';
 	controllers: [AppController],
 	providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
