@@ -20,16 +20,29 @@ import { MailerModule } from "@nestjs-modules/mailer";
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
-		TypeOrmModule.forRoot({
-			type: "postgres",
-			host: process.env.DATABASE_HOST,
-			port: parseInt(process.env.DATABASE_PORT),
-			username: process.env.DATABASE_USERNAME,
-			password: process.env.DATABASE_PASSWORD,
-			database: process.env.DATABASE,
-			autoLoadEntities: true,
-			synchronize: true,
-		}),
+		TypeOrmModule.forRoot(
+			process.env.ENV === "DEV"
+				? {
+						type: "postgres",
+						host: process.env.DATABASE_HOST_DEV,
+						port: parseInt(process.env.DATABASE_PORT_DEV),
+						username: process.env.DATABASE_USERNAME_DEV,
+						password: process.env.DATABASE_PASSWORD_DEV,
+						database: process.env.DATABASE_DEV,
+						autoLoadEntities: true,
+						synchronize: true,
+				  }
+				: {
+						type: "postgres",
+						host: process.env.DATABASE_HOST,
+						port: parseInt(process.env.DATABASE_PORT),
+						username: process.env.DATABASE_USERNAME,
+						password: process.env.DATABASE_PASSWORD,
+						database: process.env.DATABASE,
+						autoLoadEntities: true,
+						synchronize: true,
+				  }
+		),
 		UsersModule,
 		AuthModule,
 		RolesModule,
