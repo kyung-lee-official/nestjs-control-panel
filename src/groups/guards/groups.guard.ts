@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { UsersService } from "src/users/users.service";
+import { UsersService } from "../../users/users.service";
 
 @Injectable()
 export class GroupsGuard implements CanActivate {

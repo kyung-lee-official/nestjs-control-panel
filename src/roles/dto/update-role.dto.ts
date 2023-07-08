@@ -1,5 +1,5 @@
 import { IsArray, IsEnum, IsOptional, IsString, IsUUID } from "class-validator";
-import { Permissions } from "src/permissions/permissions.enum";
+import { Permissions } from "../../permissions/permissions.enum";
 
 export class UpdateRoleDto {
 	@IsOptional()

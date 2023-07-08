@@ -1,4 +1,4 @@
-import { DiscordDrawCampaign } from "src/discord-draw-campaigns/entities/discord-draw-campaign.entity";
+import { DiscordDrawCampaign } from "../../discord-draw-campaigns/entities/discord-draw-campaign.entity";
 import { Column, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 export class ChituboxOrder {

@@ -1,6 +1,12 @@
-import { ChituboxOrder } from "src/chitubox-orders/entities/chitubox-order.entity";
-import { DiscordDrawRecord } from "src/discord-draw-records/entities/discord-draw-record.entity";
-import { Column, CreateDateColumn, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { ChituboxOrder } from "../../chitubox-orders/entities/chitubox-order.entity";
+import { DiscordDrawRecord } from "../../discord-draw-records/entities/discord-draw-record.entity";
+import {
+	Column,
+	CreateDateColumn,
+	OneToMany,
+	PrimaryGeneratedColumn,
+	UpdateDateColumn,
+} from "typeorm";
 
 export class DiscordDrawCampaign {
 	@PrimaryGeneratedColumn()
@@ -35,7 +41,7 @@ export class DiscordDrawCampaign {
 
 	@OneToMany(
 		() => DiscordDrawRecord,
-		(discordDrawRecord) => discordDrawRecord.discordDrawCampaign,
+		(discordDrawRecord) => discordDrawRecord.discordDrawCampaign
 	)
 	discordDrawRecords: DiscordDrawRecord[];
 

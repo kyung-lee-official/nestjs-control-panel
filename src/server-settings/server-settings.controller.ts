@@ -1,21 +1,32 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
-import { ServerSettingsService } from './server-settings.service';
-import { CreateServerSettingDto } from './dto/create-server-setting.dto';
-import { UpdateServerSettingDto } from './dto/update-server-setting.dto';
+import {
+	Controller,
+	Get,
+	Post,
+	Body,
+	Patch,
+	Param,
+	Delete,
+	UseGuards,
+} from "@nestjs/common";
+import { ServerSettingsService } from "./server-settings.service";
+import { CreateServerSettingDto } from "./dto/create-server-setting.dto";
+import { UpdateServerSettingDto } from "./dto/update-server-setting.dto";
 import { ServerSetting } from "./entities/server-setting.entity";
-import { PermissionsGuard } from "src/permissions/guards/permissions.guard";
-import { RequiredPermissions } from "src/permissions/decorators/required-permissions.decorator";
-import { Permissions } from "src/permissions/permissions.enum";
-import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
+import { PermissionsGuard } from "../permissions/guards/permissions.guard";
+import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
+import { Permissions } from "../permissions/permissions.enum";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
-@Controller('server-settings')
+@Controller("server-settings")
 export class ServerSettingsController {
-	constructor(private readonly serverSettingsService: ServerSettingsService) { }
+	constructor(
+		private readonly serverSettingsService: ServerSettingsService
+	) {}
 
 	/**
 	 * !!! Danger, test only !!!
 	 * Create a new server setting
-	 * @param createServerSettingDto 
+	 * @param createServerSettingDto
 	 * @returns server settings
 	 */
 	// @Post()
@@ -23,9 +34,8 @@ export class ServerSettingsController {
 	// 	return this.serverSettingsService.create(createServerSettingDto);
 	// }
 
-
 	@Get("/isSignUpAvailable")
-	isSignUpAvailable(): Promise<{ isSignUpAvailable: boolean; }> {
+	isSignUpAvailable(): Promise<{ isSignUpAvailable: boolean }> {
 		return this.serverSettingsService.isSignUpAvailable();
 	}
 

@@ -15,10 +15,10 @@ import { RolesService } from "./roles.service";
 import { CreateRoleDto } from "./dto/create-role.dto";
 import { UpdateRoleDto } from "./dto/update-role.dto";
 import { Role } from "./entities/role.entity";
-import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
-import { RequiredPermissions } from "src/permissions/decorators/required-permissions.decorator";
-import { Permissions } from "src/permissions/permissions.enum";
-import { PermissionsGuard } from "src/permissions/guards/permissions.guard";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
+import { Permissions } from "../permissions/permissions.enum";
+import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredRoles } from "./decorators/required-roles.decorator";
 import { RolesGuard } from "./guards/roles.guard";
 

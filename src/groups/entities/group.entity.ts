@@ -1,5 +1,13 @@
-import { User } from "src/users/entities/user.entity";
-import { Column, CreateDateColumn, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { User } from "../../users/entities/user.entity";
+import {
+	Column,
+	CreateDateColumn,
+	Entity,
+	ManyToMany,
+	ManyToOne,
+	PrimaryGeneratedColumn,
+	UpdateDateColumn,
+} from "typeorm";
 
 @Entity()
 export class Group {
@@ -9,10 +17,7 @@ export class Group {
 	@Column()
 	name: string;
 
-	@ManyToOne(
-		(type) => User,
-		(user) => user.ownedGroups
-	)
+	@ManyToOne((type) => User, (user) => user.ownedGroups)
 	owner: User;
 
 	@ManyToMany(

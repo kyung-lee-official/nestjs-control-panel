@@ -4,13 +4,13 @@ import { AuthService } from "./auth.service";
 import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { User } from "src/users/entities/user.entity";
+import { User } from "../users/entities/user.entity";
 import { ConfigModule } from "@nestjs/config";
 import { JwtStrategy } from "./strategies/jwt.strategy";
-import { Role } from "src/roles/entities/role.entity";
+import { Role } from "../roles/entities/role.entity";
 import { GoogleOAuth20Strategy } from "./strategies/google-oauth20.strategy";
-import { Group } from "src/groups/entities/group.entity";
-import { ServerSetting } from "src/server-settings/entities/server-setting.entity";
+import { Group } from "../groups/entities/group.entity";
+import { ServerSetting } from "../server-settings/entities/server-setting.entity";
 
 @Module({
 	imports: [

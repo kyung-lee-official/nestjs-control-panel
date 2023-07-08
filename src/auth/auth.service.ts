@@ -5,27 +5,24 @@ import {
 	InternalServerErrorException,
 	UnauthorizedException,
 } from "@nestjs/common";
-import { CreateUserDto } from "src/users/dto/create-user.dto";
-import { User } from "src/users/entities/user.entity";
+import { CreateUserDto } from "../users/dto/create-user.dto";
+import { User } from "../users/entities/user.entity";
 import { AuthCredentialsDto } from "./dto/auth-credential.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { JwtPayload } from "./jwt-payload.interface";
-import { Role } from "src/roles/entities/role.entity";
-import { Permissions } from "src/permissions/permissions.enum";
-import { REQUEST } from "@nestjs/core";
-import { Group } from "src/groups/entities/group.entity";
-import { ServerSetting } from "src/server-settings/entities/server-setting.entity";
+import { Role } from "../roles/entities/role.entity";
+import { Permissions } from "../permissions/permissions.enum";
+import { Group } from "../groups/entities/group.entity";
+import { ServerSetting } from "../server-settings/entities/server-setting.entity";
 import { MailerService } from "@nestjs-modules/mailer";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
 
 @Injectable()
 export class AuthService {
 	constructor(
-		@Inject(REQUEST)
-		private request: any,
 		@InjectRepository(User)
 		private usersRepository: Repository<User>,
 		@InjectRepository(Role)
@@ -136,6 +133,20 @@ export class AuthService {
 		if (!req.user) {
 			throw new InternalServerErrorException("User not found");
 		} else {
+			const isUserExists = await this.usersRepository.findOne({
+				where: { email: req.user.email },
+			});
+			if (!isUserExists) {
+				const dbEveryoneGroup = await this.groupsRepository.find({
+					where: { name: "everyone" },
+				});
+				const user = this.usersRepository.create({
+					email: req.user.email,
+					nickname: req.user.nickname,
+					groups: dbEveryoneGroup,
+				});
+				await this.usersRepository.save(user);
+			}
 			const payload: JwtPayload = { email: req.user.email };
 			const accessToken: string = this.jwtService.sign(payload);
 			return {

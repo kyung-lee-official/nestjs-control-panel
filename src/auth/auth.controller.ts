@@ -8,12 +8,12 @@ import {
 	UseGuards,
 	UseInterceptors,
 } from "@nestjs/common";
-import { CreateUserDto } from "src/users/dto/create-user.dto";
+import { CreateUserDto } from "../users/dto/create-user.dto";
 import { AuthService } from "./auth.service";
 import { AuthCredentialsDto } from "./dto/auth-credential.dto";
-import { User } from "src/users/entities/user.entity";
+import { User } from "../users/entities/user.entity";
 import { GoogleOAuth20AuthGuard } from "./guards/google-oauth20.guard";
-import { AllowPublicSignUpGuard } from "src/server-settings/guards/allow-public-sign-up.guard";
+import { AllowPublicSignUpGuard } from "../server-settings/guards/allow-public-sign-up.guard";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { AuthGuard } from "@nestjs/passport";
 import { VerifyEmailDto } from "./dto/verify-email.dto";

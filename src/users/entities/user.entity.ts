@@ -1,6 +1,6 @@
 import { Exclude } from "class-transformer";
-import { Group } from "src/groups/entities/group.entity";
-import { Role } from "src/roles/entities/role.entity";
+import { Group } from "../../groups/entities/group.entity";
+import { Role } from "../../roles/entities/role.entity";
 import {
 	Column,
 	CreateDateColumn,

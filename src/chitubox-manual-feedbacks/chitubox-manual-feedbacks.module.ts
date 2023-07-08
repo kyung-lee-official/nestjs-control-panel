@@ -3,7 +3,7 @@ import { ChituboxManualFeedbacksService } from "./chitubox-manual-feedbacks.serv
 import { ChituboxManualFeedbacksController } from "./chitubox-manual-feedbacks.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ChituboxManualFeedback } from "./entities/chitubox-manual-feedback-record.entity";
-import { PermissionsModule } from "src/permissions/permissions.module";
+import { PermissionsModule } from "../permissions/permissions.module";
 import { ConfigModule } from "@nestjs/config";
 
 @Module({

@@ -3,9 +3,7 @@ import {
 	Get,
 	Post,
 	Body,
-	Param,
 	Delete,
-	Ip,
 	UseGuards,
 	Headers,
 	Query,
@@ -13,10 +11,10 @@ import {
 import { ChituboxManualFeedbacksService } from "./chitubox-manual-feedbacks.service";
 import { CreateChituboxManualFeedbackDto } from "./dto/create-chitubox-manual-feedback.dto";
 import { ChituboxManualFeedback } from "./entities/chitubox-manual-feedback-record.entity";
-import { PermissionsGuard } from "src/permissions/guards/permissions.guard";
-import { RequiredPermissions } from "src/permissions/decorators/required-permissions.decorator";
-import { Permissions } from "src/permissions/permissions.enum";
-import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
+import { PermissionsGuard } from "../permissions/guards/permissions.guard";
+import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
+import { Permissions } from "../permissions/permissions.enum";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { Iso8601DateRangeDto } from "./dto/iso8601-date-range.dto";
 
 @Controller("chitubox-manual-feedbacks")

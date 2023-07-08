@@ -1,5 +1,11 @@
-import { DiscordDrawCampaign } from "src/discord-draw-campaigns/entities/discord-draw-campaign.entity";
-import { Column, CreateDateColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { DiscordDrawCampaign } from "../../discord-draw-campaigns/entities/discord-draw-campaign.entity";
+import {
+	Column,
+	CreateDateColumn,
+	ManyToOne,
+	PrimaryGeneratedColumn,
+	UpdateDateColumn,
+} from "typeorm";
 
 export class DiscordDrawRecord {
 	@PrimaryGeneratedColumn()

@@ -19,13 +19,13 @@ import { FindUsersByIdsDto } from "./dto/find-users-by-ids.dto";
 import {
 	Actions,
 	CaslAbilityFactory,
-} from "src/casl/casl-ability.factory/casl-ability.factory";
+} from "../casl/casl-ability.factory/casl-ability.factory";
 import { ForbiddenError } from "@casl/ability";
-import { Group } from "src/groups/entities/group.entity";
-import { Role } from "src/roles/entities/role.entity";
+import { Group } from "../groups/entities/group.entity";
+import { Role } from "../roles/entities/role.entity";
 import { uniq } from "lodash";
 import { UpdateUserGroupsDto } from "./dto/update-user-groups.dto";
-import { AuthService } from "src/auth/auth.service";
+import { AuthService } from "../auth/auth.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class UsersService {
@@ -75,7 +75,11 @@ export class UsersService {
 	 * @param roleIds user's role ids
 	 * @returns user
 	 */
-	async find(email?: string, nickname?: string, roleIds?): Promise<User[]> {
+	async find(
+		email?: string,
+		nickname?: string,
+		roleIds?: any
+	): Promise<User[]> {
 		const requester = this.request.user;
 		const dbRequester = await this.usersRepository.findOne({
 			where: { id: requester.id },

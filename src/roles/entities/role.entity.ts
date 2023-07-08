@@ -1,6 +1,13 @@
-import { Permissions } from "src/permissions/permissions.enum";
-import { User } from "src/users/entities/user.entity";
-import { Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Permissions } from "../../permissions/permissions.enum";
+import { User } from "../../users/entities/user.entity";
+import {
+	Column,
+	CreateDateColumn,
+	Entity,
+	ManyToMany,
+	PrimaryGeneratedColumn,
+	UpdateDateColumn,
+} from "typeorm";
 
 @Entity()
 export class Role {
