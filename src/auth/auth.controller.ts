@@ -27,6 +27,7 @@ export class AuthController {
 		return this.authService.isSeeded();
 	}
 
+	@UseInterceptors(ClassSerializerInterceptor)
 	@Post("/seed")
 	seed(@Body() createUserDto: CreateUserDto): Promise<User> {
 		return this.authService.seed(createUserDto);
