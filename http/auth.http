@@ -37,7 +37,12 @@ Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Test send verification email
-GET {{$dotenv LOCAL_HOST}}/auth/testSendVerificationEmail
+POST {{$dotenv LOCAL_HOST}}/auth/testSendVerificationEmail
+Content-Type: application/json
+
+{
+	"email": "{{$dotenv SMTP_TEST_TO}}"
+}
 
 ### Test verify email
 POST {{$dotenv LOCAL_HOST}}/auth/verifyEmail

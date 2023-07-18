@@ -63,10 +63,13 @@ export class AuthController {
 		return this.authService.googleSignIn(req);
 	}
 
-	@Get("/testSendVerificationEmail")
-	testSendVerificationEmail(): Promise<void> {
-		return this.authService.testSendVerificationEmail();
-	}
+	/**
+	 * For auth.http testing only, should be commented out in production
+	 */
+	// @Post("/testSendVerificationEmail")
+	// testSendVerificationEmail(@Body() emailObj: any): Promise<void> {
+	// 	return this.authService.sendVerificationEmail(emailObj.email);
+	// }
 
 	@Post("/verifyEmail")
 	verifyEmail(

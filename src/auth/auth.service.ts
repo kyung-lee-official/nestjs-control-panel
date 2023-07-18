@@ -81,7 +81,7 @@ export class AuthService {
 		user.groups = [everyoneGroup];
 		user.ownedGroups = [everyoneGroup];
 		await this.usersRepository.save(user);
-		this.sendVerificationEmail(email);
+		await this.sendVerificationEmail(email);
 		return user;
 	}
 
@@ -100,7 +100,7 @@ export class AuthService {
 			groups: dbEveryoneGroup,
 		});
 		await this.usersRepository.save(user);
-		this.sendVerificationEmail(email);
+		await this.sendVerificationEmail(email);
 		return user;
 	}
 
@@ -173,44 +173,9 @@ export class AuthService {
 		`;
 
 		try {
-			this.mailerService.sendMail({
+			await this.mailerService.sendMail({
 				from: `"${process.env.SMTP_USERNAME}" <${process.env.SMTP_USER}>` /* sender address */,
 				to: email /* list of receivers, comma separated */,
-				subject:
-					"Please verify your email address 📧" /* subject line */,
-				text: textTemplate(
-					`${process.env.FRONTEND_HOST}/signup/emailVerification?token=${token}`
-				) /* plain text body */,
-				html: htmlTemplate(
-					`${process.env.FRONTEND_HOST}/signup/emailVerification?token=${token}`
-				) /* html body */,
-			});
-		} catch (error) {
-			console.error(error);
-		}
-	}
-
-	async testSendVerificationEmail() {
-		const payload: JwtPayload = { email: process.env.SMTP_TEST_TO };
-		const token: string = this.jwtService.sign(payload, {
-			secret: process.env.SMTP_EMAIL_VERIFICATION_JWT_SECRET,
-			expiresIn: "1d",
-		});
-		const textTemplate = (url: string) =>
-			`Please verify your email by clicking on the following link ${url}`;
-		const htmlTemplate = (url: string) => `
-			<div style="text-align: center; font-family: sans-serif; border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f5f5f5; max-width: 500px; margin: 0 auto;">
-				<h1>Verify your email 📧</h1>
-				<p>Please verify your email by clicking on the following link:</p>
-				<a href="${url}">👉🏼 Click here</a>
-			</div>
-		`;
-
-		try {
-			this.mailerService.sendMail({
-				from: `"${process.env.SMTP_USERNAME}" <${process.env.SMTP_USER}>` /* sender address */,
-				to: process.env
-					.SMTP_TEST_TO /* list of receivers, comma separated */,
 				subject:
 					"Please verify your email address 📧" /* subject line */,
 				text: textTemplate(

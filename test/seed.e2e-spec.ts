@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { INestApplication } from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import * as request from "supertest";
 import { AppModule } from "./../src/app.module";
 import { Client } from "pg";
@@ -40,6 +40,12 @@ describe("Seed flow (e2e)", () => {
 		}).compile();
 
 		app = moduleFixture.createNestApplication();
+		app.useGlobalPipes(
+			new ValidationPipe({
+				whitelist: true,
+			})
+		);
+		app.enableCors();
 		await app.init();
 	}, 15000);
 
@@ -50,13 +56,30 @@ describe("Seed flow (e2e)", () => {
 			.expect({ isSeeded: false });
 	});
 
+	it("POST /auth/seed simple password should be failed", async () => {
+		return await request(app.getHttpServer())
+			.post("/auth/seed")
+			.send({
+				email: process.env.E2E_TEST_EMAIL,
+				nickname: process.env.E2E_TEST_NICKNAME,
+				password: "1234",
+			})
+			.expect(400)
+			.then((response) => {
+				console.log(response.body);
+				expect(
+					response.body.message.includes("password is too weak")
+				).toBe(true);
+			});
+	});
+
 	it("POST /auth/seed", () => {
 		return request(app.getHttpServer())
 			.post("/auth/seed")
 			.send({
 				email: process.env.E2E_TEST_EMAIL,
 				nickname: process.env.E2E_TEST_NICKNAME,
-				password: process.env.E2E_TEST_PASSWORD,
+				password: "1234Abcd!",
 			})
 			.expect(201)
 			.then((response) => {
@@ -79,12 +102,23 @@ describe("Seed flow (e2e)", () => {
 			.expect({ isSeeded: true });
 	});
 
+	it("POST /auth/seed seed again should be failed", () => {
+		return request(app.getHttpServer())
+			.post("/auth/seed")
+			.send({
+				email: process.env.E2E_TEST_EMAIL,
+				nickname: process.env.E2E_TEST_NICKNAME,
+				password: "1234Abcd!",
+			})
+			.expect(400);
+	}, 15000);
+
 	it("POST /auth/signin", () => {
 		return request(app.getHttpServer())
 			.post("/auth/signin")
 			.send({
 				email: process.env.E2E_TEST_EMAIL,
-				password: process.env.E2E_TEST_PASSWORD,
+				password: "1234Abcd!",
 			})
 			.expect(201)
 			.then((response) => {
