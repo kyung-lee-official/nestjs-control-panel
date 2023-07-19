@@ -16,6 +16,7 @@ import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
 import { Permissions } from "../permissions/permissions.enum";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { IsVerifiedGuard } from "../users/guards/is-verified.guard";
 
 @Controller("server-settings")
 export class ServerSettingsController {
@@ -42,6 +43,7 @@ export class ServerSettingsController {
 	@UseGuards(PermissionsGuard)
 	@UseGuards(JwtAuthGuard)
 	@RequiredPermissions(Permissions.GET_SERVER_SETTING)
+	@UseGuards(IsVerifiedGuard)
 	@Get()
 	findAll(): Promise<ServerSetting> {
 		return this.serverSettingsService.findAll();
@@ -55,6 +57,7 @@ export class ServerSettingsController {
 	@UseGuards(PermissionsGuard)
 	@UseGuards(JwtAuthGuard)
 	@RequiredPermissions(Permissions.UPDATE_SERVER_SETTING)
+	@UseGuards(IsVerifiedGuard)
 	@Patch()
 	update(@Body() updateServerSettingDto: UpdateServerSettingDto) {
 		return this.serverSettingsService.update(updateServerSettingDto);

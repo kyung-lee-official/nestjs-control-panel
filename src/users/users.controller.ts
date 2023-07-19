@@ -25,6 +25,7 @@ import { UpdateUserPasswordDto } from "./dto/update-user-password.dto";
 import { FindUsersByIdsDto } from "./dto/find-users-by-ids.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserGroupsDto } from "./dto/update-user-groups.dto";
+import { IsVerifiedGuard } from "./guards/is-verified.guard";
 
 @UseGuards(JwtAuthGuard)
 @Controller("users")
@@ -34,6 +35,7 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.CREATE_USER)
+	@UseGuards(IsVerifiedGuard)
 	@Post("/create")
 	create(@Body() createUserDto: CreateUserDto): Promise<User> {
 		return this.usersService.create(createUserDto);
@@ -42,6 +44,7 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_USERS)
+	@UseGuards(IsVerifiedGuard)
 	@Get()
 	find(
 		@Query("email") email?: string,
@@ -55,6 +58,7 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_USERS)
+	@UseGuards(IsVerifiedGuard)
 	@Get("ids")
 	findUsersByIds(
 		@Body() findUsersByIdsDto: FindUsersByIdsDto
@@ -65,6 +69,7 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_ME)
+	@UseGuards(IsVerifiedGuard)
 	@Get("/me")
 	findMe(): Promise<User> {
 		return this.usersService.findMe();
@@ -73,6 +78,7 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_USERS, Permissions.GET_ME)
+	@UseGuards(IsVerifiedGuard)
 	@Get("/:id")
 	findOne(@Param("id") id: string): Promise<User> {
 		return this.usersService.findOne(id);
@@ -81,6 +87,7 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_USER, Permissions.UPDATE_ME)
+	@UseGuards(IsVerifiedGuard)
 	@Patch("/profile/:id")
 	update(
 		@Param("id") id: string,
@@ -92,6 +99,7 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_USER, Permissions.UPDATE_ME)
+	@UseGuards(IsVerifiedGuard)
 	@Patch("/email/:id")
 	updateUserEmail(
 		@Param("id") id: string,
@@ -103,6 +111,7 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_USER)
+	@UseGuards(IsVerifiedGuard)
 	@Patch("/roles/:id")
 	updateUserRoles(
 		@Param("id") id: string,
@@ -114,6 +123,7 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_USER)
+	@UseGuards(IsVerifiedGuard)
 	@Patch("/roles/:id")
 	updateUserGroups(
 		@Param("id") id: string,
@@ -125,6 +135,7 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_USER, Permissions.UPDATE_ME)
+	@UseGuards(IsVerifiedGuard)
 	@Patch("/password/:id")
 	updateUserPassword(
 		@Param("id") id: string,
@@ -136,6 +147,7 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.TRANSFER_ADMIN)
+	@UseGuards(IsVerifiedGuard)
 	@Patch("/transferAdmin/:id")
 	transferAdmim(@Param("id") id: string): Promise<User> {
 		return this.usersService.transferAdmim(id);
@@ -143,6 +155,7 @@ export class UsersController {
 
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.DELETE_USER)
+	@UseGuards(IsVerifiedGuard)
 	@Delete("/:id")
 	remove(@Param("id") id: string) {
 		return this.usersService.remove(id);

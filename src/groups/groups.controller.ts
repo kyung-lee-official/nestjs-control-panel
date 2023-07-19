@@ -18,6 +18,7 @@ import { GroupIdPipe } from "./pipes/group-id.pipe";
 import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
 import { Permissions } from "../permissions/permissions.enum";
+import { IsVerifiedGuard } from "src/users/guards/is-verified.guard";
 
 @UseGuards(JwtAuthGuard)
 @Controller("groups")
@@ -26,6 +27,7 @@ export class GroupsController {
 
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.CREATE_GROUP)
+	@UseGuards(IsVerifiedGuard)
 	@Post()
 	create(@Body() createGroupDto: CreateGroupDto) {
 		return this.groupsService.create(createGroupDto);
@@ -34,6 +36,7 @@ export class GroupsController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_GROUPS)
+	@UseGuards(IsVerifiedGuard)
 	@Get()
 	findAll() {
 		return this.groupsService.findAll();
@@ -42,6 +45,7 @@ export class GroupsController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_GROUPS)
+	@UseGuards(IsVerifiedGuard)
 	@Get(":id")
 	findOne(@Param("id", GroupIdPipe) id: string) {
 		return this.groupsService.findOne(+id);
@@ -50,6 +54,7 @@ export class GroupsController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_GROUP)
+	@UseGuards(IsVerifiedGuard)
 	@Patch(":id")
 	update(
 		@Param("id", GroupIdPipe) id: string,
@@ -60,6 +65,7 @@ export class GroupsController {
 
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.DELETE_GROUP)
+	@UseGuards(IsVerifiedGuard)
 	@Delete(":id")
 	remove(@Param("id", GroupIdPipe) id: string) {
 		return this.groupsService.remove(+id);

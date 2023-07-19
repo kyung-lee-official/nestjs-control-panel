@@ -21,6 +21,7 @@ import { Permissions } from "../permissions/permissions.enum";
 import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredRoles } from "./decorators/required-roles.decorator";
 import { RolesGuard } from "./guards/roles.guard";
+import { IsVerifiedGuard } from "src/users/guards/is-verified.guard";
 
 @UseGuards(JwtAuthGuard)
 @Controller("roles")
@@ -29,6 +30,7 @@ export class RolesController {
 
 	@UseGuards(RolesGuard)
 	@RequiredRoles("admin")
+	@UseGuards(IsVerifiedGuard)
 	@Get("/updateAdminPermissions")
 	updateAdminPermissions(): Promise<Role> {
 		return this.rolesService.updateAdminPermissions();
@@ -36,6 +38,7 @@ export class RolesController {
 
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.CREATE_ROLE)
+	@UseGuards(IsVerifiedGuard)
 	@Post()
 	create(@Body() createRoleDto: CreateRoleDto) {
 		return this.rolesService.create(createRoleDto);
@@ -44,6 +47,7 @@ export class RolesController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_ROLES)
+	@UseGuards(IsVerifiedGuard)
 	@Get()
 	find(roleIds?: number[]): Promise<Role[]> {
 		return this.rolesService.find(roleIds);
@@ -52,6 +56,7 @@ export class RolesController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_ROLES)
+	@UseGuards(IsVerifiedGuard)
 	@Get(":id")
 	findOne(@Param("id") id: string) {
 		return this.rolesService.findOne(+id);
@@ -60,6 +65,7 @@ export class RolesController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_ROLE)
+	@UseGuards(IsVerifiedGuard)
 	@Patch(":id")
 	updateRoleById(
 		@Param("id") id: string,
@@ -70,6 +76,7 @@ export class RolesController {
 
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.DELETE_ROLE)
+	@UseGuards(IsVerifiedGuard)
 	@Delete(":id")
 	remove(@Param("id", new ParseIntPipe()) id: number) {
 		return this.rolesService.remove(id);

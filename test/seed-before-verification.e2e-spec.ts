@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import * as request from "supertest";
-import { AppModule } from "./../src/app.module";
+import { AppModule } from "../src/app.module";
 import { Client } from "pg";
 
 if (process.env.ENV === "DEV") {
@@ -47,7 +47,7 @@ describe("Seed flow (e2e)", () => {
 		);
 		app.enableCors();
 		await app.init();
-	}, 15000);
+	}, 30000);
 
 	it("GET /auth/isSeeded should be false", () => {
 		return request(app.getHttpServer())
@@ -66,7 +66,6 @@ describe("Seed flow (e2e)", () => {
 			})
 			.expect(400)
 			.then((response) => {
-				console.log(response.body);
 				expect(
 					response.body.message.includes("password is too weak")
 				).toBe(true);
@@ -93,7 +92,7 @@ describe("Seed flow (e2e)", () => {
 				expect(response.body.roles[0].name).toBe("admin");
 				expect(response.body.isVerified).toBe(null);
 			});
-	}, 15000);
+	}, 30000);
 
 	it("GET /auth/isSeeded should be true", () => {
 		return request(app.getHttpServer())
@@ -111,7 +110,7 @@ describe("Seed flow (e2e)", () => {
 				password: "1234Abcd!",
 			})
 			.expect(400);
-	}, 15000);
+	}, 30000);
 
 	it("POST /auth/signin", () => {
 		return request(app.getHttpServer())
@@ -124,25 +123,17 @@ describe("Seed flow (e2e)", () => {
 			.then((response) => {
 				accessToken = response.body.accessToken;
 			});
-	}, 15000);
+	}, 30000);
 
-	it("GET /users/me", () => {
+	it("GET /users/me should be failed for unverified", () => {
 		return request(app.getHttpServer())
 			.get("/users/me")
 			.set("Authorization", `Bearer ${accessToken}`)
-			.expect(200)
+			.expect(403)
 			.then((response) => {
-				expect(response.body.email).toBe(process.env.E2E_TEST_EMAIL);
-				expect(response.body.password).toBe(undefined);
-				expect(response.body.nickname).toBe(
-					process.env.E2E_TEST_NICKNAME
-				);
-				expect(response.body.groups[0].name).toBe("everyone");
-				expect(response.body.ownedGroups[0].name).toBe("everyone");
-				expect(response.body.roles[0].name).toBe("admin");
-				expect(response.body.isVerified).toBe(null);
+				expect(response.body.message).toBe("User is not verified");
 			});
-	}, 15000);
+	}, 30000);
 
 	it("Contains at least one test", () => {
 		expect(true).toBe(true);

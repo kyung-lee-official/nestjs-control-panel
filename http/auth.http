@@ -8,7 +8,7 @@ Content-Type: application/json
 {
 	"email": "kyung@cbd-3d.com",
 	"nickname": "Kyung",
-	"password": "hdkmQ@m98M83"
+	"password": "1234Abcd!"
 }
 
 ### Sign up
@@ -19,7 +19,7 @@ Authorization: {{$dotenv AUTHORIZATION}}
 {
 	"email": "kyung.lee@qq.com",
 	"nickname": "Lee",
-	"password": "hdkmQ@m98M83"
+	"password": "1234Abcd!"
 }
 
 ### Sign in
@@ -27,8 +27,8 @@ POST {{$dotenv LOCAL_HOST}}/auth/signin
 Content-Type: application/json
 
 {
-	"email": "kyung.lee.official@gmail.com",
-	"password": "hdkmQ@m98M83"
+	"email": "kyung.lee@qq.com",
+	"password": "1234Abcd!"
 }
 
 ### Check is signed in

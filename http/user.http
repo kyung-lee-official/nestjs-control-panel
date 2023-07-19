@@ -6,7 +6,7 @@ Authorization: {{$dotenv AUTHORIZATION}}
 {
 	"email": "qwer@cbd-3d.com",
 	"nickname": "Qwer",
-	"password": "hdkmQ@m98M83"
+	"password": "1234Abcd!"
 }
 
 ### Find users
@@ -67,8 +67,8 @@ PATCH {{$dotenv LOCAL_HOST}}/users/password/8b9136f6-902d-4799-b5c2-5f6caebac8b6
 Content-Type: application/x-www-form-urlencoded
 Authorization: {{$dotenv AUTHORIZATION}}
 
-oldPassword=hdkmQ@m98M83
-&newPassword=hdkmQ@m98M83
+oldPassword=1234Abcd!
+&newPassword=1234Abcd!
 
 ### Delete a user
 DELETE {{$dotenv LOCAL_HOST}}/users/da46993e-ca6e-4ed4-94d7-29380e9f71bc
