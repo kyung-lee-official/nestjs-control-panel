@@ -44,6 +44,14 @@ Content-Type: application/json
 	"email": "{{$dotenv SMTP_TEST_TO}}"
 }
 
+### Test send initial password email
+POST {{$dotenv LOCAL_HOST}}/auth/testSendInitialPasswordEmail
+Content-Type: application/json
+
+{
+	"email": "{{$dotenv SMTP_TEST_TO}}"
+}
+
 ### Test verify email
 POST {{$dotenv LOCAL_HOST}}/auth/verifyEmail
 Content-Type: application/json

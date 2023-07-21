@@ -81,6 +81,17 @@ export class AuthController {
 	// 	return this.authService.sendVerificationEmail(emailObj.email);
 	// }
 
+	/**
+	 * For auth.http testing only, should be commented out in production
+	 */
+	// @Post("/testSendInitialPasswordEmail")
+	// testSendInitialPasswordEmail(@Body() emailObj: any): Promise<void> {
+	// 	return this.authService.sendInitialPasswordEmail(
+	// 		emailObj.email,
+	// 		"123456"
+	// 	);
+	// }
+
 	@Post("/verifyEmail")
 	verifyEmail(
 		@Body() verifyEmailDto: VerifyEmailDto
