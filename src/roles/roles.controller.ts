@@ -21,7 +21,7 @@ import { Permissions } from "../permissions/permissions.enum";
 import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredRoles } from "./decorators/required-roles.decorator";
 import { RolesGuard } from "./guards/roles.guard";
-import { IsVerifiedGuard } from "src/users/guards/is-verified.guard";
+import { IsVerifiedGuard } from "../users/guards/is-verified.guard";
 
 @UseGuards(JwtAuthGuard)
 @Controller("roles")

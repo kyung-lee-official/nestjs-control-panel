@@ -18,7 +18,7 @@ import { GroupIdPipe } from "./pipes/group-id.pipe";
 import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
 import { Permissions } from "../permissions/permissions.enum";
-import { IsVerifiedGuard } from "src/users/guards/is-verified.guard";
+import { IsVerifiedGuard } from "../users/guards/is-verified.guard";
 
 @UseGuards(JwtAuthGuard)
 @Controller("groups")

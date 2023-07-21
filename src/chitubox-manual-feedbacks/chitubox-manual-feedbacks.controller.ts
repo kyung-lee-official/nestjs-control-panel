@@ -16,7 +16,7 @@ import { RequiredPermissions } from "../permissions/decorators/required-permissi
 import { Permissions } from "../permissions/permissions.enum";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { Iso8601DateRangeDto } from "./dto/iso8601-date-range.dto";
-import { IsVerifiedGuard } from "src/users/guards/is-verified.guard";
+import { IsVerifiedGuard } from "../users/guards/is-verified.guard";
 
 @Controller("chitubox-manual-feedbacks")
 export class ChituboxManualFeedbacksController {

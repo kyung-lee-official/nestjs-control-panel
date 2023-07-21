@@ -6,7 +6,7 @@ import { AppModule } from "../src/app.module";
 if (process.env.ENV === "DEV") {
 	console.log("✅ Running in DEV mode");
 	console.log(
-		"📩 Make sure to verify the user from the email before starting this test"
+		"❕Make sure to verify the user from the email before starting this test"
 	);
 } else {
 	console.error(
@@ -34,8 +34,8 @@ describe("Seed flow (e2e)", () => {
 		await app.init();
 	}, 15000);
 
-	it("POST /auth/signin", () => {
-		return request(app.getHttpServer())
+	it("POST /auth/signin", async () => {
+		return await request(app.getHttpServer())
 			.post("/auth/signin")
 			.send({
 				email: process.env.E2E_TEST_EMAIL,
@@ -47,8 +47,8 @@ describe("Seed flow (e2e)", () => {
 			});
 	}, 15000);
 
-	it("GET /users/me", () => {
-		return request(app.getHttpServer())
+	it("GET /users/me user should be verified", async () => {
+		return await request(app.getHttpServer())
 			.get("/users/me")
 			.set("Authorization", `Bearer ${accessToken}`)
 			.expect(200)
@@ -62,6 +62,17 @@ describe("Seed flow (e2e)", () => {
 				expect(response.body.ownedGroups[0].name).toBe("everyone");
 				expect(response.body.roles[0].name).toBe("admin");
 				expect(response.body.isVerified).toBe(true);
+			});
+	}, 15000);
+
+	it("GET /roles should return 'admin' and 'common' given the user is already verified", async () => {
+		return await request(app.getHttpServer())
+			.get("/roles")
+			.set("Authorization", `Bearer ${accessToken}`)
+			.expect(200)
+			.then((response) => {
+				expect(response.body[0].name).toBe("admin");
+				expect(response.body[1].name).toBe("common");
 			});
 	}, 15000);
 

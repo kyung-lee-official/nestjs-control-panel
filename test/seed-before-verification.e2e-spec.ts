@@ -112,6 +112,16 @@ describe("Seed flow (e2e)", () => {
 			.expect(400);
 	}, 30000);
 
+	it("POST /auth/signin sign in with wrong password", () => {
+		return request(app.getHttpServer())
+			.post("/auth/signin")
+			.send({
+				email: process.env.E2E_TEST_EMAIL,
+				password: "4321Abcd!",
+			})
+			.expect(401);
+	}, 30000);
+
 	it("POST /auth/signin", () => {
 		return request(app.getHttpServer())
 			.post("/auth/signin")
@@ -125,15 +135,20 @@ describe("Seed flow (e2e)", () => {
 			});
 	}, 30000);
 
-	it("GET /users/me should be failed for unverified", () => {
+	it("GET /auth/isSignedIn should be true", () => {
 		return request(app.getHttpServer())
-			.get("/users/me")
+			.get("/auth/isSignedIn")
 			.set("Authorization", `Bearer ${accessToken}`)
-			.expect(403)
-			.then((response) => {
-				expect(response.body.message).toBe("User is not verified");
-			});
-	}, 30000);
+			.expect(200)
+			.expect({ isSignedIn: true });
+	});
+
+	it("GET /roles should be false given the user is not verified yet", () => {
+		return request(app.getHttpServer())
+			.get("/roles")
+			.set("Authorization", `Bearer ${accessToken}`)
+			.expect(403);
+	});
 
 	it("Contains at least one test", () => {
 		expect(true).toBe(true);

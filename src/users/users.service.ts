@@ -341,7 +341,10 @@ export class UsersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester.id
 		);
-		const user = await this.usersRepository.findOne({ where: { id: id } });
+		const user = await this.usersRepository.findOne({
+			where: { id: id },
+			relations: ["groups"],
+		});
 		if (!user) {
 			throw new NotFoundException("User not found");
 		}

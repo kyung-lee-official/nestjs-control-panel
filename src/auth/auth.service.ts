@@ -19,6 +19,7 @@ import { Group } from "../groups/entities/group.entity";
 import { ServerSetting } from "../server-settings/entities/server-setting.entity";
 import { MailerService } from "@nestjs-modules/mailer";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
+import { generatePassword } from "../utils/algorithms";
 
 @Injectable()
 export class AuthService {
@@ -59,9 +60,13 @@ export class AuthService {
 		if (users.length > 0) {
 			throw new BadRequestException("Server already seeded");
 		}
-		let role = this.rolesRepository.create({ name: "admin" });
-		role.permissions = Object.values(Permissions); /* Full permissions */
-		role = await this.rolesRepository.save(role);
+		let adminRole = this.rolesRepository.create({ name: "admin" });
+		adminRole.permissions =
+			Object.values(Permissions); /* Full permissions */
+		adminRole = await this.rolesRepository.save(adminRole);
+		let commonRole = this.rolesRepository.create({ name: "common" });
+		commonRole.permissions = [Permissions.GET_ME];
+		commonRole = await this.rolesRepository.save(commonRole);
 		let everyoneGroup = this.groupsRepository.create({ name: "everyone" });
 		everyoneGroup = await this.groupsRepository.save(everyoneGroup);
 		let { email, password, nickname } = createUserDto;
@@ -77,7 +82,7 @@ export class AuthService {
 			nickname,
 			groups: dbEveryoneGroup,
 		});
-		user.roles = [role];
+		user.roles = [adminRole];
 		user.groups = [everyoneGroup];
 		user.ownedGroups = [everyoneGroup];
 		await this.usersRepository.save(user);
@@ -133,25 +138,46 @@ export class AuthService {
 		if (!req.user) {
 			throw new InternalServerErrorException("User not found");
 		} else {
+			const googleAccessToken = req.user.accessToken;
+			const email = req.user.email.toLowerCase();
 			const isUserExists = await this.usersRepository.findOne({
-				where: { email: req.user.email },
+				where: { email: email },
 			});
 			if (!isUserExists) {
+				const password = generatePassword();
+				const salt = await bcrypt.genSalt();
+				const hashedPassword = await bcrypt.hash(password, salt);
 				const dbEveryoneGroup = await this.groupsRepository.find({
 					where: { name: "everyone" },
 				});
+				const dbCommonRole = await this.rolesRepository.find({
+					where: { name: "common" },
+				});
 				const user = this.usersRepository.create({
-					email: req.user.email,
-					nickname: req.user.nickname,
+					email: email,
+					nickname: req.user.givenName + " " + req.user.familyName,
 					groups: dbEveryoneGroup,
+					roles: dbCommonRole,
+					password: hashedPassword,
+					isVerified: true,
 				});
 				await this.usersRepository.save(user);
+				const payload: JwtPayload = { email: email };
+				const accessToken: string = this.jwtService.sign(payload);
+				this.sendInitialPasswordEmail(email, password);
+				return {
+					password,
+					accessToken,
+					googleAccessToken,
+				};
+			} else {
+				const payload: JwtPayload = { email: email };
+				const accessToken: string = this.jwtService.sign(payload);
+				return {
+					accessToken,
+					googleAccessToken,
+				};
 			}
-			const payload: JwtPayload = { email: req.user.email };
-			const accessToken: string = this.jwtService.sign(payload);
-			return {
-				accessToken,
-			};
 		}
 	}
 
@@ -206,5 +232,24 @@ export class AuthService {
 		user.isVerified = true;
 		await this.usersRepository.save(user);
 		return { isVerified: true };
+	}
+
+	async sendInitialPasswordEmail(email: string, password: string) {
+		try {
+			await this.mailerService.sendMail({
+				from: `"${process.env.SMTP_USERNAME}" <${process.env.SMTP_USER}>` /* sender address */,
+				to: email /* list of receivers, comma separated */,
+				subject: "Your initial password 🗝️" /* subject line */,
+				/* plain text body */
+				text: `Hi, this is your initial password: ${password}`,
+				/* html body */
+				html: `<div style="text-align: center; font-family: sans-serif; border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f5f5f5; max-width: 500px; margin: 0 auto;">
+					<h1>Hi, this is your initial password: 🗝️</h1>
+					<p>${password}</p>
+				</div>`,
+			});
+		} catch (error) {
+			console.error(error);
+		}
 	}
 }

@@ -69,7 +69,6 @@ export class UsersController {
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_ME)
-	@UseGuards(IsVerifiedGuard)
 	@Get("/me")
 	findMe(): Promise<User> {
 		return this.usersService.findMe();

@@ -5,6 +5,7 @@ import {
 	Get,
 	Post,
 	Req,
+	Res,
 	UseGuards,
 	UseInterceptors,
 } from "@nestjs/common";
@@ -59,8 +60,17 @@ export class AuthController {
 
 	@Get("/google/redirect")
 	@UseGuards(GoogleOAuth20AuthGuard)
-	googleAuthRedirect(@Req() req: any) {
-		return this.authService.googleSignIn(req);
+	async googleAuthRedirect(@Req() req: any, @Res() res: any) {
+		const googleOauth2Info = await this.authService.googleSignIn(req);
+		if (googleOauth2Info.password) {
+			return res.redirect(
+				`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewUser=true`
+			);
+		} else {
+			return res.redirect(
+				`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewUser=false`
+			);
+		}
 	}
 
 	/**

@@ -5,7 +5,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { ChituboxManualFeedback } from "./entities/chitubox-manual-feedback-record.entity";
 import { PermissionsModule } from "../permissions/permissions.module";
 import { ConfigModule } from "@nestjs/config";
-import { User } from "src/users/entities/user.entity";
+import { User } from "../users/entities/user.entity";
 
 @Module({
 	imports: [
