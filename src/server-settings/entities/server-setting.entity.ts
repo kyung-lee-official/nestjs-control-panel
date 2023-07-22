@@ -9,5 +9,5 @@ export class ServerSetting {
 	allowPublicSignUp: boolean;
 
 	@Column()
-	allowGoogleSignUp: boolean;
+	allowGoogleSignIn: boolean;
 }

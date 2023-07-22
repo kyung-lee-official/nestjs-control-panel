@@ -64,6 +64,7 @@ describe("Drop database (e2e)", () => {
 		expect(res.rows).toContainEqual({ table_name: "user" });
 		expect(res.rows).toContainEqual({ table_name: "user_groups_group" });
 		expect(res.rows).toContainEqual({ table_name: "user_roles_role" });
+		await dbClient.end();
 	}, 30000);
 
 	it("All tables should be empty", async () => {
@@ -83,5 +84,6 @@ describe("Drop database (e2e)", () => {
 			const res = await dbClient.query(`SELECT * FROM "${tableName}"`);
 			expect(res.rows.length).toBe(0);
 		}
+		await dbClient.end();
 	}, 30000);
 });

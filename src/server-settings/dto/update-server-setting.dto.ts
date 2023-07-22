@@ -7,5 +7,5 @@ export class UpdateServerSettingDto extends PartialType(CreateServerSettingDto) 
 	allowPublicSignUp: boolean;
 
 	@IsBoolean()
-	allowGoogleSignUp: boolean;
+	allowGoogleSignIn: boolean;
 }

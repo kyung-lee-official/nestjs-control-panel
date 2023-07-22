@@ -1,5 +1,6 @@
 import {
 	BadRequestException,
+	ForbiddenException,
 	Inject,
 	Injectable,
 	InternalServerErrorException,
@@ -48,43 +49,43 @@ export class AuthService {
 	}
 
 	async seed(createUserDto: CreateUserDto): Promise<User> {
-		const serverSettings = this.settingsRepository.create({
-			allowPublicSignUp: false,
-			allowGoogleSignUp: false,
-		});
-		await this.settingsRepository.save(serverSettings);
-
 		const userQb = this.usersRepository.createQueryBuilder("user");
 		userQb.limit(3);
 		const users = await userQb.getMany();
 		if (users.length > 0) {
 			throw new BadRequestException("Server already seeded");
 		}
-		let adminRole = this.rolesRepository.create({ name: "admin" });
+		const serverSettings = this.settingsRepository.create({
+			allowPublicSignUp: false,
+			allowGoogleSignIn: false,
+		});
+		await this.settingsRepository.save(serverSettings);
+		const adminRole = this.rolesRepository.create({ name: "admin" });
 		adminRole.permissions =
 			Object.values(Permissions); /* Full permissions */
-		adminRole = await this.rolesRepository.save(adminRole);
+		await this.rolesRepository.save(adminRole);
 		let commonRole = this.rolesRepository.create({ name: "common" });
 		commonRole.permissions = [Permissions.GET_ME];
 		commonRole = await this.rolesRepository.save(commonRole);
-		let everyoneGroup = this.groupsRepository.create({ name: "everyone" });
-		everyoneGroup = await this.groupsRepository.save(everyoneGroup);
+		const everyoneGroup = this.groupsRepository.create({
+			name: "everyone",
+		});
+		await this.groupsRepository.save(everyoneGroup);
 		let { email, password, nickname } = createUserDto;
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
-		const dbEveryoneGroup = await this.groupsRepository.find({
+		const dbEveryoneGroup = await this.groupsRepository.findOne({
 			where: { name: "everyone" },
 		});
 		const user = this.usersRepository.create({
 			email,
 			password: hashedPassword,
 			nickname,
-			groups: dbEveryoneGroup,
+			roles: [adminRole],
+			groups: [dbEveryoneGroup],
+			ownedGroups: [dbEveryoneGroup],
 		});
-		user.roles = [adminRole];
-		user.groups = [everyoneGroup];
-		user.ownedGroups = [everyoneGroup];
 		await this.usersRepository.save(user);
 		await this.sendVerificationEmail(email);
 		return user;
@@ -134,31 +135,111 @@ export class AuthService {
 		return { isSignedIn: true };
 	}
 
-	async googleSignIn(req: any) {
+	async googleSignIn(req: any): Promise<{
+		isSeedUser: boolean;
+		isNewUser: boolean;
+		accessToken: string;
+		googleAccessToken: string;
+	}> {
 		if (!req.user) {
 			throw new InternalServerErrorException("User not found");
 		} else {
-			const googleAccessToken = req.user.accessToken;
-			const email = req.user.email.toLowerCase();
-			const isUserExists = await this.usersRepository.findOne({
-				where: { email: email },
-			});
-			if (!isUserExists) {
+			const userQb = this.usersRepository.createQueryBuilder("user");
+			userQb.limit(3);
+			const users = await userQb.getMany();
+			if (users.length > 0) {
+				/* Server already seeded */
+				const serverSettings = await this.settingsRepository.find();
+				const isGoogleSignInAllowed =
+					serverSettings[0].allowGoogleSignIn;
+				if (!isGoogleSignInAllowed) {
+					throw new ForbiddenException(
+						"Google sign in is not allowed"
+					);
+				}
+				const googleAccessToken = req.user.accessToken;
+				const email = req.user.email.toLowerCase();
+				const isUserExists = await this.usersRepository.findOne({
+					where: { email: email },
+				});
+				if (!isUserExists) {
+					const password = generatePassword();
+					const salt = await bcrypt.genSalt();
+					const hashedPassword = await bcrypt.hash(password, salt);
+					const dbEveryoneGroup = await this.groupsRepository.findOne(
+						{
+							where: { name: "everyone" },
+						}
+					);
+					const dbCommonRole = await this.rolesRepository.findOne({
+						where: { name: "common" },
+					});
+					const user = this.usersRepository.create({
+						email: email,
+						password: hashedPassword,
+						nickname:
+							req.user.givenName + " " + req.user.familyName,
+						roles: [dbCommonRole],
+						groups: [dbEveryoneGroup],
+						isVerified: true,
+					});
+					await this.usersRepository.save(user);
+					const payload: JwtPayload = { email: email };
+					const accessToken: string = this.jwtService.sign(payload);
+					this.sendInitialPasswordEmail(email, password);
+					return {
+						isSeedUser: false,
+						isNewUser: true,
+						accessToken,
+						googleAccessToken,
+					};
+				} else {
+					const payload: JwtPayload = { email: email };
+					const accessToken: string = this.jwtService.sign(payload);
+					return {
+						isSeedUser: false,
+						isNewUser: false,
+						accessToken,
+						googleAccessToken,
+					};
+				}
+			} else {
+				/* Server not seeded */
+				const serverSettings = this.settingsRepository.create({
+					allowPublicSignUp: false,
+					allowGoogleSignIn: false,
+				});
+				await this.settingsRepository.save(serverSettings);
+				const adminRole = this.rolesRepository.create({
+					name: "admin",
+				});
+				adminRole.permissions =
+					Object.values(Permissions); /* Full permissions */
+				await this.rolesRepository.save(adminRole);
+				const commonRole = this.rolesRepository.create({
+					name: "common",
+				});
+				commonRole.permissions = [Permissions.GET_ME];
+				await this.rolesRepository.save(commonRole);
+				const everyoneGroup = this.groupsRepository.create({
+					name: "everyone",
+				});
+				await this.groupsRepository.save(everyoneGroup);
+				const googleAccessToken = req.user.accessToken;
+				const email = req.user.email.toLowerCase();
 				const password = generatePassword();
 				const salt = await bcrypt.genSalt();
 				const hashedPassword = await bcrypt.hash(password, salt);
-				const dbEveryoneGroup = await this.groupsRepository.find({
+				const dbEveryoneGroup = await this.groupsRepository.findOne({
 					where: { name: "everyone" },
 				});
-				const dbCommonRole = await this.rolesRepository.find({
-					where: { name: "common" },
-				});
 				const user = this.usersRepository.create({
-					email: email,
-					nickname: req.user.givenName + " " + req.user.familyName,
-					groups: dbEveryoneGroup,
-					roles: dbCommonRole,
+					email,
 					password: hashedPassword,
+					nickname: req.user.givenName + " " + req.user.familyName,
+					roles: [adminRole],
+					groups: [dbEveryoneGroup],
+					ownedGroups: [dbEveryoneGroup],
 					isVerified: true,
 				});
 				await this.usersRepository.save(user);
@@ -166,14 +247,8 @@ export class AuthService {
 				const accessToken: string = this.jwtService.sign(payload);
 				this.sendInitialPasswordEmail(email, password);
 				return {
-					password,
-					accessToken,
-					googleAccessToken,
-				};
-			} else {
-				const payload: JwtPayload = { email: email };
-				const accessToken: string = this.jwtService.sign(payload);
-				return {
+					isSeedUser: true,
+					isNewUser: true,
 					accessToken,
 					googleAccessToken,
 				};

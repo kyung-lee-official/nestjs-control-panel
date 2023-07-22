@@ -37,9 +37,9 @@ export class ChituboxManualFeedbacksController {
 	}
 
 	@UseGuards(PermissionsGuard)
+	@UseGuards(IsVerifiedGuard)
 	@UseGuards(JwtAuthGuard)
 	@RequiredPermissions(Permissions.FIND_CHITUBOX_MANUAL_FEEDBACKS)
-	@UseGuards(IsVerifiedGuard)
 	@Get()
 	find(
 		@Query()

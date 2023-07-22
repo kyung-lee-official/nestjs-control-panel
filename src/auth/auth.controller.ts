@@ -62,13 +62,19 @@ export class AuthController {
 	@UseGuards(GoogleOAuth20AuthGuard)
 	async googleAuthRedirect(@Req() req: any, @Res() res: any) {
 		const googleOauth2Info = await this.authService.googleSignIn(req);
-		if (googleOauth2Info.password) {
-			return res.redirect(
-				`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewUser=true`
-			);
+		if (googleOauth2Info.isNewUser) {
+			if (googleOauth2Info.isSeedUser) {
+				return res.redirect(
+					`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewUser=true&isSeedUser=true`
+				);
+			} else {
+				return res.redirect(
+					`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewUser=true&isSeedUser=false`
+				);
+			}
 		} else {
 			return res.redirect(
-				`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewUser=false`
+				`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewUser=false&isSeedUser=false`
 			);
 		}
 	}

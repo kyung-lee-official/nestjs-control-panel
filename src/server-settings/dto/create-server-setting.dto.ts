@@ -5,5 +5,5 @@ export class CreateServerSettingDto {
 	allowPublicSignUp: boolean;
 
 	@IsBoolean()
-	allowGoogleSignUp: boolean;
+	allowGoogleSignIn: boolean;
 }

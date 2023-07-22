@@ -6,7 +6,7 @@ Authorization: {{$dotenv AUTHORIZATION}}
 
 {
 	"allowPublicSignUp": true,
-	"allowGoogleSignUp": true
+	"allowGoogleSignIn": true
 }
 
 ### Check is sign up available
@@ -24,5 +24,5 @@ Authorization: {{$dotenv AUTHORIZATION}}
 
 {
 	"allowPublicSignUp": true,
-	"allowGoogleSignUp": false
+	"allowGoogleSignIn": false
 }

@@ -40,10 +40,15 @@ export class ServerSettingsController {
 		return this.serverSettingsService.isSignUpAvailable();
 	}
 
+	@Get("/isGoogleSignInAvailable")
+	isGoogleSignInAvailable(): Promise<{ isGoogleSignInAvailable: boolean }> {
+		return this.serverSettingsService.isGoogleSignInAvailable();
+	}
+
 	@UseGuards(PermissionsGuard)
+	@UseGuards(IsVerifiedGuard)
 	@UseGuards(JwtAuthGuard)
 	@RequiredPermissions(Permissions.GET_SERVER_SETTING)
-	@UseGuards(IsVerifiedGuard)
 	@Get()
 	findAll(): Promise<ServerSetting> {
 		return this.serverSettingsService.findAll();
@@ -55,9 +60,9 @@ export class ServerSettingsController {
 	// }
 
 	@UseGuards(PermissionsGuard)
+	@UseGuards(IsVerifiedGuard)
 	@UseGuards(JwtAuthGuard)
 	@RequiredPermissions(Permissions.UPDATE_SERVER_SETTING)
-	@UseGuards(IsVerifiedGuard)
 	@Patch()
 	update(@Body() updateServerSettingDto: UpdateServerSettingDto) {
 		return this.serverSettingsService.update(updateServerSettingDto);
