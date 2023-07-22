@@ -79,13 +79,11 @@ export class AuthController {
 		}
 	}
 
-	/**
-	 * For auth.http testing only, should be commented out in production
-	 */
-	// @Post("/testSendVerificationEmail")
-	// testSendVerificationEmail(@Body() emailObj: any): Promise<void> {
-	// 	return this.authService.sendVerificationEmail(emailObj.email);
-	// }
+	@UseGuards(JwtAuthGuard)
+	@Post("/sendVerificationEmail")
+	sendVerificationEmail(@Req() req: any): Promise<void> {
+		return this.authService.sendVerificationEmail(req);
+	}
 
 	/**
 	 * For auth.http testing only, should be commented out in production

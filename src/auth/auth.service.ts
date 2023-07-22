@@ -256,7 +256,8 @@ export class AuthService {
 		}
 	}
 
-	async sendVerificationEmail(email: string) {
+	async sendVerificationEmail(req: any) {
+		const { email } = req.user;
 		const payload: JwtPayload = { email };
 		const token: string = this.jwtService.sign(payload, {
 			secret: process.env.SMTP_EMAIL_VERIFICATION_JWT_SECRET,
