@@ -63,12 +63,14 @@ Authorization: {{$dotenv AUTHORIZATION}}
 }
 
 ### Update user password
-PATCH {{$dotenv LOCAL_HOST}}/users/password/8b9136f6-902d-4799-b5c2-5f6caebac8b6
-Content-Type: application/x-www-form-urlencoded
+PATCH {{$dotenv LOCAL_HOST}}/users/password/56b90810-3793-400e-92af-6d97f495adb7
+Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
-oldPassword=1234Abcd!
-&newPassword=1234Abcd!
+{
+	"oldPassword": "1234Abcd!",
+	"newPassword": "4321Abcd!"
+}
 
 ### Delete a user
 DELETE {{$dotenv LOCAL_HOST}}/users/da46993e-ca6e-4ed4-94d7-29380e9f71bc
