@@ -18,6 +18,8 @@ import { AllowPublicSignUpGuard } from "../server-settings/guards/allow-public-s
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { AuthGuard } from "@nestjs/passport";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
+import { ForgetPasswordDto } from "./dto/forget-password.dto";
+import { ResetPasswordDto } from "./dto/reset-password.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -101,5 +103,19 @@ export class AuthController {
 		@Body() verifyEmailDto: VerifyEmailDto
 	): Promise<{ isVerified: boolean }> {
 		return this.authService.verifyEmail(verifyEmailDto);
+	}
+
+	@Post("/forgetPassword")
+	forgetPassword(
+		@Body() forgetPasswordDto: ForgetPasswordDto
+	): Promise<void> {
+		return this.authService.forgetPassword(forgetPasswordDto);
+	}
+
+	@Post("/resetPassword")
+	resetPassword(
+		@Body() resetPasswordDto: ResetPasswordDto
+	): Promise<{ isReset: boolean }> {
+		return this.authService.resetPassword(resetPasswordDto);
 	}
 }

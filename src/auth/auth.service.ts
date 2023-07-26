@@ -4,6 +4,7 @@ import {
 	Inject,
 	Injectable,
 	InternalServerErrorException,
+	NotFoundException,
 	UnauthorizedException,
 } from "@nestjs/common";
 import { CreateUserDto } from "../users/dto/create-user.dto";
@@ -21,6 +22,8 @@ import { ServerSetting } from "../server-settings/entities/server-setting.entity
 import { MailerService } from "@nestjs-modules/mailer";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { generatePassword } from "../utils/algorithms";
+import { ForgetPasswordDto } from "./dto/forget-password.dto";
+import { ResetPasswordDto } from "./dto/reset-password.dto";
 
 @Injectable()
 export class AuthService {
@@ -260,7 +263,7 @@ export class AuthService {
 		const { email } = req.user;
 		const payload: JwtPayload = { email };
 		const token: string = this.jwtService.sign(payload, {
-			secret: process.env.SMTP_EMAIL_VERIFICATION_JWT_SECRET,
+			secret: process.env.SMTP_JWT_SECRET,
 			expiresIn: "1d",
 		});
 
@@ -289,13 +292,16 @@ export class AuthService {
 			});
 		} catch (error) {
 			console.error(error);
+			throw new InternalServerErrorException(
+				"Failed to send verification email"
+			);
 		}
 	}
 
 	async verifyEmail(verifyEmailDto: VerifyEmailDto) {
 		const { verificationToken } = verifyEmailDto;
 		const payload: JwtPayload = this.jwtService.verify(verificationToken, {
-			secret: process.env.SMTP_EMAIL_VERIFICATION_JWT_SECRET,
+			secret: process.env.SMTP_JWT_SECRET,
 		});
 		const user = await this.usersRepository.findOne({
 			where: {
@@ -326,6 +332,83 @@ export class AuthService {
 			});
 		} catch (error) {
 			console.error(error);
+			throw new InternalServerErrorException(
+				"Failed to send initial password email"
+			);
 		}
+	}
+
+	async forgetPassword(forgetPasswordDto: ForgetPasswordDto) {
+		const { email } = forgetPasswordDto;
+		const user = await this.usersRepository.findOne({
+			where: { email: email },
+		});
+		if (!user) {
+			throw new NotFoundException("User not found");
+		}
+		this.sendForgetPasswordEmail(email);
+		return;
+	}
+
+	async sendForgetPasswordEmail(email: string) {
+		const payload: JwtPayload = { email };
+		const token: string = this.jwtService.sign(payload, {
+			secret: process.env.SMTP_JWT_SECRET,
+			expiresIn: "10m",
+		});
+
+		const textTemplate = (url: string) =>
+			`Please reset your password by clicking on the following link, the link remains valid for 10 minutes, if you did not request a password reset, please ignore this email: ${url}`;
+		const htmlTemplate = (url: string) => `
+			<div style="text-align: center; font-family: sans-serif; border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f5f5f5; max-width: 500px; margin: 0 auto;">
+				<h1>Reset your password 🗝️</h1>
+				<p>Please reset your password by clicking on the following link, the link remains valid for 10 minutes, if you did not request a password reset, please ignore this email:</p>
+				<a href="${url}">👉🏼 Click here</a>
+			</div>
+		`;
+
+		try {
+			await this.mailerService.sendMail({
+				from: `"${process.env.SMTP_USERNAME}" <${process.env.SMTP_USER}>` /* sender address */,
+				to: email /* list of receivers, comma separated */,
+				subject: "Reset your password 🗝️" /* subject line */,
+				text: textTemplate(
+					`${process.env.FRONTEND_HOST}/signin/resetPassword?token=${token}`
+				) /* plain text body */,
+				html: htmlTemplate(
+					`${process.env.FRONTEND_HOST}/signin/resetPassword?token=${token}`
+				) /* html body */,
+			});
+		} catch (error) {
+			console.error(error);
+			throw new InternalServerErrorException(
+				"Failed to send forget password email"
+			);
+		}
+	}
+
+	async resetPassword(
+		resetPasswordDto: ResetPasswordDto
+	): Promise<{ isReset: boolean }> {
+		const { password, resetPasswordToken } = resetPasswordDto;
+		let payload: JwtPayload;
+		let user: User;
+		try {
+			payload = this.jwtService.verify(resetPasswordToken, {
+				secret: process.env.SMTP_JWT_SECRET,
+			});
+			user = await this.usersRepository.findOne({
+				where: {
+					email: payload.email,
+				},
+			});
+		} catch (error) {
+			throw new BadRequestException("Invalid token");
+		}
+		const salt = await bcrypt.genSalt();
+		const hashedPassword = await bcrypt.hash(password, salt);
+		user.password = hashedPassword;
+		await this.usersRepository.save(user);
+		return { isReset: true };
 	}
 }
