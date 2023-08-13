@@ -24,6 +24,7 @@ import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { generatePassword } from "../utils/algorithms";
 import { ForgetPasswordDto } from "./dto/forget-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
+import { CredentialData, getCredential } from "qcloud-cos-sts";
 
 @Injectable()
 export class AuthService {
@@ -410,5 +411,60 @@ export class AuthService {
 		user.password = hashedPassword;
 		await this.usersRepository.save(user);
 		return { isReset: true };
+	}
+
+	async getTemporaryCredential(): Promise<CredentialData> {
+		const config = {
+			secretId: process.env.SECRET_ID,
+			secretKey: process.env.SECRET_KEY,
+			proxy: "",
+			host: "sts.tencentcloudapi.com",
+			durationSeconds: 120,
+			bucket: process.env.BUCKET,
+			region: process.env.REGION,
+			allowPrefix: "*",
+		};
+		const shortBucketName = config.bucket.split("-")[0];
+		const appId = config.bucket.split("-")[1];
+		const policy = {
+			version: "2.0",
+			statement: [
+				{
+					action: [
+						/* 列出对象 */
+						"name/cos:GetBucket",
+						/* 简单上传 */
+						"name/cos:PutObject",
+						/* 分片上传 */
+						"name/cos:InitiateMultipartUpload",
+						"name/cos:ListMultipartUploads",
+						"name/cos:ListParts",
+						"name/cos:UploadPart",
+						"name/cos:CompleteMultipartUpload",
+						/* 下载 */
+						"name/cos:GetObject",
+						/* 删除 */
+						"name/cos:DeleteObject",
+					],
+					effect: "allow",
+					principal: { qcs: ["*"] },
+					resource: [
+						`qcs::cos:${config.region}:uid/${appId}:prefix//${appId}/${shortBucketName}/app/${config.allowPrefix}`,
+					],
+				},
+			],
+		};
+		try {
+			const credentialData = await getCredential({
+				secretId: config.secretId,
+				secretKey: config.secretKey,
+				proxy: config.proxy,
+				durationSeconds: config.durationSeconds,
+				policy: policy,
+			});
+			return credentialData;
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
 	}
 }

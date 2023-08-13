@@ -20,6 +20,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { ForgetPasswordDto } from "./dto/forget-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
+import { CredentialData } from "qcloud-cos-sts";
 
 @Controller("auth")
 export class AuthController {
@@ -117,5 +118,10 @@ export class AuthController {
 		@Body() resetPasswordDto: ResetPasswordDto
 	): Promise<{ isReset: boolean }> {
 		return this.authService.resetPassword(resetPasswordDto);
+	}
+
+	@Get("tencentCosTempCredential")
+	async getTemporaryCredential(): Promise<CredentialData> {
+		return this.authService.getTemporaryCredential();
 	}
 }
