@@ -7,7 +7,7 @@ import { CreateChituboxManualFeedbackDto } from "./dto/create-chitubox-manual-fe
 import { InjectRepository } from "@nestjs/typeorm";
 import { ChituboxManualFeedback } from "./entities/chitubox-manual-feedback-record.entity";
 import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 import axios from "axios";
 import { Iso8601DateRangeDto } from "./dto/iso8601-date-range.dto";
 

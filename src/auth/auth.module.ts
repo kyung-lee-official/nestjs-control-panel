@@ -20,8 +20,7 @@ import { ServerSetting } from "../server-settings/entities/server-setting.entity
 		JwtModule.register({
 			secret: process.env.JWT_SECRET,
 			signOptions: {
-				// expiresIn: 60 * 60 * 24
-				expiresIn: 60 * 60 * 2 + 60 * 2,
+				expiresIn: "3h",
 			},
 		}),
 		ServerSetting,
