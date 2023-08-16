@@ -26,6 +26,9 @@ import { Role } from "../roles/entities/role.entity";
 import { uniq } from "lodash";
 import { UpdateUserGroupsDto } from "./dto/update-user-groups.dto";
 import { AuthService } from "../auth/auth.service";
+import fs, { readFile, writeFile } from "fs/promises";
+import path from "path";
+import { existsSync, mkdirSync } from "fs";
 
 @Injectable({ scope: Scope.REQUEST })
 export class UsersService {
@@ -330,6 +333,39 @@ export class UsersService {
 		} else {
 			throw new ForbiddenException();
 		}
+	}
+
+	async updateAvatar(req: any, file: Express.Multer.File): Promise<any> {
+		const { mimetype } = file;
+		if (!req.user) {
+			throw new UnauthorizedException();
+		}
+		if (mimetype === "image/png") {
+			if (file.size > 1024 * 1024) {
+				throw new BadRequestException("File size too large");
+			}
+			const directoryPath = `storage/app/avatar/${req.user.id}`;
+			if (!existsSync(directoryPath)) {
+				mkdirSync(directoryPath, { recursive: true });
+			}
+			const filePath = directoryPath + "/avatar.png";
+			await writeFile(filePath, file.buffer);
+			return { message: "Avatar updated" };
+		} else {
+			throw new BadRequestException("Only png images are allowed");
+		}
+	}
+
+	async downloadAvatar(id: string, req: any, res: any): Promise<any> {
+		if (!req.user) {
+			throw new UnauthorizedException();
+		}
+		const directoryPath = `storage/app/avatar/${req.user.id}`;
+		const filePath = directoryPath + "/avatar.png";
+		if (!existsSync(filePath)) {
+			throw new NotFoundException("Avatar not found");
+		}
+		res.download(filePath);
 	}
 
 	async transferAdmim(id: string): Promise<User> {

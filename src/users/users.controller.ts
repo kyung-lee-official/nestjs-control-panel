@@ -11,6 +11,10 @@ import {
 	UseInterceptors,
 	ClassSerializerInterceptor,
 	Post,
+	Put,
+	UploadedFile,
+	Req,
+	Res,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -26,6 +30,7 @@ import { FindUsersByIdsDto } from "./dto/find-users-by-ids.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserGroupsDto } from "./dto/update-user-groups.dto";
 import { IsVerifiedGuard } from "./guards/is-verified.guard";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @UseGuards(JwtAuthGuard)
 @Controller("users")
@@ -141,6 +146,21 @@ export class UsersController {
 		@Body() updateUserPasswordDto: UpdateUserPasswordDto
 	): Promise<User> {
 		return this.usersService.updateUserPassword(id, updateUserPasswordDto);
+	}
+
+	@UseGuards(IsVerifiedGuard)
+	@Put("updateAvatar")
+	@UseInterceptors(FileInterceptor("file"))
+	async updateAvatar(
+		@Req() req: any,
+		@UploadedFile() file: Express.Multer.File
+	) {
+		return this.usersService.updateAvatar(req, file);
+	}
+
+	@Get("downloadAvatar/:id")
+	downloadAvatar(@Param("id") id: string, @Req() req: any, @Res() res: any) {
+		return this.usersService.downloadAvatar(id, req, res);
 	}
 
 	@UseInterceptors(ClassSerializerInterceptor)

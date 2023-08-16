@@ -72,6 +72,20 @@ Authorization: {{$dotenv AUTHORIZATION}}
 	"newPassword": "4321Abcd!"
 }
 
+# Note, pure HTTP syntax can not select a file to upload using
+# multipart/form-data. Use Insomnia or Postman instead.
+### Update user avatar
+PUT {{$dotenv LOCAL_HOST}}/users/updateAvatar
+Content-Type: multipart/form-data; boundary=REST-CLIENT-BOUNDARY
+Authorization: {{$dotenv AUTHORIZATION}}
+
+--REST-CLIENT-BOUNDARY
+Content-Disposition: form-data; name="file"; filename="938-536x354.png"
+Content-Type: image/png
+
+< xxxxx
+--REST-CLIENT-BOUNDARY--
+
 ### Delete a user
 DELETE {{$dotenv LOCAL_HOST}}/users/da46993e-ca6e-4ed4-94d7-29380e9f71bc
 Authorization: {{$dotenv AUTHORIZATION}}
