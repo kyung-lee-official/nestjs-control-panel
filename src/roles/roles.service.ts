@@ -166,7 +166,7 @@ export class RolesService {
 			}
 			throw error;
 		}
-		if (role.users.length > 0) {
+		if (role.users?.length > 0) {
 			throw new BadRequestException(
 				"Can not delete a role that has users"
 			);
