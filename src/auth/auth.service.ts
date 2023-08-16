@@ -139,6 +139,13 @@ export class AuthService {
 		return { isSignedIn: true };
 	}
 
+	async refreshAccessToken(req: any): Promise<{ accessToken: string }> {
+		const { email } = req.user;
+		const payload: JwtPayload = { email };
+		const accessToken: string = this.jwtService.sign(payload);
+		return { accessToken };
+	}
+
 	async googleSignIn(req: any): Promise<{
 		isSeedUser: boolean;
 		isNewUser: boolean;
