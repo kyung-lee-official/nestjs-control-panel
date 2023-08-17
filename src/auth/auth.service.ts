@@ -13,7 +13,7 @@ import { AuthCredentialsDto } from "./dto/auth-credential.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcrypt";
+import bcrypt from "bcrypt";
 import { JwtPayload } from "./jwt-payload.interface";
 import { Role } from "../roles/entities/role.entity";
 import { Permissions } from "../permissions/permissions.enum";
@@ -267,8 +267,7 @@ export class AuthService {
 		}
 	}
 
-	async sendVerificationEmail(req: any) {
-		const { email } = req.user;
+	async sendVerificationEmail(email: string) {
 		const payload: JwtPayload = { email };
 		const token: string = this.jwtService.sign(payload, {
 			secret: process.env.SMTP_JWT_SECRET,

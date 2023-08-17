@@ -4,7 +4,7 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { InjectRepository } from "@nestjs/typeorm/dist/common";
 import { In, Repository } from "typeorm";
 import { User } from "./entities/user.entity";
-import * as bcrypt from "bcrypt";
+import bcrypt from "bcrypt";
 import { REQUEST } from "@nestjs/core";
 import {
 	BadRequestException,

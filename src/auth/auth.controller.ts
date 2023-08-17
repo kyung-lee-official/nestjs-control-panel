@@ -91,7 +91,8 @@ export class AuthController {
 	@UseGuards(JwtAuthGuard)
 	@Post("/sendVerificationEmail")
 	sendVerificationEmail(@Req() req: any): Promise<void> {
-		return this.authService.sendVerificationEmail(req);
+		const user = req.user;
+		return this.authService.sendVerificationEmail(user);
 	}
 
 	/**
