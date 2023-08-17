@@ -13,42 +13,42 @@ if (process.env.ENV === "DEV") {
 	process.exit(1);
 }
 
-describe("Seed flow (e2e)", () => {
-	let app: INestApplication;
-	let accessToken: string;
+let app: INestApplication;
+let accessToken: string;
 
-	beforeAll(async () => {
-		/* Drop database "DATABASE_DEV" and re-create it */
-		const dbClient = new Client({
-			host: process.env.DATABASE_HOST_DEV,
-			port: parseInt(process.env.DATABASE_PORT_DEV),
-			user: process.env.DATABASE_USERNAME_DEV,
-			password: process.env.DATABASE_PASSWORD_DEV,
-			database: "postgres",
-		});
-		await dbClient.connect();
-		await dbClient.query(
-			`DROP DATABASE IF EXISTS "${process.env.DATABASE_DEV}" WITH (FORCE)`
-		);
-		await dbClient.query(
-			`CREATE DATABASE "${process.env.DATABASE_DEV}" OWNER ${process.env.DATABASE_USERNAME_DEV}`
-		);
-		await dbClient.end();
+beforeAll(async () => {
+	/* Drop database "DATABASE_DEV" and re-create it */
+	const dbClient = new Client({
+		host: process.env.DATABASE_HOST_DEV,
+		port: parseInt(process.env.DATABASE_PORT_DEV),
+		user: process.env.DATABASE_USERNAME_DEV,
+		password: process.env.DATABASE_PASSWORD_DEV,
+		database: "postgres",
+	});
+	await dbClient.connect();
+	await dbClient.query(
+		`DROP DATABASE IF EXISTS "${process.env.DATABASE_DEV}" WITH (FORCE)`
+	);
+	await dbClient.query(
+		`CREATE DATABASE "${process.env.DATABASE_DEV}" OWNER ${process.env.DATABASE_USERNAME_DEV}`
+	);
+	await dbClient.end();
 
-		const moduleFixture: TestingModule = await Test.createTestingModule({
-			imports: [AppModule],
-		}).compile();
+	const moduleFixture: TestingModule = await Test.createTestingModule({
+		imports: [AppModule],
+	}).compile();
 
-		app = moduleFixture.createNestApplication();
-		app.useGlobalPipes(
-			new ValidationPipe({
-				whitelist: true,
-			})
-		);
-		app.enableCors();
-		await app.init();
-	}, 30000);
+	app = moduleFixture.createNestApplication();
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true,
+		})
+	);
+	app.enableCors();
+	await app.init();
+}, 30000);
 
+describe("Seed flow, before verification (e2e)", () => {
 	it("GET /auth/isSeeded should be false", () => {
 		return request(app.getHttpServer())
 			.get("/auth/isSeeded")
@@ -152,5 +152,21 @@ describe("Seed flow (e2e)", () => {
 
 	it("Contains at least one test", () => {
 		expect(true).toBe(true);
+	});
+});
+
+describe("Test server settings", () => {
+	it("GET /server-settings/isSignUpAvailable should be false by default", () => {
+		return request(app.getHttpServer())
+			.get("/server-settings/isSignUpAvailable")
+			.expect(200)
+			.expect({ isSignUpAvailable: false });
+	});
+
+	it("GET /server-settings/isGoogleSignInAvailable should be false by default", () => {
+		return request(app.getHttpServer())
+			.get("/server-settings/isGoogleSignInAvailable")
+			.expect(200)
+			.expect({ isGoogleSignInAvailable: false });
 	});
 });

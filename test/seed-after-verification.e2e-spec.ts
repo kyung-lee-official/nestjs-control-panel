@@ -15,25 +15,25 @@ if (process.env.ENV === "DEV") {
 	process.exit(1);
 }
 
-describe("Seed flow (e2e)", () => {
-	let app: INestApplication;
-	let accessToken: string;
+let app: INestApplication;
+let accessToken: string;
 
-	beforeAll(async () => {
-		const moduleFixture: TestingModule = await Test.createTestingModule({
-			imports: [AppModule],
-		}).compile();
+beforeAll(async () => {
+	const moduleFixture: TestingModule = await Test.createTestingModule({
+		imports: [AppModule],
+	}).compile();
 
-		app = moduleFixture.createNestApplication();
-		app.useGlobalPipes(
-			new ValidationPipe({
-				whitelist: true,
-			})
-		);
-		app.enableCors();
-		await app.init();
-	}, 15000);
+	app = moduleFixture.createNestApplication();
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true,
+		})
+	);
+	app.enableCors();
+	await app.init();
+}, 15000);
 
+describe("Seed flow, after verification (e2e)", () => {
 	it("POST /auth/signin", async () => {
 		return await request(app.getHttpServer())
 			.post("/auth/signin")

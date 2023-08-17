@@ -100,14 +100,18 @@ export class AuthService {
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
-		const dbEveryoneGroup = await this.groupsRepository.find({
+		const dbCommonRole = await this.rolesRepository.findOne({
+			where: { name: "common" },
+		});
+		const dbEveryoneGroup = await this.groupsRepository.findOne({
 			where: { name: "everyone" },
 		});
 		const user = this.usersRepository.create({
 			email,
 			password: hashedPassword,
 			nickname,
-			groups: dbEveryoneGroup,
+			roles: [dbCommonRole],
+			groups: [dbEveryoneGroup],
 		});
 		await this.usersRepository.save(user);
 		await this.sendVerificationEmail(email);

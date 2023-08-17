@@ -66,10 +66,14 @@ To delete connections from third-party apps:
 -   [x] Find a role by id, `GET_ROLES` permission required.
 -   [x] Update a role by id, `UPDATE_ROLE` permission required.
 -   [x] Delete a role by id, reject if the role has users, `DELETE_ROLE` permission required.
--   [x] `admin` role has full permissions can not be deleted. `admin` role's permissions can not be changed.
--   [x] `admin` role can only has one user.
--   [ ] `admin` role ownership (role doesn't have an "ownership" concept, but the implementation must follow the rule that the `admin` role can only have one user) can be transferred to another user, this action can only be performed by the `admin` role user.
+-   [ ] The `admin` role name must be unique.
+-   [x] The `admin` role has full permissions can not be deleted. The `admin` role's permissions can not be changed.
+-   [x] The `admin` role can only has one user.
+-   [ ] The `admin` role ownership (role doesn't have an "ownership" concept, but the implementation must follow the rule that the `admin` role can only have one user) can be transferred to another user, this action can only be performed by the `admin` role user.
 -   [x] The `admin` user can not be deleted.
+-   [ ] The `common` role name must be unique.
+-   [x] The `common` role has permissions `GET_ME`.
+-   [x] The `common` role can not be deleted.
 
 ## groups
 
