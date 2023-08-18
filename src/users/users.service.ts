@@ -360,7 +360,7 @@ export class UsersService {
 		if (!req.user) {
 			throw new UnauthorizedException();
 		}
-		const directoryPath = `storage/app/avatar/${req.user.id}`;
+		const directoryPath = `storage/app/avatar/${id}`;
 		const filePath = directoryPath + "/avatar.png";
 		if (!existsSync(filePath)) {
 			throw new NotFoundException("Avatar not found");
