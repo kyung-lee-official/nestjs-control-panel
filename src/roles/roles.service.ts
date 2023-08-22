@@ -46,6 +46,16 @@ export class RolesService {
 	}
 
 	async create(createRoleDto: CreateRoleDto): Promise<Role> {
+		const { name } = createRoleDto;
+		if (name === "admin") {
+			throw new BadRequestException("Can't create a role named admin");
+		}
+		if (name === "common") {
+			throw new BadRequestException("Can't create a role named common");
+		}
+		if (name === "") {
+			throw new BadRequestException("Role name can not be empty");
+		}
 		const requester = this.request.user;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester.id
@@ -59,14 +69,8 @@ export class RolesService {
 			}
 			throw error;
 		}
-		try {
-			await this.rolesRepository.save(role);
-			return role;
-		} catch (error) {
-			if (error.code === "23505") {
-				throw new ConflictException("Role already exists");
-			}
-		}
+		await this.rolesRepository.save(role);
+		return role;
 	}
 
 	async find(roleIds?: number[]): Promise<Role[]> {
@@ -130,9 +134,19 @@ export class RolesService {
 			throw error;
 		}
 		const { name, permissions, userIds } = updateRoleDto;
-		if (role.name !== "admin" && name !== "admin" && name && name !== "") {
-			role.name = name;
+		if (role.name === "admin") {
+			throw new BadRequestException("Can not update admin role");
 		}
+		if (name === "admin") {
+			throw new BadRequestException("Can't rename the role to admin");
+		}
+		if (name === "common") {
+			throw new BadRequestException("Can't rename the role to common");
+		}
+		if (name === "") {
+			throw new BadRequestException("Role name can not be empty");
+		}
+		role.name = name;
 		if (permissions) {
 			role.permissions = permissions;
 		}

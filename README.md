@@ -57,7 +57,7 @@ To delete connections from third-party apps:
 
 ## roles
 
-`role` name must be unique.
+`role` name can be duplicated (except `admin` and `common`), but `role` permissions must be unique.
 
 -   [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` role required.
 -   [x] Create a role, `CREATE_ROLE` permission required.

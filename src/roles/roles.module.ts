@@ -15,6 +15,6 @@ import { CaslModule } from "../casl/casl.module";
 	],
 	controllers: [RolesController],
 	providers: [RolesService],
-	exports: [RolesService],
+	exports: [],
 })
 export class RolesModule {}
