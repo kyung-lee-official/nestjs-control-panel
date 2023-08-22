@@ -47,10 +47,10 @@ export class RolesService {
 
 	async create(createRoleDto: CreateRoleDto): Promise<Role> {
 		const { name } = createRoleDto;
-		if (name === "admin") {
+		if (name.toLowerCase() === "admin") {
 			throw new BadRequestException("Can't create a role named admin");
 		}
-		if (name === "common") {
+		if (name.toLowerCase() === "common") {
 			throw new BadRequestException("Can't create a role named common");
 		}
 		if (name === "") {
@@ -137,10 +137,10 @@ export class RolesService {
 		if (role.name === "admin") {
 			throw new BadRequestException("Can not update admin role");
 		}
-		if (name === "admin") {
+		if (name.toLowerCase() === "admin") {
 			throw new BadRequestException("Can't rename the role to admin");
 		}
-		if (name === "common") {
+		if (name.toLowerCase() === "common") {
 			throw new BadRequestException("Can't rename the role to common");
 		}
 		if (name === "") {
