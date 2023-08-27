@@ -84,10 +84,7 @@ export class RolesService {
 				}
 				return id;
 			});
-		}
-		let roles: Role[];
-		if (ids) {
-			roles = await this.rolesRepository.find({
+			const roles = await this.rolesRepository.find({
 				where: {
 					id: In(ids),
 				},
@@ -95,7 +92,7 @@ export class RolesService {
 			});
 			return roles;
 		} else {
-			roles = await this.rolesRepository.find({
+			const roles = await this.rolesRepository.find({
 				relations: ["users"],
 			});
 			return roles;

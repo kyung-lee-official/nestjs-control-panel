@@ -265,7 +265,7 @@ export class UsersService {
 			});
 			user = await this.usersRepository.findOne({
 				where: { id: id },
-				relations: ["roles"],
+				relations: ["roles", "groups"],
 			});
 			if (!user) {
 				throw new NotFoundException("User not found");
@@ -287,7 +287,7 @@ export class UsersService {
 			const result = await this.usersRepository.save(user);
 			return result;
 		} else {
-			throw new ForbiddenException();
+			throw new ForbiddenException("Forbidden, can't update user roles");
 		}
 	}
 
@@ -368,7 +368,7 @@ export class UsersService {
 		res.download(filePath);
 	}
 
-	async transferAdmim(id: string): Promise<User> {
+	async transferOwnership(id: string): Promise<User> {
 		return;
 	}
 

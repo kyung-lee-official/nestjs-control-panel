@@ -167,9 +167,9 @@ export class UsersController {
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.TRANSFER_ADMIN)
 	@UseGuards(IsVerifiedGuard)
-	@Patch("/transferAdmin/:id")
-	transferAdmim(@Param("id") id: string): Promise<User> {
-		return this.usersService.transferAdmim(id);
+	@Patch("/transferOwnership/:id")
+	transferOwnership(@Param("id") id: string): Promise<User> {
+		return this.usersService.transferOwnership(id);
 	}
 
 	@UseGuards(PermissionsGuard)
