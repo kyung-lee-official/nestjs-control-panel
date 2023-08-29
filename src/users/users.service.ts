@@ -295,7 +295,47 @@ export class UsersService {
 		id: string,
 		updateUserGroupsDto: UpdateUserGroupsDto
 	): Promise<User> {
-		return;
+		const requester = this.request.user;
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
+		const everyoneGroup = await this.groupsRepository.findOne({
+			where: { name: "everyone" },
+		});
+		let user: User;
+		let groups: Group[];
+		if (updateUserGroupsDto.groupIds) {
+			if (!updateUserGroupsDto.groupIds.includes(everyoneGroup.id)) {
+				throw new ForbiddenException(
+					"All users belong to the 'everyone' group by default, you cannot remove any user from group 'everyone'"
+				);
+			}
+			groups = await this.groupsRepository.find({
+				where: { id: In(updateUserGroupsDto.groupIds) },
+			});
+			user = await this.usersRepository.findOne({
+				where: { id: id },
+				relations: ["roles", "groups"],
+			});
+			if (!user) {
+				throw new NotFoundException("User not found");
+			}
+			const userGroupIds = uniq(
+				user.groups.map((group) => {
+					return group.id;
+				})
+			);
+		} else {
+			throw new BadRequestException("Empty body, missing 'groupIds'");
+		}
+
+		if (ability.can(Actions.UPDATE, user, "groups")) {
+			user.groups = groups;
+			const result = await this.usersRepository.save(user);
+			return result;
+		} else {
+			throw new ForbiddenException("Forbidden, can't update user groups");
+		}
 	}
 
 	async updateUserPassword(

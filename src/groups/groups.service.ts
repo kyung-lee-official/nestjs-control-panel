@@ -7,7 +7,6 @@ import {
 	Scope,
 	ServiceUnavailableException,
 } from "@nestjs/common";
-import { CreateGroupDto } from "./dto/create-group.dto";
 import { UpdateGroupDto } from "./dto/update-group.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Group } from "./entities/group.entity";
@@ -32,19 +31,36 @@ export class GroupsService {
 		private caslAbilityFactory: CaslAbilityFactory
 	) {}
 
-	async create(createGroupDto: CreateGroupDto): Promise<Group> {
+	async create(): Promise<Group> {
 		const requester = this.request.user;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester.id
 		);
-		const { name } = createGroupDto;
-		const dbGroup = await this.groupsRepository.findOne({
-			where: { name: name },
-		});
-		if (dbGroup) {
-			throw new ConflictException("Group name already exists");
+		const groupsRepository = this.groupsRepository;
+		async function generateNewGroupName(newGroupNameIndex: number) {
+			let newGroupName = "New Group";
+			if (newGroupNameIndex === 0) {
+				newGroupName = "New Group";
+			} else {
+				newGroupName = "New Group" + newGroupNameIndex;
+			}
+			let newGroup = await groupsRepository.findOne({
+				where: {
+					name: newGroupName,
+				},
+			});
+			if (newGroup) {
+				newGroupNameIndex++;
+				return await generateNewGroupName(newGroupNameIndex);
+			} else {
+				return newGroupName;
+			}
 		}
-		const group = this.groupsRepository.create(createGroupDto);
+		const newGroupName = await generateNewGroupName(0);
+		const group = this.groupsRepository.create({
+			name: newGroupName,
+		});
+
 		try {
 			ForbiddenError.from(ability).throwUnlessCan(Actions.CREATE, group);
 		} catch (error) {

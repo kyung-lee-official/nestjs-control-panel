@@ -57,7 +57,8 @@ To delete connections from third-party apps:
 
 ## roles
 
-`role` name can be duplicated (except `admin` and `common`), but `role` permissions must be unique.
+`role` name must be unique (`admin` and `common` are created when the server is seeded), the server should incrementally name the new role if the name already exists.
+`role` permissions must be unique.
 
 -   [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` role required.
 -   [x] Create a role, `CREATE_ROLE` permission required.
@@ -66,16 +67,16 @@ To delete connections from third-party apps:
 -   [x] Find a role by id, `GET_ROLES` permission required.
 -   [x] Update a role by id, `UPDATE_ROLE` permission required.
 -   [x] Delete a role by id, reject if the role has users, `DELETE_ROLE` permission required.
--   [ ] The `admin` role name must be unique.
 -   [x] The `admin` role has full permissions can not be deleted. The `admin` role's permissions can not be changed.
 -   [x] The `admin` role can only has one user.
 -   [ ] The `admin` role ownership (role doesn't have an "ownership" concept, but the implementation must follow the rule that the `admin` role can only have one user) can be transferred to another user, this action can only be performed by the `admin` role user.
 -   [x] The `admin` user can not be deleted.
--   [ ] The `common` role name must be unique.
 -   [x] The `common` role has permissions `GET_ME`.
 -   [x] The `common` role can not be deleted.
 
 ## groups
+
+`group` name must be unique. (`everyone` is created when the server is seeded), the server should incrementally name the new group if the name already exists.
 
 -   [x] Create a group, `CREATE_GROUP` permission required.
 -   [x] Find all groups, `GET_GROUPS` permission required.

@@ -11,7 +11,6 @@ import {
 	ClassSerializerInterceptor,
 } from "@nestjs/common";
 import { GroupsService } from "./groups.service";
-import { CreateGroupDto } from "./dto/create-group.dto";
 import { UpdateGroupDto } from "./dto/update-group.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { GroupIdPipe } from "./pipes/group-id.pipe";
@@ -29,8 +28,8 @@ export class GroupsController {
 	@RequiredPermissions(Permissions.CREATE_GROUP)
 	@UseGuards(IsVerifiedGuard)
 	@Post()
-	create(@Body() createGroupDto: CreateGroupDto) {
-		return this.groupsService.create(createGroupDto);
+	create() {
+		return this.groupsService.create();
 	}
 
 	@UseInterceptors(ClassSerializerInterceptor)

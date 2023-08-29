@@ -128,7 +128,7 @@ export class UsersController {
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_USER)
 	@UseGuards(IsVerifiedGuard)
-	@Patch("/roles/:id")
+	@Patch("/groups/:id")
 	updateUserGroups(
 		@Param("id") id: string,
 		@Body() updateUserGroupsDto: UpdateUserGroupsDto

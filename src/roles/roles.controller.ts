@@ -12,7 +12,6 @@ import {
 	ParseIntPipe,
 } from "@nestjs/common";
 import { RolesService } from "./roles.service";
-import { CreateRoleDto } from "./dto/create-role.dto";
 import { UpdateRoleDto } from "./dto/update-role.dto";
 import { Role } from "./entities/role.entity";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
@@ -40,8 +39,8 @@ export class RolesController {
 	@RequiredPermissions(Permissions.CREATE_ROLE)
 	@UseGuards(IsVerifiedGuard)
 	@Post()
-	create(@Body() createRoleDto: CreateRoleDto) {
-		return this.rolesService.create(createRoleDto);
+	create() {
+		return this.rolesService.create();
 	}
 
 	@UseInterceptors(ClassSerializerInterceptor)

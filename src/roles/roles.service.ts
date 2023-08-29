@@ -45,22 +45,34 @@ export class RolesService {
 		return adminRole;
 	}
 
-	async create(createRoleDto: CreateRoleDto): Promise<Role> {
-		const { name } = createRoleDto;
-		if (name.toLowerCase() === "admin") {
-			throw new BadRequestException("Can't create a role named admin");
-		}
-		if (name.toLowerCase() === "common") {
-			throw new BadRequestException("Can't create a role named common");
-		}
-		if (name === "") {
-			throw new BadRequestException("Role name can not be empty");
-		}
+	async create(): Promise<Role> {
 		const requester = this.request.user;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester.id
 		);
-		const role = this.rolesRepository.create(createRoleDto);
+		const rolesRepository = this.rolesRepository;
+		async function generateNewRoleName(newRoleNameIndex: number) {
+			let newRoleName = "New Role";
+			if (newRoleNameIndex === 0) {
+				newRoleName = "New Role";
+			} else {
+				newRoleName = "New Role" + newRoleNameIndex;
+			}
+			let newRole = await rolesRepository.findOne({
+				where: {
+					name: newRoleName,
+				},
+			});
+			if (newRole) {
+				newRoleNameIndex++;
+				return await generateNewRoleName(newRoleNameIndex);
+			} else {
+				return newRoleName;
+			}
+		}
+		const newRoleName = await generateNewRoleName(0);
+		const role = this.rolesRepository.create({ name: newRoleName });
+
 		try {
 			ForbiddenError.from(ability).throwUnlessCan(Actions.CREATE, role);
 		} catch (error) {
