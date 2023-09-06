@@ -146,16 +146,20 @@ export class RolesService {
 		if (role.name === "admin") {
 			throw new BadRequestException("Can not update admin role");
 		}
-		if (name.toLowerCase() === "admin") {
-			throw new BadRequestException("Can't rename the role to admin");
+		if (name) {
+			if (name.toLowerCase() === "admin") {
+				throw new BadRequestException("Can't rename the role to admin");
+			}
+			if (name.toLowerCase() === "common") {
+				throw new BadRequestException(
+					"Can't rename the role to common"
+				);
+			}
+			if (name === "") {
+				throw new BadRequestException("Role name can not be empty");
+			}
+			role.name = name;
 		}
-		if (name.toLowerCase() === "common") {
-			throw new BadRequestException("Can't rename the role to common");
-		}
-		if (name === "") {
-			throw new BadRequestException("Role name can not be empty");
-		}
-		role.name = name;
 		if (permissions) {
 			role.permissions = permissions;
 		}
