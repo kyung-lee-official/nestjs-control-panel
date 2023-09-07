@@ -16,6 +16,7 @@ if (process.env.ENV === "DEV") {
 }
 
 let app: INestApplication;
+let req: request.SuperTest<request.Test>;
 let adminAccessToken: string;
 
 beforeAll(async () => {
@@ -31,6 +32,7 @@ beforeAll(async () => {
 	);
 	app.enableCors();
 	await app.init();
+	req = request(app.getHttpServer());
 }, 30000);
 
 describe("Test user flow, after test user verification (e2e)", () => {
@@ -40,16 +42,18 @@ describe("Test user flow, after test user verification (e2e)", () => {
 });
 
 describe("Test user flow, finally disable sign up in server settings and delete the user (e2e)", () => {
-	it("DELETE /users/:id should be successful", async () => {
-		const req = request(app.getHttpServer());
+	it("POST /auth/signin sign in as admin", async () => {
 		const res = await req
 			.post("/auth/signin")
 			.send({
-				email: process.env.E2E_TEST_EMAIL,
+				email: process.env.E2E_TEST_ADMIN_EMAIL,
 				password: "1234Abcd!",
 			})
 			.expect(201);
 		adminAccessToken = res.body.accessToken;
+	});
+
+	it("PATCH /server-settings should be successful", async () => {
 		await req
 			.patch("/server-settings")
 			.set("Authorization", `Bearer ${adminAccessToken}`)
@@ -63,12 +67,23 @@ describe("Test user flow, finally disable sign up in server settings and delete 
 			.set("Authorization", `Bearer ${adminAccessToken}`)
 			.expect(200)
 			.expect({ isSignUpAvailable: false });
+	});
+
+	it("DELETE /users/:id delete test users should be successful", async () => {
 		const user1Res = await req
-			.get("/users?email=" + process.env.E2E_TEST_TEST_USER_1_EMAIL)
+			.get("/users?email=" + process.env.E2E_TEST_USER_1_EMAIL)
 			.set("Authorization", `Bearer ${adminAccessToken}`);
 		console.log(user1Res.body);
 		await req
 			.delete(`/users/${user1Res.body[0].id}`)
+			.set("Authorization", `Bearer ${adminAccessToken}`)
+			.expect(200);
+		const user2Res = await req
+			.get("/users?email=" + process.env.E2E_TEST_USER_2_EMAIL)
+			.set("Authorization", `Bearer ${adminAccessToken}`);
+		console.log(user2Res.body);
+		await req
+			.delete(`/users/${user2Res.body[0].id}`)
 			.set("Authorization", `Bearer ${adminAccessToken}`)
 			.expect(200);
 	});

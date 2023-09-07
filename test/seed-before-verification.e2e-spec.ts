@@ -14,6 +14,7 @@ if (process.env.ENV === "DEV") {
 }
 
 let app: INestApplication;
+let req: request.SuperTest<request.Test>;
 let accessToken: string;
 
 beforeAll(async () => {
@@ -46,105 +47,82 @@ beforeAll(async () => {
 	);
 	app.enableCors();
 	await app.init();
+	req = request(app.getHttpServer());
 }, 30000);
 
 describe("Seed flow, before verification (e2e)", () => {
-	it("GET /auth/isSeeded should be false", () => {
-		return request(app.getHttpServer())
-			.get("/auth/isSeeded")
-			.expect(200)
-			.expect({ isSeeded: false });
+	it("GET /auth/isSeeded should be false", async () => {
+		const res = await req.get("/auth/isSeeded").expect(200);
+		expect(res.body.isSeeded).toBe(false);
 	});
 
 	it("POST /auth/seed simple password should be failed", async () => {
-		return await request(app.getHttpServer())
-			.post("/auth/seed")
-			.send({
-				email: process.env.E2E_TEST_EMAIL,
-				nickname: process.env.E2E_TEST_NICKNAME,
-				password: "1234",
-			})
-			.expect(400)
-			.then((response) => {
-				expect(
-					response.body.message.includes("password is too weak")
-				).toBe(true);
-			});
+		const res = await req.post("/auth/seed").send({
+			email: process.env.E2E_TEST_ADMIN_EMAIL,
+			nickname: process.env.E2E_TEST_ADMIN_NICKNAME,
+			password: "1234",
+		});
+		expect(res.status).toBe(400);
+		expect(res.body.message.includes("password is too weak")).toBe(true);
 	});
 
-	it("POST /auth/seed", () => {
-		return request(app.getHttpServer())
-			.post("/auth/seed")
-			.send({
-				email: process.env.E2E_TEST_EMAIL,
-				nickname: process.env.E2E_TEST_NICKNAME,
-				password: "1234Abcd!",
-			})
-			.expect(201)
-			.then((response) => {
-				expect(response.body.email).toBe(process.env.E2E_TEST_EMAIL);
-				expect(response.body.password).toBe(undefined);
-				expect(response.body.nickname).toBe(
-					process.env.E2E_TEST_NICKNAME
-				);
-				expect(response.body.groups[0].name).toBe("everyone");
-				expect(response.body.ownedGroups[0].name).toBe("everyone");
-				expect(response.body.roles[0].name).toBe("admin");
-				expect(response.body.isVerified).toBe(null);
-			});
+	it("POST /auth/seed", async () => {
+		const res = await req.post("/auth/seed").send({
+			email: process.env.E2E_TEST_ADMIN_EMAIL,
+			nickname: process.env.E2E_TEST_ADMIN_NICKNAME,
+			password: "1234Abcd!",
+		});
+		expect(res.status).toBe(201);
+		expect(res.body.email).toBe(process.env.E2E_TEST_ADMIN_EMAIL);
+		expect(res.body.password).toBe(undefined);
+		expect(res.body.nickname).toBe(process.env.E2E_TEST_ADMIN_NICKNAME);
+		expect(res.body.groups[0].name).toBe("everyone");
+		expect(res.body.ownedGroups[0].name).toBe("everyone");
+		expect(res.body.roles[0].name).toBe("admin");
+		expect(res.body.isVerified).toBe(null);
 	}, 30000);
 
-	it("GET /auth/isSeeded should be true", () => {
-		return request(app.getHttpServer())
-			.get("/auth/isSeeded")
-			.expect(200)
-			.expect({ isSeeded: true });
+	it("GET /auth/isSeeded should be true", async () => {
+		const res = await req.get("/auth/isSeeded").expect(200);
+		expect(res.body.isSeeded).toBe(true);
 	});
 
-	it("POST /auth/seed seed again should be failed", () => {
-		return request(app.getHttpServer())
-			.post("/auth/seed")
-			.send({
-				email: process.env.E2E_TEST_EMAIL,
-				nickname: process.env.E2E_TEST_NICKNAME,
-				password: "1234Abcd!",
-			})
-			.expect(400);
+	it("POST /auth/seed seed again should be failed", async () => {
+		const res = await req.post("/auth/seed").send({
+			email: process.env.E2E_TEST_ADMIN_EMAIL,
+			nickname: process.env.E2E_TEST_ADMIN_NICKNAME,
+			password: "1234Abcd!",
+		});
+		expect(res.status).toBe(400);
 	}, 30000);
 
-	it("POST /auth/signin sign in with wrong password", () => {
-		return request(app.getHttpServer())
-			.post("/auth/signin")
-			.send({
-				email: process.env.E2E_TEST_EMAIL,
-				password: "4321Abcd!",
-			})
-			.expect(401);
+	it("POST /auth/signin sign in with wrong password", async () => {
+		const res = await req.post("/auth/signin").send({
+			email: process.env.E2E_TEST_ADMIN_EMAIL,
+			password: "4321Abcd!",
+		});
+		expect(res.status).toBe(401);
 	}, 30000);
 
-	it("POST /auth/signin", () => {
-		return request(app.getHttpServer())
-			.post("/auth/signin")
-			.send({
-				email: process.env.E2E_TEST_EMAIL,
-				password: "1234Abcd!",
-			})
-			.expect(201)
-			.then((response) => {
-				accessToken = response.body.accessToken;
-			});
+	it("POST /auth/signin", async () => {
+		const res = await req.post("/auth/signin").send({
+			email: process.env.E2E_TEST_ADMIN_EMAIL,
+			password: "1234Abcd!",
+		});
+		expect(res.status).toBe(201);
+		accessToken = res.body.accessToken;
 	}, 30000);
 
-	it("GET /auth/isSignedIn should be true", () => {
-		return request(app.getHttpServer())
+	it("GET /auth/isSignedIn should be true", async () => {
+		const res = await req
 			.get("/auth/isSignedIn")
 			.set("Authorization", `Bearer ${accessToken}`)
-			.expect(200)
-			.expect({ isSignedIn: true });
+			.expect(200);
+		expect(res.body.isSignedIn).toBe(true);
 	});
 
-	it("GET /roles should be false given the user is not verified yet", () => {
-		return request(app.getHttpServer())
+	it("GET /roles should be false given the user is not verified yet", async () => {
+		const res = await req
 			.get("/roles")
 			.set("Authorization", `Bearer ${accessToken}`)
 			.expect(403);
@@ -156,17 +134,15 @@ describe("Seed flow, before verification (e2e)", () => {
 });
 
 describe("Test server settings", () => {
-	it("GET /server-settings/isSignUpAvailable should be false by default", () => {
-		return request(app.getHttpServer())
-			.get("/server-settings/isSignUpAvailable")
-			.expect(200)
-			.expect({ isSignUpAvailable: false });
+	it("GET /server-settings/isSignUpAvailable should be false by default", async () => {
+		const res = await req.get("/server-settings/isSignUpAvailable");
+		expect(res.status).toBe(200);
+		expect(res.body.isSignUpAvailable).toBe(false);
 	});
 
-	it("GET /server-settings/isGoogleSignInAvailable should be false by default", () => {
-		return request(app.getHttpServer())
-			.get("/server-settings/isGoogleSignInAvailable")
-			.expect(200)
-			.expect({ isGoogleSignInAvailable: false });
+	it("GET /server-settings/isGoogleSignInAvailable should be false by default", async () => {
+		const res = await req.get("/server-settings/isGoogleSignInAvailable");
+		expect(res.status).toBe(200);
+		expect(res.body.isGoogleSignInAvailable).toBe(false);
 	});
 });

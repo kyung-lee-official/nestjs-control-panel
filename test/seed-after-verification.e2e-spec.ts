@@ -16,6 +16,7 @@ if (process.env.ENV === "DEV") {
 }
 
 let app: INestApplication;
+let req: request.SuperTest<request.Test>;
 let accessToken: string;
 
 beforeAll(async () => {
@@ -31,49 +32,40 @@ beforeAll(async () => {
 	);
 	app.enableCors();
 	await app.init();
+	req = request(app.getHttpServer());
 }, 15000);
 
 describe("Seed flow, after verification (e2e)", () => {
 	it("POST /auth/signin", async () => {
-		return await request(app.getHttpServer())
-			.post("/auth/signin")
-			.send({
-				email: process.env.E2E_TEST_EMAIL,
-				password: "1234Abcd!",
-			})
-			.expect(201)
-			.then((response) => {
-				accessToken = response.body.accessToken;
-			});
+		const res = await req.post("/auth/signin").send({
+			email: process.env.E2E_TEST_ADMIN_EMAIL,
+			password: "1234Abcd!",
+		});
+		expect(res.status).toBe(201);
+		accessToken = res.body.accessToken;
 	}, 15000);
 
 	it("GET /users/me user should be verified", async () => {
-		return await request(app.getHttpServer())
+		const res = await req
 			.get("/users/me")
-			.set("Authorization", `Bearer ${accessToken}`)
-			.expect(200)
-			.then((response) => {
-				expect(response.body.email).toBe(process.env.E2E_TEST_EMAIL);
-				expect(response.body.password).toBe(undefined);
-				expect(response.body.nickname).toBe(
-					process.env.E2E_TEST_NICKNAME
-				);
-				expect(response.body.groups[0].name).toBe("everyone");
-				expect(response.body.ownedGroups[0].name).toBe("everyone");
-				expect(response.body.roles[0].name).toBe("admin");
-				expect(response.body.isVerified).toBe(true);
-			});
+			.set("Authorization", `Bearer ${accessToken}`);
+		expect(res.status).toBe(200);
+		expect(res.body.email).toBe(process.env.E2E_TEST_ADMIN_EMAIL);
+		expect(res.body.password).toBe(undefined);
+		expect(res.body.nickname).toBe(process.env.E2E_TEST_ADMIN_NICKNAME);
+		expect(res.body.groups[0].name).toBe("everyone");
+		expect(res.body.ownedGroups[0].name).toBe("everyone");
+		expect(res.body.roles[0].name).toBe("admin");
+		expect(res.body.isVerified).toBe(true);
 	}, 15000);
 
 	it("GET /roles should return 'admin' and 'common' given the user is already verified", async () => {
-		return await request(app.getHttpServer())
+		const res = await req
 			.get("/roles")
-			.set("Authorization", `Bearer ${accessToken}`)
-			.expect(200)
-			.then((response) => {
-				expect(response.body[0].name).toBe("admin");
-				expect(response.body[1].name).toBe("common");
-			});
+			.set("Authorization", `Bearer ${accessToken}`);
+		expect(res.status).toBe(200);
+		expect(res.body[0].name).toBe("admin");
+		expect(res.body[1].name).toBe("common");
 	}, 15000);
 
 	it("Contains at least one test", () => {
