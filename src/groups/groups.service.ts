@@ -196,7 +196,6 @@ export class GroupsService {
 		);
 		const dbGroup = await this.groupsRepository.findOne({
 			where: { id: id },
-			relations: ["users"],
 		});
 		if (!dbGroup) {
 			throw new NotFoundException("Group not found");
@@ -211,11 +210,6 @@ export class GroupsService {
 				throw new BadRequestException(error.message);
 			}
 			throw error;
-		}
-		if (dbGroup.users.length > 0) {
-			throw new BadRequestException(
-				"Can not delete a group that has users"
-			);
 		}
 		const result = await this.groupsRepository.delete({ id: dbGroup.id });
 		if (!result.affected) {

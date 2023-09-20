@@ -26,6 +26,9 @@ export class Group {
 		},
 		(user) => {
 			return user.groups;
+		},
+		{
+			onDelete: "CASCADE",
 		}
 	)
 	users: User[];

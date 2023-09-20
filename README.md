@@ -82,7 +82,7 @@ To delete connections from third-party apps:
 -   [x] Find all groups, `GET_GROUPS` permission required.
 -   [x] Find a group by id, `GET_GROUPS` permission required.
 -   [x] Update a group by id, `UPDATE_GROUP` permission required.
--   [x] Delete a group by id, reject if the group has users, `DELETE_GROUP` permission required.
+-   [x] Delete a group by id, delete even if the group has users, `DELETE_GROUP` permission required.
 
 ## permissions
 
