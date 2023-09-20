@@ -68,9 +68,9 @@ export class AuthService {
 		adminRole.permissions =
 			Object.values(Permissions); /* Full permissions */
 		await this.rolesRepository.save(adminRole);
-		let commonRole = this.rolesRepository.create({ name: "common" });
-		commonRole.permissions = [Permissions.GET_ME];
-		commonRole = await this.rolesRepository.save(commonRole);
+		let defaultRole = this.rolesRepository.create({ name: "default" });
+		defaultRole.permissions = [Permissions.GET_ME];
+		defaultRole = await this.rolesRepository.save(defaultRole);
 		const everyoneGroup = this.groupsRepository.create({
 			name: "everyone",
 		});
@@ -100,8 +100,8 @@ export class AuthService {
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
-		const dbCommonRole = await this.rolesRepository.findOne({
-			where: { name: "common" },
+		const dbdefaultRole = await this.rolesRepository.findOne({
+			where: { name: "default" },
 		});
 		const dbEveryoneGroup = await this.groupsRepository.findOne({
 			where: { name: "everyone" },
@@ -110,7 +110,7 @@ export class AuthService {
 			email,
 			password: hashedPassword,
 			nickname,
-			roles: [dbCommonRole],
+			roles: [dbdefaultRole],
 			groups: [dbEveryoneGroup],
 		});
 		await this.usersRepository.save(user);
@@ -186,15 +186,15 @@ export class AuthService {
 							where: { name: "everyone" },
 						}
 					);
-					const dbCommonRole = await this.rolesRepository.findOne({
-						where: { name: "common" },
+					const dbdefaultRole = await this.rolesRepository.findOne({
+						where: { name: "default" },
 					});
 					const user = this.usersRepository.create({
 						email: email,
 						password: hashedPassword,
 						nickname:
 							req.user.givenName + " " + req.user.familyName,
-						roles: [dbCommonRole],
+						roles: [dbdefaultRole],
 						groups: [dbEveryoneGroup],
 						isVerified: true,
 					});
@@ -231,11 +231,11 @@ export class AuthService {
 				adminRole.permissions =
 					Object.values(Permissions); /* Full permissions */
 				await this.rolesRepository.save(adminRole);
-				const commonRole = this.rolesRepository.create({
-					name: "common",
+				const defaultRole = this.rolesRepository.create({
+					name: "default",
 				});
-				commonRole.permissions = [Permissions.GET_ME];
-				await this.rolesRepository.save(commonRole);
+				defaultRole.permissions = [Permissions.GET_ME];
+				await this.rolesRepository.save(defaultRole);
 				const everyoneGroup = this.groupsRepository.create({
 					name: "everyone",
 				});

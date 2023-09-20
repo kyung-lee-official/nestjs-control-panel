@@ -153,9 +153,9 @@ export class RolesService {
 			if (name.toLowerCase() === "admin") {
 				throw new BadRequestException("Can't rename the role to admin");
 			}
-			if (name.toLowerCase() === "common") {
+			if (name.toLowerCase() === "default") {
 				throw new BadRequestException(
-					"Can't rename the role to common"
+					"Can't rename the role to default"
 				);
 			}
 			if (name === "") {

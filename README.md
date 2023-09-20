@@ -9,7 +9,7 @@
 
 -   [x] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/isSeeded` request to check if at least one user exists, if at least one user already exists, return `{ "isSeeded": true }`, frontend then redirects to the sign in page.
         If frontend sends a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request.
-        If no user exists, create a new user, `email` saved as lower case. Create an `admin` role, assign the role to the user. Create an `everyone` group, and assign the user as the group owner. Create a `common` role, any newly created user will be assigned to this role.
+        If no user exists, create a new user, `email` saved as lower case. Create an `admin` role, assign the role to the user. Create an `everyone` group, and assign the user as the group owner. Create a `default` role, any newly created user will be assigned to this role.
 -   [ ] Sign up a new user, `email` saved in lower case, `CREATE_USER` permission required， and assign the user to the `everyone` group.
 -   [x] Users must sign in to apply any operations after the server is seeded.
 -   [x] Check if sign-up is available
@@ -57,7 +57,7 @@ To delete connections from third-party apps:
 
 ## roles
 
-`role` name must be unique (`admin` and `common` are created when the server is seeded), the server should incrementally name the new role if the name already exists.
+`role` name must be unique (`admin` and `default` are created when the server is seeded), the server should incrementally name the new role if the name already exists.
 `role` permissions must be unique.
 
 -   [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` role required.
@@ -71,8 +71,8 @@ To delete connections from third-party apps:
 -   [x] The `admin` role can only has one user.
 -   [ ] The `admin` role ownership (role doesn't have an "ownership" concept, but the implementation must follow the rule that the `admin` role can only have one user) can be transferred to another user, this action can only be performed by the `admin` role user.
 -   [x] The `admin` user can not be deleted.
--   [x] The `common` role has permissions `GET_ME`.
--   [x] The `common` role can not be deleted.
+-   [x] The `default` role has permissions `GET_ME`.
+-   [x] The `default` role can not be deleted.
 
 ## groups
 

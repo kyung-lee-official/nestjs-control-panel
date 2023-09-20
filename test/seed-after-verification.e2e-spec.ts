@@ -59,13 +59,13 @@ describe("Seed flow, after verification (e2e)", () => {
 		expect(res.body.isVerified).toBe(true);
 	}, 15000);
 
-	it("GET /roles should return 'admin' and 'common' given the user is already verified", async () => {
+	it("GET /roles should return 'admin' and 'default' given the user is already verified", async () => {
 		const res = await req
 			.get("/roles")
 			.set("Authorization", `Bearer ${accessToken}`);
 		expect(res.status).toBe(200);
 		expect(res.body[0].name).toBe("admin");
-		expect(res.body[1].name).toBe("common");
+		expect(res.body[1].name).toBe("default");
 	}, 15000);
 
 	it("Contains at least one test", () => {
