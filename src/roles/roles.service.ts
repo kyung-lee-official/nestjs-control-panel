@@ -184,7 +184,9 @@ export class RolesService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester.id
 		);
-		const role = await this.rolesRepository.findOne({ where: { id: id } });
+		const role = await this.rolesRepository.findOne({
+			where: { id: id },
+		});
 		if (!role) {
 			throw new BadRequestException(`Role with ID ${id} not found`);
 		}
@@ -195,11 +197,6 @@ export class RolesService {
 				throw new BadRequestException(error.message);
 			}
 			throw error;
-		}
-		if (role.users?.length > 0) {
-			throw new BadRequestException(
-				"Can not delete a role that has users"
-			);
 		}
 		const result = await this.rolesRepository.delete(id);
 		if (!result.affected) {

@@ -32,6 +32,9 @@ export class Role {
 		},
 		(user) => {
 			return user.roles;
+		},
+		{
+			onDelete: "CASCADE",
 		}
 	)
 	users: User[];
