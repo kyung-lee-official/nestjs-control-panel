@@ -71,7 +71,10 @@ export class RolesService {
 			}
 		}
 		const newRoleName = await generateNewRoleName(0);
-		const role = this.rolesRepository.create({ name: newRoleName });
+		const role = this.rolesRepository.create({
+			name: newRoleName,
+			permissions: [],
+		});
 
 		try {
 			ForbiddenError.from(ability).throwUnlessCan(Actions.CREATE, role);
