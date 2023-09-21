@@ -251,11 +251,23 @@ export class UsersService {
 		);
 		const adminRole = await this.rolesRepository.findOne({
 			where: { name: "admin" },
+			relations: ["users"],
 		});
+		const adminUserId = adminRole.users[0].id;
 		let user: User;
 		let roles: Role[];
 		if (updateUserRolesDto.roleIds) {
-			if (updateUserRolesDto.roleIds.includes(adminRole.id)) {
+			if (id === adminUserId) {
+				if (!updateUserRolesDto.roleIds.includes(adminRole.id)) {
+					throw new ForbiddenException(
+						"'admin' cannot be resigned without transferring it to another user"
+					);
+				}
+			}
+			if (
+				id !== adminUserId &&
+				updateUserRolesDto.roleIds.includes(adminRole.id)
+			) {
 				throw new ForbiddenException(
 					"Can't assign the 'admin' role to other users"
 				);
