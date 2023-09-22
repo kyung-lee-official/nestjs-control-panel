@@ -29,6 +29,7 @@ import { AuthService } from "../auth/auth.service";
 import fs, { readFile, writeFile } from "fs/promises";
 import path from "path";
 import { existsSync, mkdirSync } from "fs";
+import { FreezeUserDto } from "./dto/freeze-user.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class UsersService {
@@ -420,7 +421,51 @@ export class UsersService {
 		res.download(filePath);
 	}
 
+	async freeze(id: string, freezeUserDto: FreezeUserDto): Promise<User> {
+		let requester = this.request.user;
+		const adminRole = await this.rolesRepository.findOne({
+			where: { name: "admin" },
+			relations: ["users"],
+		});
+		const admin = adminRole.users[0];
+		const user = await this.usersRepository.findOne({
+			where: { id: id },
+			relations: ["groups"],
+		});
+		if (id === admin.id) {
+			throw new ForbiddenException("Can't freeze the 'admin' user");
+		}
+		if (requester.id === id) {
+			throw new ForbiddenException("Can't freeze yourself");
+		}
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
+		if (!user) {
+			throw new NotFoundException("User not found");
+		}
+		try {
+			ForbiddenError.from(ability).throwUnlessCan(Actions.UPDATE, user);
+		} catch (error) {
+			if (error instanceof ForbiddenError) {
+				throw new ForbiddenException(error.message);
+			}
+			throw error;
+		}
+		user.isFrozen = freezeUserDto.isFrozen;
+		const result = await this.usersRepository.save(user);
+		return result;
+	}
+
 	async transferOwnership(id: string): Promise<User> {
+		const user = await this.usersRepository.findOne({
+			where: { id: id },
+		});
+		if (user.isFrozen) {
+			throw new ForbiddenException(
+				"Can't transfer ownership to a frozen user"
+			);
+		}
 		return;
 	}
 

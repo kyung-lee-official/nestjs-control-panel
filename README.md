@@ -53,6 +53,7 @@ To delete connections from third-party apps:
 -   [x] Update email by user id, `UPDATE_USER | UPDATE_ME` permission required.
 -   [x] Update roles by user id, `UPDATE_USER` permission required.
 -   [x] Update password by user id, `UPDATE_USER | UPDATE_ME` permission required.
+-   [ ] Freeze a user by id, `UPDATE_USER` permission required.
 -   [x] Delete a user by id, `DELETE_USER` permission required.
 
 ## roles

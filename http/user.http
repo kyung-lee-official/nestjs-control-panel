@@ -86,6 +86,15 @@ Content-Type: image/png
 < xxxxx
 --REST-CLIENT-BOUNDARY--
 
+### Freeze a user
+PATCH  {{$dotenv LOCAL_HOST}}/users/freeze/430e9765-a771-4ef0-8fe4-dac8f6dfbb0f
+Content-Type: application/json
+Authorization: {{$dotenv AUTHORIZATION}}
+
+{
+	"isFrozen": true
+}
+
 ### Delete a user
 DELETE {{$dotenv LOCAL_HOST}}/users/da46993e-ca6e-4ed4-94d7-29380e9f71bc
 Authorization: {{$dotenv AUTHORIZATION}}

@@ -86,6 +86,8 @@ export class AuthService {
 			email,
 			password: hashedPassword,
 			nickname,
+			isVerified: false,
+			isFrozen: false,
 			roles: [adminRole],
 			groups: [dbEveryoneGroup],
 			ownedGroups: [dbEveryoneGroup],
@@ -100,7 +102,7 @@ export class AuthService {
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
-		const dbdefaultRole = await this.rolesRepository.findOne({
+		const dbDefaultRole = await this.rolesRepository.findOne({
 			where: { name: "default" },
 		});
 		const dbEveryoneGroup = await this.groupsRepository.findOne({
@@ -110,7 +112,9 @@ export class AuthService {
 			email,
 			password: hashedPassword,
 			nickname,
-			roles: [dbdefaultRole],
+			isVerified: false,
+			isFrozen: false,
+			roles: [dbDefaultRole],
 			groups: [dbEveryoneGroup],
 		});
 		await this.usersRepository.save(user);
@@ -186,7 +190,7 @@ export class AuthService {
 							where: { name: "everyone" },
 						}
 					);
-					const dbdefaultRole = await this.rolesRepository.findOne({
+					const dbDefaultRole = await this.rolesRepository.findOne({
 						where: { name: "default" },
 					});
 					const user = this.usersRepository.create({
@@ -194,7 +198,7 @@ export class AuthService {
 						password: hashedPassword,
 						nickname:
 							req.user.givenName + " " + req.user.familyName,
-						roles: [dbdefaultRole],
+						roles: [dbDefaultRole],
 						groups: [dbEveryoneGroup],
 						isVerified: true,
 					});

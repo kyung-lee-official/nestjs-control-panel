@@ -27,11 +27,11 @@ export class User {
 	@Exclude()
 	password: string;
 
-	// @Column()
-	// isActive: boolean;
-
 	@Column({ nullable: true })
 	isVerified: boolean;
+
+	@Column({ nullable: true })
+	isFrozen: boolean;
 
 	@ManyToMany(
 		(type) => {

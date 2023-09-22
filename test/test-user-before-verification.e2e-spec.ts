@@ -96,7 +96,7 @@ describe("Test user flow, before test user verification (e2e)", () => {
 		expect(user1Res.body.groups[0].name).toBe("everyone");
 		expect(user1Res.body.ownedGroups).toBe(undefined);
 		expect(user1Res.body.roles[0].name).toBe("default");
-		expect(user1Res.body.isVerified).toBe(null);
+		expect(user1Res.body.isVerified).toBe(false);
 	});
 
 	it("POST /auth/signup sign up as test user 2", async () => {
@@ -117,7 +117,7 @@ describe("Test user flow, before test user verification (e2e)", () => {
 		expect(user2Res.body.groups[0].name).toBe("everyone");
 		expect(user2Res.body.ownedGroups).toBe(undefined);
 		expect(user2Res.body.roles[0].name).toBe("default");
-		expect(user2Res.body.isVerified).toBe(null);
+		expect(user2Res.body.isVerified).toBe(false);
 	});
 
 	it("Contains at least one test", () => {

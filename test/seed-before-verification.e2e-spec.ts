@@ -79,7 +79,7 @@ describe("Seed flow, before verification (e2e)", () => {
 		expect(res.body.groups[0].name).toBe("everyone");
 		expect(res.body.ownedGroups[0].name).toBe("everyone");
 		expect(res.body.roles[0].name).toBe("admin");
-		expect(res.body.isVerified).toBe(null);
+		expect(res.body.isVerified).toBe(false);
 	}, 30000);
 
 	it("GET /auth/isSeeded should be true", async () => {

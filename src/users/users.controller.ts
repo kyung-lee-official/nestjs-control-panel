@@ -31,6 +31,8 @@ import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserGroupsDto } from "./dto/update-user-groups.dto";
 import { IsVerifiedGuard } from "./guards/is-verified.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { FreezeUserDto } from "./dto/freeze-user.dto";
+import { NotFrozenGuard } from "./guards/not-frozen.guard";
 
 @UseGuards(JwtAuthGuard)
 @Controller("users")
@@ -165,7 +167,20 @@ export class UsersController {
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.UPDATE_USER)
+	@UseGuards(IsVerifiedGuard)
+	@Patch("/freeze/:id")
+	freeze(
+		@Param("id") id: string,
+		@Body() freezeUserDto: FreezeUserDto
+	): Promise<User> {
+		return this.usersService.freeze(id, freezeUserDto);
+	}
+
+	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.TRANSFER_ADMIN)
+	@UseGuards(NotFrozenGuard)
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/transferOwnership/:id")
 	transferOwnership(@Param("id") id: string): Promise<User> {
