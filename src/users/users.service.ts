@@ -26,8 +26,7 @@ import { Role } from "../roles/entities/role.entity";
 import { uniq } from "lodash";
 import { UpdateUserGroupsDto } from "./dto/update-user-groups.dto";
 import { AuthService } from "../auth/auth.service";
-import fs, { readFile, writeFile } from "fs/promises";
-import path from "path";
+import { writeFile } from "fs/promises";
 import { existsSync, mkdirSync } from "fs";
 import { FreezeUserDto } from "./dto/freeze-user.dto";
 
@@ -224,7 +223,7 @@ export class UsersService {
 		if (!user) {
 			throw new NotFoundException("User not found");
 		}
-		if (ability.can(Actions.UPDATE, user, "email")) {
+		if (ability.can(Actions.UPDATE, user)) {
 			Object.assign(user, updateUserEmailDto);
 			const result = await this.usersRepository.save(user);
 			return result;
@@ -235,10 +234,10 @@ export class UsersService {
 
 	/**
 	 * Update user's roles.
-	 * Throws a forbidden exception if updateUserRolesDto contains the 'admin' role.
-	 * If the requestee is an admin user, keep the 'admin' role anyway.
-	 * If updateUserRolesDto contains unknown roleIds, ignore them, doesn't throw.
-	 * @param id user id
+	 * If the requestee is not an admin user, and the 'admin' role is included in updateUserRolesDto, throw a forbidden exception.
+	 * If the requestee is an admin user, and the 'admin' role is not included in updateUserRolesDto, throw a forbidden exception.
+	 * If the 'default' role is not included in updateUserRolesDto, throw a forbidden exception.
+	 * If updateUserRolesDto contains unknown roleIds, throw a not found exception.
 	 * @param updateUserRolesDto
 	 * @returns user
 	 */
@@ -276,6 +275,9 @@ export class UsersService {
 			roles = await this.rolesRepository.find({
 				where: { id: In(updateUserRolesDto.roleIds) },
 			});
+			if (roles.length !== updateUserRolesDto.roleIds.length) {
+				throw new NotFoundException("At least one role not found");
+			}
 			user = await this.usersRepository.findOne({
 				where: { id: id },
 				relations: ["roles", "groups"],
@@ -294,8 +296,7 @@ export class UsersService {
 		} else {
 			throw new BadRequestException("Empty body, missing 'roleIds'");
 		}
-
-		if (ability.can(Actions.UPDATE, user, "roles")) {
+		if (ability.can(Actions.UPDATE, Role)) {
 			user.roles = roles;
 			const result = await this.usersRepository.save(user);
 			return result;
@@ -341,8 +342,7 @@ export class UsersService {
 		} else {
 			throw new BadRequestException("Empty body, missing 'groupIds'");
 		}
-
-		if (ability.can(Actions.UPDATE, user, "groups")) {
+		if (ability.can(Actions.UPDATE, Group)) {
 			user.groups = groups;
 			const result = await this.usersRepository.save(user);
 			return result;
@@ -355,7 +355,7 @@ export class UsersService {
 		id: string,
 		updateUserPasswordDto: UpdateUserPasswordDto
 	): Promise<User> {
-		let requester = this.request.user;
+		const requester = this.request.user;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester.id
 		);
@@ -363,7 +363,7 @@ export class UsersService {
 		if (!user) {
 			throw new NotFoundException("User not found");
 		}
-		if (ability.can(Actions.UPDATE, user, "password")) {
+		if (ability.can(Actions.UPDATE, user)) {
 			const { oldPassword, newPassword } = updateUserPasswordDto;
 			const isOldPasswordCorrect: boolean = await bcrypt.compare(
 				oldPassword,
@@ -422,7 +422,10 @@ export class UsersService {
 	}
 
 	async freeze(id: string, freezeUserDto: FreezeUserDto): Promise<User> {
-		let requester = this.request.user;
+		const requester = this.request.user;
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
 		const adminRole = await this.rolesRepository.findOne({
 			where: { name: "admin" },
 			relations: ["users"],
@@ -438,9 +441,6 @@ export class UsersService {
 		if (requester.id === id) {
 			throw new ForbiddenException("Can't freeze yourself");
 		}
-		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
-		);
 		if (!user) {
 			throw new NotFoundException("User not found");
 		}
@@ -457,7 +457,28 @@ export class UsersService {
 		return result;
 	}
 
-	async transferOwnership(id: string): Promise<User> {
+	async transferOwnership(id: string): Promise<{ isTransferred: boolean }> {
+		const requester = this.request.user;
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
+		const adminRole = await this.rolesRepository.findOne({
+			where: { name: "admin" },
+			relations: ["users"],
+		});
+		const defaultRole = await this.rolesRepository.findOne({
+			where: { name: "default" },
+			relations: ["users"],
+		});
+		const admin = adminRole.users[0];
+		if (requester.id !== admin.id) {
+			throw new ForbiddenException(
+				"Only the 'admin' user can transfer ownership"
+			);
+		}
+		const everyoneGroup = await this.groupsRepository.findOne({
+			where: { name: "everyone" },
+		});
 		const user = await this.usersRepository.findOne({
 			where: { id: id },
 		});
@@ -466,7 +487,20 @@ export class UsersService {
 				"Can't transfer ownership to a frozen user"
 			);
 		}
-		return;
+		if (!user) {
+			throw new NotFoundException("User not found");
+		}
+		if (ability.can(Actions.UPDATE, Role)) {
+			adminRole.users = [user];
+			everyoneGroup.owner = user;
+		} else {
+			throw new ForbiddenException("Forbidden, can't update user roles");
+		}
+		const adminRoleResult = await this.rolesRepository.save(adminRole);
+		const everyoneGroupResult = await this.groupsRepository.save(
+			everyoneGroup
+		);
+		return { isTransferred: true };
 	}
 
 	async remove(id: string): Promise<any> {

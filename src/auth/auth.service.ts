@@ -88,7 +88,7 @@ export class AuthService {
 			nickname,
 			isVerified: false,
 			isFrozen: false,
-			roles: [adminRole],
+			roles: [adminRole, defaultRole],
 			groups: [dbEveryoneGroup],
 			ownedGroups: [dbEveryoneGroup],
 		});
@@ -161,7 +161,7 @@ export class AuthService {
 		googleAccessToken: string;
 	}> {
 		if (!req.user) {
-			throw new InternalServerErrorException("User not found");
+			throw new NotFoundException("User not found");
 		} else {
 			const userQb = this.usersRepository.createQueryBuilder("user");
 			userQb.limit(3);
@@ -256,7 +256,7 @@ export class AuthService {
 					email,
 					password: hashedPassword,
 					nickname: req.user.givenName + " " + req.user.familyName,
-					roles: [adminRole],
+					roles: [adminRole, defaultRole],
 					groups: [dbEveryoneGroup],
 					ownedGroups: [dbEveryoneGroup],
 					isVerified: true,

@@ -21,7 +21,6 @@ if (process.env.ENV === "DEV") {
 let app: INestApplication;
 let req: request.SuperTest<request.Test>;
 let adminAccessToken: string;
-let testUser1AccessToken: string;
 
 beforeAll(async () => {
 	const moduleFixture: TestingModule = await Test.createTestingModule({

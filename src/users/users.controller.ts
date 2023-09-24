@@ -33,6 +33,7 @@ import { IsVerifiedGuard } from "./guards/is-verified.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { FreezeUserDto } from "./dto/freeze-user.dto";
 import { NotFrozenGuard } from "./guards/not-frozen.guard";
+import { Role } from "src/roles/entities/role.entity";
 
 @UseGuards(JwtAuthGuard)
 @Controller("users")
@@ -183,7 +184,9 @@ export class UsersController {
 	@UseGuards(NotFrozenGuard)
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/transferOwnership/:id")
-	transferOwnership(@Param("id") id: string): Promise<User> {
+	transferOwnership(
+		@Param("id") id: string
+	): Promise<{ isTransferred: boolean }> {
 		return this.usersService.transferOwnership(id);
 	}
 

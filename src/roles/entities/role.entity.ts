@@ -20,12 +20,6 @@ export class Role {
 	@Column("simple-array", { nullable: true })
 	permissions?: Permissions[];
 
-	@CreateDateColumn({ type: "timestamp with time zone" })
-	createdDate: Date;
-
-	@UpdateDateColumn({ type: "timestamp with time zone" })
-	updatedDate: Date;
-
 	@ManyToMany(
 		(type) => {
 			return User;
@@ -38,4 +32,10 @@ export class Role {
 		}
 	)
 	users: User[];
+
+	@CreateDateColumn({ type: "timestamp with time zone" })
+	createdDate: Date;
+
+	@UpdateDateColumn({ type: "timestamp with time zone" })
+	updatedDate: Date;
 }

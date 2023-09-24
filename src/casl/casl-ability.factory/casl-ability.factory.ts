@@ -71,32 +71,8 @@ export class CaslAbilityFactory {
 		if (requesterPermissions.includes(Permissions.UPDATE_ME)) {
 			can(Actions.UPDATE, User, { id: dbRequester.id });
 		}
-		if (requesterPermissions.includes(Permissions.UPDATE_USER)) {
-			can(Actions.UPDATE, User, "email", {
-				groups: { $elemMatch: { id: { $in: ownedGroupIds } } },
-			});
-		}
-		if (requesterPermissions.includes(Permissions.UPDATE_ME)) {
-			can(Actions.UPDATE, User, "email", { id: dbRequester.id });
-		}
-		if (requesterPermissions.includes(Permissions.UPDATE_USER)) {
-			can(Actions.UPDATE, User, "roles", {
-				groups: { $elemMatch: { id: { $in: ownedGroupIds } } },
-			});
-		}
-		if (requesterPermissions.includes(Permissions.UPDATE_ME)) {
-			can(Actions.UPDATE, User, "roles", { id: dbRequester.id });
-		}
 		if (requesterPermissions.includes(Permissions.TRANSFER_ADMIN)) {
-			can(Actions.UPDATE, User, "roles", { id: dbRequester.id });
-		}
-		if (requesterPermissions.includes(Permissions.UPDATE_USER)) {
-			can(Actions.UPDATE, User, "password", {
-				groups: { $elemMatch: { id: { $in: ownedGroupIds } } },
-			});
-		}
-		if (requesterPermissions.includes(Permissions.UPDATE_ME)) {
-			can(Actions.UPDATE, User, "password", { id: dbRequester.id });
+			can(Actions.UPDATE, Role);
 		}
 		if (requesterPermissions.includes(Permissions.GET_USERS)) {
 			can(Actions.READ, User, {
