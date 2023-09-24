@@ -92,7 +92,8 @@ export class AuthController {
 	@Post("/sendVerificationEmail")
 	sendVerificationEmail(@Req() req: any): Promise<void> {
 		const user = req.user;
-		return this.authService.sendVerificationEmail(user);
+		const email = user.email;
+		return this.authService.sendVerificationEmail(email);
 	}
 
 	/**
