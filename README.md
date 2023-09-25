@@ -204,3 +204,7 @@ Response example:
 	},
 ];
 ```
+
+## Todo
+
+-   Finish up freeze user logic
