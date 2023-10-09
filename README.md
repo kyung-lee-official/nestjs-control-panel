@@ -175,8 +175,8 @@ type DiscordDrawCampaignRules = {
 -   ip
 -   country
 
-*   [x] Create a feedback.
-*   [x] Find feedbacks by `startDate` and `endDate`.
+-   [x] Create a feedback.
+-   [x] Find feedbacks by `startDate` and `endDate`.
 
 Response example:
 
@@ -207,4 +207,6 @@ Response example:
 
 ## Todo
 
+-   Finish up limitations for unverified users
 -   Finish up freeze user logic
+-   [x] Support manually verify users

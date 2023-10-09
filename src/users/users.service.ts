@@ -184,6 +184,27 @@ export class UsersService {
 		}
 	}
 
+	async userVerification(id: string): Promise<User> {
+		const requester = this.request.user;
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
+		const user = await this.usersRepository.findOne({
+			where: { id: id },
+			relations: ["groups"],
+		});
+		if (!user) {
+			throw new NotFoundException("User not found");
+		}
+		if (ability.can(Actions.UPDATE, user)) {
+			user.isVerified = true;
+			const result = await this.usersRepository.save(user);
+			return result;
+		} else {
+			throw new ForbiddenException();
+		}
+	}
+
 	async update(
 		id: string,
 		updateUserDto: Partial<UpdateUserDto>

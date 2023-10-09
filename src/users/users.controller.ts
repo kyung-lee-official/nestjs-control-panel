@@ -93,6 +93,15 @@ export class UsersController {
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.UPDATE_USER)
+	@UseGuards(IsVerifiedGuard)
+	@Patch("/user-verification/:id")
+	userVerification(@Param("id") id: string): Promise<User> {
+		return this.usersService.userVerification(id);
+	}
+
+	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_USER, Permissions.UPDATE_ME)
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/profile/:id")

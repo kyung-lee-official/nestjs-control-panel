@@ -38,6 +38,10 @@ GET {{$dotenv LOCAL_HOST}}/users/8b9136f6-902d-4799-b5c2-5f6caebac8b6
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
+### Verify a user manually
+PATCH {{$dotenv LOCAL_HOST}}/users/user-verification/449ed90f-59d3-4a6f-b39d-033bb13da350
+Authorization: {{$dotenv AUTHORIZATION}}
+
 ### Update a user profile
 PATCH {{$dotenv LOCAL_HOST}}/users/profile/8b9136f6-902d-4799-b5c2-5f6caebac8b6
 Content-Type: application/x-www-form-urlencoded
