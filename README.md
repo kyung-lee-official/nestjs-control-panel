@@ -209,4 +209,4 @@ Response example:
 
 -   Finish up limitations for unverified users
 -   Finish up freeze user logic
--   [x] Support manually verify users
+-   Check new email logic and sign up logic, if the new email is already taken, return 400 bad request

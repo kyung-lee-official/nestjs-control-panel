@@ -3,6 +3,7 @@ import {
 	ClassSerializerInterceptor,
 	Controller,
 	Get,
+	Patch,
 	Post,
 	Req,
 	Res,
@@ -21,6 +22,7 @@ import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { ForgetPasswordDto } from "./dto/forget-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { CredentialData } from "qcloud-cos-sts";
+import { UpdateEmailRequestDto } from "./dto/update-email-request";
 
 @Controller("auth")
 export class AuthController {
@@ -112,6 +114,27 @@ export class AuthController {
 		@Body() verifyEmailDto: VerifyEmailDto
 	): Promise<{ isVerified: boolean }> {
 		return this.authService.verifyEmail(verifyEmailDto);
+	}
+
+	@UseGuards(JwtAuthGuard)
+	@Patch("/update-email-request")
+	sendUpdateEmailVerificationRequest(
+		@Req() req: any,
+		@Body() updateEmailRequestDto: UpdateEmailRequestDto
+	): Promise<{ isSent: boolean }> {
+		const user = req.user;
+		const email = user.email;
+		return this.authService.sendUpdateEmailVerificationRequest(
+			email,
+			updateEmailRequestDto
+		);
+	}
+
+	@Patch("/verifyNewEmail")
+	veryfyNewEmail(
+		@Body() verifyEmailDto: VerifyEmailDto
+	): Promise<{ isVerified: boolean }> {
+		return this.authService.verifyNewEmail(verifyEmailDto);
 	}
 
 	@Post("/forgetPassword")

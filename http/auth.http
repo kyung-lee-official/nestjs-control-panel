@@ -56,3 +56,11 @@ Content-Type: application/json
 {
 	"verificationToken": "{{$dotenv SMTP_TEST_EMAIL_VERIFICATION_TOKEN}}"
 }
+
+### Test verify new email
+PATCH {{$dotenv LOCAL_HOST}}/auth/verifyNewEmail
+Content-Type: application/json
+
+{
+	"verificationToken": "{{$dotenv SMTP_TEST_EMAIL_VERIFICATION_TOKEN}}"
+}

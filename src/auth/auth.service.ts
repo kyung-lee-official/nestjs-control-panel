@@ -25,6 +25,7 @@ import { generatePassword } from "../utils/algorithms";
 import { ForgetPasswordDto } from "./dto/forget-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { CredentialData, getCredential } from "qcloud-cos-sts";
+import { UpdateEmailRequestDto } from "./dto/update-email-request";
 
 @Injectable()
 export class AuthService {
@@ -327,6 +328,85 @@ export class AuthService {
 			throw new BadRequestException("User not found");
 		}
 		user.isVerified = true;
+		await this.usersRepository.save(user);
+		return { isVerified: true };
+	}
+
+	async sendUpdateEmailVerificationRequest(
+		requesterEmail: string,
+		updateEmailRequestDto: UpdateEmailRequestDto
+	) {
+		const { newEmail } = updateEmailRequestDto;
+		if (requesterEmail === newEmail) {
+			throw new BadRequestException(
+				"New email is the same as the old one"
+			);
+		}
+		const isEmailExists = await this.usersRepository.findOne({
+			where: { email: newEmail },
+		});
+		if (isEmailExists) {
+			throw new BadRequestException("Email already exists");
+		}
+
+		const payload: JwtPayload = {
+			email: requesterEmail,
+			newEmail: newEmail,
+		};
+		const token: string = this.jwtService.sign(payload, {
+			secret: process.env.SMTP_JWT_SECRET,
+			expiresIn: "1d",
+		});
+
+		const textTemplate = (url: string) =>
+			`Please verify your new email by clicking on the following link ${url}`;
+
+		const htmlTemplate = (url: string) => `
+			<div style="text-align: center; font-family: sans-serif; border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f5f5f5; max-width: 500px; margin: 0 auto;">
+				<h1>Verify your new email 📧</h1>
+				<p>Please verify your new email by clicking on the following link:</p>
+				<a href="${url}">👉🏼 Click here</a>
+			</div>
+		`;
+
+		try {
+			await this.mailerService.sendMail({
+				from: `"${process.env.SMTP_USERNAME}" <${process.env.SMTP_USER}>` /* sender address */,
+				to: newEmail /* list of receivers, comma separated */,
+				subject:
+					"Please verify your new email address 📧" /* subject line */,
+				text: textTemplate(
+					`${process.env.FRONTEND_HOST}/auth/newEmailVerification?token=${token}`
+				) /* plain text body */,
+				html: htmlTemplate(
+					`${process.env.FRONTEND_HOST}/auth/newEmailVerification?token=${token}`
+				) /* html body */,
+			});
+		} catch (error) {
+			console.error(error);
+			throw new InternalServerErrorException(
+				"Failed to send verification email"
+			);
+		}
+
+		return { isSent: true };
+	}
+
+	async verifyNewEmail(verifyEmailDto: VerifyEmailDto) {
+		const { verificationToken } = verifyEmailDto;
+		const payload: JwtPayload = this.jwtService.verify(verificationToken, {
+			secret: process.env.SMTP_JWT_SECRET,
+		});
+		const { email, newEmail } = payload;
+		const user = await this.usersRepository.findOne({
+			where: {
+				email: email,
+			},
+		});
+		if (!user) {
+			throw new BadRequestException("User not found");
+		}
+		user.email = newEmail;
 		await this.usersRepository.save(user);
 		return { isVerified: true };
 	}
