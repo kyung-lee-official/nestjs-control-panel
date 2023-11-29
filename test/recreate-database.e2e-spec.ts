@@ -42,7 +42,7 @@ describe("Drop database (e2e)", () => {
 		await app.init();
 	}, 30000);
 
-	it("Table numbers should not be 0", async () => {
+	it("As the AppModule been compiled, tables should be initialized, and table numbers should not be 0", async () => {
 		const dbClient = new Client({
 			host: process.env.DATABASE_HOST_DEV,
 			port: parseInt(process.env.DATABASE_PORT_DEV),
@@ -58,12 +58,12 @@ describe("Drop database (e2e)", () => {
 		expect(res.rows).toContainEqual({
 			table_name: "chitubox_manual_feedback",
 		});
-		expect(res.rows).toContainEqual({ table_name: "group" });
-		expect(res.rows).toContainEqual({ table_name: "role" });
-		expect(res.rows).toContainEqual({ table_name: "server_setting" });
-		expect(res.rows).toContainEqual({ table_name: "user" });
-		expect(res.rows).toContainEqual({ table_name: "user_groups_group" });
-		expect(res.rows).toContainEqual({ table_name: "user_roles_role" });
+		expect(res.rows).toContainEqual({ table_name: "member_group" });
+		expect(res.rows).toContainEqual({ table_name: "member_role" });
+		expect(res.rows).toContainEqual({ table_name: "member_server_setting" });
+		expect(res.rows).toContainEqual({ table_name: "member" });
+		expect(res.rows).toContainEqual({ table_name: "member_member_groups_member_group" });
+		expect(res.rows).toContainEqual({ table_name: "member_member_roles_member_role" });
 		await dbClient.end();
 	}, 30000);
 

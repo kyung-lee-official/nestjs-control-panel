@@ -2,42 +2,42 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { Permissions } from "./permissions.enum";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { User } from "../users/entities/user.entity";
+import { Member } from "../members/entities/member.entity";
 import { uniq } from "lodash";
 
 @Injectable()
 export class PermissionsService {
 	constructor(
-		@InjectRepository(User)
-		private usersRepository: Repository<User>
-	) {}
+		@InjectRepository(Member)
+		private membersRepository: Repository<Member>
+	) { }
 
 	find() {
 		return Object.values(Permissions);
 	}
 
-	async getPermissionsByUserId(id: string): Promise<Permissions[]> {
-		const user = await this.usersRepository.findOne({
+	async getPermissionsByMemberId(id: string): Promise<Permissions[]> {
+		const member = await this.membersRepository.findOne({
 			where: {
 				id: id,
 			},
-			relations: ["roles"],
+			relations: ["memberRoles"],
 		});
-		if (!user) {
-			throw new NotFoundException("User not exists");
+		if (!member) {
+			throw new NotFoundException("Member not exists");
 		}
-		const permissionArrayOfOwnedRoles = user.roles.map((role) => {
+		const permissionArrayOfOwnedRoles = member.memberRoles.map((role) => {
 			return role.permissions;
 		});
-		let allPermissionsOfUser = [];
+		let allPermissionsOfMember = [];
 		if (permissionArrayOfOwnedRoles.length > 0) {
-			allPermissionsOfUser = permissionArrayOfOwnedRoles.reduce(
+			allPermissionsOfMember = permissionArrayOfOwnedRoles.reduce(
 				(accumulator, currentValue) => {
 					return accumulator.concat(currentValue);
 				}
 			);
 		}
-		allPermissionsOfUser = uniq(allPermissionsOfUser);
-		return allPermissionsOfUser;
+		allPermissionsOfMember = uniq(allPermissionsOfMember);
+		return allPermissionsOfMember;
 	}
 }

@@ -8,11 +8,11 @@ import {
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ChituboxManualFeedback } from "../../chitubox-manual-feedbacks/entities/chitubox-manual-feedback-record.entity";
-import { Group } from "../../groups/entities/group.entity";
+import { MemberGroup } from "../../member-groups/entities/member-group.entity";
 import { Permissions } from "../../permissions/permissions.enum";
 import { PermissionsService } from "../../permissions/permissions.service";
-import { Role } from "../../roles/entities/role.entity";
-import { User } from "../../users/entities/user.entity";
+import { MemberRole } from "../../member-roles/entities/member-role.entity";
+import { Member } from "../../members/entities/member.entity";
 import { Repository } from "typeorm";
 
 export enum Actions {
@@ -24,11 +24,11 @@ export enum Actions {
 
 export type Subjects =
 	| InferSubjects<
-			| typeof User
-			| typeof Role
-			| typeof Group
-			| typeof ChituboxManualFeedback
-	  >
+		| typeof Member
+		| typeof MemberRole
+		| typeof MemberGroup
+		| typeof ChituboxManualFeedback
+	>
 	| "all";
 
 export type AppAbility = MongoAbility<[Actions, Subjects]>;
@@ -36,19 +36,19 @@ export type AppAbility = MongoAbility<[Actions, Subjects]>;
 @Injectable()
 export class CaslAbilityFactory {
 	constructor(
-		@InjectRepository(User)
-		private usersRepository: Repository<User>,
+		@InjectRepository(Member)
+		private membersRepository: Repository<Member>,
 		private permissionsService: PermissionsService
-	) {}
+	) { }
 	async defineAbilityFor(requesterId: string): Promise<AppAbility> {
-		const dbRequester = await this.usersRepository.findOne({
+		const dbRequester = await this.membersRepository.findOne({
 			where: {
 				id: requesterId,
 			},
-			relations: ["groups", "ownedGroups"],
+			relations: ["memberGroups", "ownedGroups"],
 		});
 		const requesterPermissions =
-			await this.permissionsService.getPermissionsByUserId(
+			await this.permissionsService.getPermissionsByMemberId(
 				dbRequester.id
 			);
 		const abilityBuilder = new AbilityBuilder<AppAbility>(
@@ -58,76 +58,81 @@ export class CaslAbilityFactory {
 		const ownedGroupIds = dbRequester.ownedGroups.map((ownedGroup) => {
 			return ownedGroup.id;
 		});
+
 		/* Auth permissions */
-		if (requesterPermissions.includes(Permissions.CREATE_USER)) {
-			can(Actions.CREATE, User);
+		if (requesterPermissions.includes(Permissions.CREATE_MEMBER)) {
+			can(Actions.CREATE, Member);
 		}
-		/* User permissions */
-		if (requesterPermissions.includes(Permissions.UPDATE_USER)) {
-			can(Actions.UPDATE, User, {
-				groups: { $elemMatch: { id: { $in: ownedGroupIds } } },
+
+		/* Member permissions */
+		if (requesterPermissions.includes(Permissions.UPDATE_MEMBER)) {
+			can(Actions.UPDATE, Member, {
+				memberGroups: { $elemMatch: { id: { $in: ownedGroupIds } } },
 			});
 		}
-		if (requesterPermissions.includes(Permissions.UPDATE_ME)) {
-			can(Actions.UPDATE, User, { id: dbRequester.id });
+		if (requesterPermissions.includes(Permissions.UPDATE_MEMBER_ME)) {
+			can(Actions.UPDATE, Member, { id: dbRequester.id });
 		}
-		if (requesterPermissions.includes(Permissions.TRANSFER_ADMIN)) {
-			can(Actions.UPDATE, Role);
+		if (requesterPermissions.includes(Permissions.TRANSFER_MEMBER_ADMIN)) {
+			can(Actions.UPDATE, MemberRole);
 		}
-		if (requesterPermissions.includes(Permissions.GET_USERS)) {
-			can(Actions.READ, User, {
-				groups: { $elemMatch: { id: { $in: ownedGroupIds } } },
+		if (requesterPermissions.includes(Permissions.GET_MEMBERS)) {
+			can(Actions.READ, Member, {
+				memberGroups: { $elemMatch: { id: { $in: ownedGroupIds } } },
 			});
 		}
-		if (requesterPermissions.includes(Permissions.GET_ME)) {
-			can(Actions.READ, User, { id: dbRequester.id });
+		if (requesterPermissions.includes(Permissions.GET_MEMBER_ME)) {
+			can(Actions.READ, Member, { id: dbRequester.id });
 		}
-		if (requesterPermissions.includes(Permissions.DELETE_USER)) {
-			can(Actions.DELETE, User, {
-				groups: { $elemMatch: { id: { $in: ownedGroupIds } } },
+		if (requesterPermissions.includes(Permissions.DELETE_MEMBER)) {
+			can(Actions.DELETE, Member, {
+				memberGroups: { $elemMatch: { id: { $in: ownedGroupIds } } },
 			});
-			cannot(Actions.DELETE, User, {
-				roles: { $elemMatch: { name: "admin" } },
-			}).because("Can't delete an admin user");
+			cannot(Actions.DELETE, Member, {
+				memberRoles: { $elemMatch: { name: "admin" } },
+			}).because("Can't delete an admin member");
 		}
-		/* Role permissions */
-		if (requesterPermissions.includes(Permissions.CREATE_ROLE)) {
-			can(Actions.CREATE, Role);
-			cannot(Actions.CREATE, Role, { name: "admin" }).because(
+
+		/* Member role permissions */
+		if (requesterPermissions.includes(Permissions.CREATE_MEMBER_ROLE)) {
+			can(Actions.CREATE, MemberRole);
+			cannot(Actions.CREATE, MemberRole, { name: "admin" }).because(
 				'Can\'t create "admin" role'
 			);
 		}
-		if (requesterPermissions.includes(Permissions.UPDATE_ROLE)) {
-			can(Actions.UPDATE, Role);
-			cannot(Actions.UPDATE, Role, { name: "admin" }).because(
+		if (requesterPermissions.includes(Permissions.UPDATE_MEMBER_ROLE)) {
+			can(Actions.UPDATE, MemberRole);
+			cannot(Actions.UPDATE, MemberRole, { name: "admin" }).because(
 				'Can\'t update "admin" role'
 			);
 		}
-		if (requesterPermissions.includes(Permissions.DELETE_ROLE)) {
-			can(Actions.DELETE, Role);
-			cannot(Actions.DELETE, Role, { name: "admin" }).because(
+		if (requesterPermissions.includes(Permissions.DELETE_MEMBER_ROLE)) {
+			can(Actions.DELETE, MemberRole);
+			cannot(Actions.DELETE, MemberRole, { name: "admin" }).because(
 				'Can\'t delete "admin" role'
 			);
 		}
-		/* Group permissions */
-		if (requesterPermissions.includes(Permissions.CREATE_GROUP)) {
-			can(Actions.CREATE, Group);
-			cannot(Actions.CREATE, Group, { name: "everyone" }).because(
-				'Can\'t create "everyone" group'
+
+		/* Member group permissions */
+		if (requesterPermissions.includes(Permissions.CREATE_MEMBER_GROUP)) {
+			can(Actions.CREATE, MemberGroup);
+			cannot(Actions.CREATE, MemberGroup, { name: "everyone" }).because(
+				'Can\'t create "everyone" member group'
 			);
 		}
-		if (requesterPermissions.includes(Permissions.UPDATE_GROUP)) {
-			can(Actions.UPDATE, Group);
-			cannot(Actions.UPDATE, Group, { name: "everyone" }).because(
-				'Can\'t update "everyone" group'
+		if (requesterPermissions.includes(Permissions.UPDATE_MEMBER_GROUP)) {
+			can(Actions.UPDATE, MemberGroup);
+			cannot(Actions.UPDATE, MemberGroup, { name: "everyone" }).because(
+				'Can\'t update "everyone" member group'
 			);
 		}
-		if (requesterPermissions.includes(Permissions.DELETE_GROUP)) {
-			can(Actions.DELETE, Group);
-			cannot(Actions.DELETE, Group, { name: "everyone" }).because(
-				'Can\'t delete "everyone" group'
+		if (requesterPermissions.includes(Permissions.DELETE_MEMBER_GROUP)) {
+			can(Actions.DELETE, MemberGroup);
+			cannot(Actions.DELETE, MemberGroup, { name: "everyone" }).because(
+				'Can\'t delete "everyone" member group'
 			);
 		}
+
 		/* Permission permissions */
 
 		const ability = build({

@@ -1,0 +1,40 @@
+### Update admin permissions
+GET {{$dotenv LOCAL_HOST}}/member-roles/updateAdminPermissions
+Authorization: {{$dotenv AUTHORIZATION}}
+
+### Create a member role
+POST {{$dotenv LOCAL_HOST}}/member-roles
+Content-Type: application/x-www-form-urlencoded
+Authorization: {{$dotenv AUTHORIZATION}}
+
+name=研发
+
+### Find member roles
+GET {{$dotenv LOCAL_HOST}}/member-roles
+Authorization: {{$dotenv AUTHORIZATION}}
+
+### Find a member role by id
+GET {{$dotenv LOCAL_HOST}}/member-roles/17
+Authorization: {{$dotenv AUTHORIZATION}}
+
+### Update member role by id
+PATCH {{$dotenv LOCAL_HOST}}/member-roles/4
+Content-Type: application/json
+Authorization: {{$dotenv AUTHORIZATION}}
+
+{
+	"name": "New Name",
+	"permissions": [
+		"GET_ROLES",
+		"GET_PERMISSIONS",
+		"GET_MEMBERS",
+		"GET_MEMBER_ME"
+	],
+	"memberIds": [
+		"59f73769-1794-4389-a731-8a774cb58bc0"
+	]
+}
+
+### Delete a member role
+DELETE {{$dotenv LOCAL_HOST}}/member-roles/13
+Authorization: {{$dotenv AUTHORIZATION}}

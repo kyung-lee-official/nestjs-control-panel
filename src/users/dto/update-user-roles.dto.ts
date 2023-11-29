@@ -1,8 +1,0 @@
-import { IsArray, IsNumber, IsOptional } from "class-validator";
-
-export class UpdateUserRolesDto {
-	@IsOptional()
-	@IsArray()
-	@IsNumber({}, { each: true })
-	roleIds?: number[];
-}

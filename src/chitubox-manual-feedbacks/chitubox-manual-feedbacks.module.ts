@@ -5,12 +5,12 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { ChituboxManualFeedback } from "./entities/chitubox-manual-feedback-record.entity";
 import { PermissionsModule } from "../permissions/permissions.module";
 import { ConfigModule } from "@nestjs/config";
-import { User } from "../users/entities/user.entity";
+import { Member } from "../members/entities/member.entity";
 
 @Module({
 	imports: [
 		ConfigModule.forRoot(),
-		TypeOrmModule.forFeature([ChituboxManualFeedback, User]),
+		TypeOrmModule.forFeature([ChituboxManualFeedback, Member]),
 		PermissionsModule,
 	],
 	controllers: [ChituboxManualFeedbacksController],

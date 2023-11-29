@@ -14,9 +14,9 @@ import { ChituboxManualFeedback } from "./entities/chitubox-manual-feedback-reco
 import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
 import { Permissions } from "../permissions/permissions.enum";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { JwtAuthGuard } from "../member-auth/guards/jwt-auth.guard";
 import { Iso8601DateRangeDto } from "./dto/iso8601-date-range.dto";
-import { IsVerifiedGuard } from "../users/guards/is-verified.guard";
+import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
 
 @Controller("chitubox-manual-feedbacks")
 export class ChituboxManualFeedbacksController {

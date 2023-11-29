@@ -1,0 +1,66 @@
+### Check is seeded
+GET {{$dotenv LOCAL_HOST}}/member-auth/isSeeded
+
+### Seed
+POST {{$dotenv LOCAL_HOST}}/member-auth/seed
+Content-Type: application/json
+
+{
+	"email": "kyung@cbd-3d.com",
+	"nickname": "Kyung",
+	"password": "1234Abcd!"
+}
+
+### Sign up
+POST {{$dotenv LOCAL_HOST}}/member-auth/signup
+Content-Type: application/json
+Authorization: {{$dotenv AUTHORIZATION}}
+
+{
+	"email": "kyung.lee@qq.com",
+	"nickname": "Lee",
+	"password": "1234Abcd!"
+}
+
+### Sign in
+POST {{$dotenv LOCAL_HOST}}/member-auth/signin
+Content-Type: application/json
+
+{
+	"email": "kyung.lee@qq.com",
+	"password": "1234Abcd!"
+}
+
+### Check is signed in
+GET {{$dotenv LOCAL_HOST}}/member-auth/isSignedIn
+Content-Type: application/json
+Authorization: {{$dotenv AUTHORIZATION}}
+
+### Send verification email
+POST {{$dotenv LOCAL_HOST}}/member-auth/sendVerificationEmail
+Content-Type: application/json
+Authorization: {{$dotenv AUTHORIZATION}}
+
+### Test send initial password email
+POST {{$dotenv LOCAL_HOST}}/member-auth/testSendInitialPasswordEmail
+Content-Type: application/json
+
+{
+	"email": "{{$dotenv SMTP_TEST_TO}}"
+}
+
+### Test verify email
+POST {{$dotenv LOCAL_HOST}}/member-auth/verifyEmail
+Content-Type: application/json
+
+{
+	"verificationToken": "{{$dotenv SMTP_TEST_EMAIL_VERIFICATION_TOKEN}}"
+}
+
+### Test verify new email
+PATCH {{$dotenv LOCAL_HOST}}/member-auth/verifyNewEmail
+Content-Type: application/json
+
+{
+	"verificationToken": "{{$dotenv SMTP_TEST_EMAIL_VERIFICATION_TOKEN}}"
+}

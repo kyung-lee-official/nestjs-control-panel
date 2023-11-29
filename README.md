@@ -1,20 +1,28 @@
-# Product Requirement Document
+# Architecture and Design
 
-## server-settings
+This system implements monolithic architecture. However, accounts are separated into two sub-systems.
+
+The internal account system is used for internal organization **members**, and the external account system (optional) is used for external **users**, note that we use **members** and **users** to differentiate the two.
+
+This pattern reduces security risks and improves compliance, it's also easier to maintain and scale.
+
+## Internal Members
+
+### member-server-settings
 
 -   [x] Allow or block public sign ups.
 -   [ ] Allow or block Google sign ups.
 
-## auth
+### member-auth
 
--   [x] Seed. If a user accesses the sign up page, the sign up page should send a `GET /auth/isSeeded` request to check if at least one user exists, if at least one user already exists, return `{ "isSeeded": true }`, frontend then redirects to the sign in page.
-        If frontend sends a `GET /auth/seed` request, check if at least one user exists, if at least one user already exists, return `400` bad request.
-        If no user exists, create a new user, `email` saved as lower case. Create an `admin` role, assign the role to the user. Create an `everyone` group, and assign the user as the group owner. Create a `default` role, any newly created user will be assigned to this role and can't be removed from it.
--   [ ] Sign up a new user, `email` saved in lower case, `CREATE_USER` permission required， and assign the user to the `everyone` group.
--   [x] Users must sign in to apply any operations after the server is seeded.
+-   [x] Seed. If a member accesses the sign up page, the sign up page should send a `GET /auth/isSeeded` request to check if at least one member exists, if at least one member already exists, return `{ "isSeeded": true }`, frontend then redirects to the sign in page.
+        If frontend sends a `GET /auth/seed` request, check if at least one member exists, if at least one member already exists, return `400` bad request.
+        If no member exists, create a new member, `email` saved as lower case. Create an `admin` role, assign the role to the member. Create an `everyone` group, and assign the member as the group owner. Create a `default` role, any newly created member will be assigned to this role and can't be removed from it.
+-   [ ] Sign up a new member, `email` saved in lower case, `CREATE_MEMBER` permission required， and assign the member to the `everyone` group.
+-   [x] Members must sign in to apply any operations after the server is seeded.
 -   [x] Check if sign-up is available
 
-### Google OAuth
+#### Google OAuth
 
 Make sure your dev server is able to connect to Google's OAuth server (use Proxifier if needed).
 
@@ -33,7 +41,7 @@ Example `request.user` send from Google to our server:
 }
 ```
 
-#### Delete Connections from Third-Party Apps
+##### Delete Connections from Third-Party Apps
 
 To delete connections from third-party apps:
 
@@ -43,22 +51,22 @@ To delete connections from third-party apps:
 
 1. On the **Your connections to third-party apps & services** panel, select the app or service you want to remove.
 
-## users
+### members
 
--   [ ] Create a new user, `email` saved as lower case, `CREATE_USER` permission required， and assign the user to the `everyone` group.
--   [x] Conditionally find users by query email (case insensitive), nickname, or roleIds. roleIds delimited by comma `','`, use **or** relationship. `GET_USERS` permission required.
--   [x] Find users by ids, `GET_USERS` permission required.
--   [x] Find a user by id, `GET_USERS | GET_ME` permission required.
--   [x] Update a user by id, can update `nickname`, `UPDATE_USER | UPDATE_ME` permission required.
--   [x] Update email by user id, `UPDATE_USER | UPDATE_ME` permission required.
--   [x] Update roles by user id, `UPDATE_USER` permission required.
--   [x] Update password by user id, `UPDATE_USER | UPDATE_ME` permission required.
--   [ ] Freeze or unfreeze a user by id, `UPDATE_USER` permission required.
--   [x] Delete a user by id, `DELETE_USER` permission required.
+-   [ ] Create a new member, `email` saved as lower case, `CREATE_MEMBER` permission required， and assign the member to the `everyone` group.
+-   [x] Conditionally find members by query email (case insensitive), nickname, or roleIds. roleIds delimited by comma `','`, use **or** relationship. `GET_MEMBERS` permission required.
+-   [x] Find members by ids, `GET_MEMBERS` permission required.
+-   [x] Find a member by id, `GET_MEMBERS | GET_MEMBER_ME` permission required.
+-   [x] Update a member by id, can update `nickname`, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
+-   [x] Update email by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
+-   [x] Update roles by member id, `UPDATE_MEMBER` permission required.
+-   [x] Update password by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
+-   [ ] Freeze or unfreeze a member by id, `UPDATE_MEMBER` permission required.
+-   [x] Delete a member by id, `DELETE_MEMBER` permission required.
 
-## roles
+### member-roles
 
-`role` name must be unique (`admin` and `default` are created when the server is seeded), the server should incrementally name the new role if the name already exists. The `default` role should be assigned to all users.
+`role` name must be unique (`admin` and `default` are created when the server is seeded), the server should incrementally name the new role if the name already exists. The `default` role should be assigned to all members.
 
 -   [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` role required.
 -   [x] Create a role, `CREATE_ROLE` permission required.
@@ -66,25 +74,25 @@ To delete connections from third-party apps:
 -   [x] Find all roles, `GET_ROLES` permission required.
 -   [x] Find a role by id, `GET_ROLES` permission required.
 -   [x] Update a role by id, `UPDATE_ROLE` permission required.
--   [x] Delete a role by id, delete even if the role has users, `DELETE_ROLE` permission required.
+-   [x] Delete a role by id, delete even if the role has members, `DELETE_ROLE` permission required.
 -   [x] The `admin` role has full permissions can not be deleted. The `admin` role's permissions can not be changed.
--   [x] The `admin` role can only has one user.
--   [ ] The `admin` role can only have one user, and can be transferred to another user, this action can only be performed by the `admin` role user. `admin` role can't be transferred to a frozen user.
--   [x] The `admin` user can not be deleted.
--   [x] The `default` role has permissions `GET_ME`.
+-   [x] The `admin` role can only has one member.
+-   [ ] The `admin` role can only have one member, and can be transferred to another member, this action can only be performed by the `admin` role member. `admin` role can't be transferred to a frozen member.
+-   [x] The `admin` member can not be deleted.
+-   [x] The `default` role has permissions `GET_MEMBER_ME`.
 -   [x] The `default` role can not be deleted.
 
-## groups
+### member-groups
 
 `group` name must be unique. (`everyone` is created when the server is seeded), the server should incrementally name the new group if the name already exists.
 
--   [x] Create a group, `CREATE_GROUP` permission required.
--   [x] Find all groups, `GET_GROUPS` permission required.
--   [x] Find a group by id, `GET_GROUPS` permission required.
--   [x] Update a group by id, `UPDATE_GROUP` permission required.
--   [x] Delete a group by id, delete even if the group has users, `DELETE_GROUP` permission required.
+-   [x] Create a group, `CREATE_MEMBER_GROUP` permission required.
+-   [x] Find all groups, `GET_MEMBER_GROUPS` permission required.
+-   [x] Find a group by id, `GET_MEMBER_GROUPS` permission required.
+-   [x] Update a group by id, `UPDATE_MEMBER_GROUP` permission required.
+-   [x] Delete a group by id, delete even if the group has members, `DELETE_MEMBER_GROUP` permission required.
 
-## permissions
+### permissions
 
 `@UseGuards(PermissionsGuard)` and `@RequiredPermissions(Permissions.ACT_SOMETHING)` help filter out requesters without required permissions.
 
@@ -94,7 +102,7 @@ CASL adds fields and conditions to the existing permission system to realize com
 
 -   Realize grouping, so requesters can only access resources belongs them. For example, the requestee must belongs to at least one group that is **owned** by the requester.
 
-Other permission rule logic must be implemented in corresponding services. For example, the `admin` role must have a user. When changing roles of a user, if the user belongs to the `admin` role, we can't simply remove the user from `admin`. Also, we can't add the `admin` role to a user without removing the current `admin` user.
+Other permission rule logic must be implemented in corresponding services. For example, the `admin` role must have a member. When changing roles of a member, if the member belongs to the `admin` role, we can't simply remove the member from `admin`. Also, we can't add the `admin` role to a member without removing the current `admin` member.
 
 -   [x] Find all permissions.
 
@@ -207,6 +215,6 @@ Response example:
 
 ## Todo
 
--   Finish up limitations for unverified users
--   Finish up freeze user logic
+-   Finish up limitations for unverified members
+-   Finish up freeze member logic
 -   Check new email logic and sign up logic, if the new email is already taken, return 400 bad request

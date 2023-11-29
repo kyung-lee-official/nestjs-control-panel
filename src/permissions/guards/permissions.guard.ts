@@ -19,12 +19,12 @@ export class PermissionsGuard implements CanActivate {
 		if (!requiredPermissions) {
 			return true;
 		}
-		let { user } = context.switchToHttp().getRequest();
-		const allPermissionsOfUser = await this.permissionsService.getPermissionsByUserId(user.id);
+		let { user: member } = context.switchToHttp().getRequest();
+		const allPermissionsOfMember = await this.permissionsService.getPermissionsByMemberId(member.id);
 
 		/* At least has one required permission */
 		const hasRequiredPermission = requiredPermissions.some((requiredPermission: Permissions) => {
-			return allPermissionsOfUser?.includes(requiredPermission);
+			return allPermissionsOfMember?.includes(requiredPermission);
 		});
 		return hasRequiredPermission;
 	}
