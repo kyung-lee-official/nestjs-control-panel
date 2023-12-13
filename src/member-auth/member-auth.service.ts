@@ -149,7 +149,7 @@ export class MemberAuthService {
 	}
 
 	async refreshAccessToken(req: any): Promise<{ accessToken: string; }> {
-		const { email } = req.member;
+		const { email } = req.user;
 		const payload: JwtPayload = { email };
 		const accessToken: string = this.jwtService.sign(payload);
 		return { accessToken };

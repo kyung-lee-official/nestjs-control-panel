@@ -411,14 +411,14 @@ export class MembersService {
 
 	async updateAvatar(req: any, file: Express.Multer.File): Promise<any> {
 		const { mimetype } = file;
-		if (!req.member) {
+		if (!req.user) {
 			throw new UnauthorizedException();
 		}
 		if (mimetype === "image/png") {
 			if (file.size > 1024 * 1024) {
 				throw new BadRequestException("File size too large");
 			}
-			const directoryPath = `storage/app/avatar/${req.member.id}`;
+			const directoryPath = `storage/app/avatar/${req.user.id}`;
 			if (!existsSync(directoryPath)) {
 				mkdirSync(directoryPath, { recursive: true });
 			}
@@ -431,7 +431,7 @@ export class MembersService {
 	}
 
 	async downloadAvatar(id: string, req: any, res: any): Promise<any> {
-		if (!req.member) {
+		if (!req.user) {
 			throw new UnauthorizedException();
 		}
 		const directoryPath = `storage/app/avatar/${id}`;

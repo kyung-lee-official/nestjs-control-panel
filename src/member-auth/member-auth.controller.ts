@@ -93,7 +93,7 @@ export class MemberAuthController {
 	@UseGuards(JwtAuthGuard)
 	@Post("/sendVerificationEmail")
 	sendVerificationEmail(@Req() req: any): Promise<void> {
-		const member = req.member;
+		const member = req.user;
 		const email = member.email;
 		return this.memberAuthService.sendVerificationEmail(email);
 	}
@@ -122,7 +122,7 @@ export class MemberAuthController {
 		@Req() req: any,
 		@Body() updateEmailRequestDto: MemberUpdateEmailRequestDto
 	): Promise<{ isSent: boolean; }> {
-		const member = req.member;
+		const member = req.user;
 		const email = member.email;
 		return this.memberAuthService.sendUpdateEmailVerificationRequest(
 			email,
