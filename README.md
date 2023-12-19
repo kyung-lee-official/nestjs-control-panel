@@ -66,30 +66,35 @@ To delete connections from third-party apps:
 
 ### member-roles
 
-`role` name must be unique (`admin` and `default` are created when the server is seeded), the server should incrementally name the new role if the name already exists. The `default` role should be assigned to all members.
+`member-role` name must be unique (`admin` and `default` are created when the server is seeded), the server should incrementally name the new member-role if the name already exists. The `default` member-role should be assigned to all members by default, but members can be removed from the `default` member-role.
 
--   [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` role required.
--   [x] Create a role, `CREATE_ROLE` permission required.
--   [ ] Create a role by copying permissions of an existing role, `CREATE_ROLE` permission required.
--   [x] Find all roles, `GET_ROLES` permission required.
--   [x] Find a role by id, `GET_ROLES` permission required.
--   [x] Update a role by id, `UPDATE_ROLE` permission required.
--   [x] Delete a role by id, delete even if the role has members, `DELETE_ROLE` permission required.
--   [x] The `admin` role has full permissions can not be deleted. The `admin` role's permissions can not be changed.
--   [x] The `admin` role can only has one member.
--   [ ] The `admin` role can only have one member, and can be transferred to another member, this action can only be performed by the `admin` role member. `admin` role can't be transferred to a frozen member.
+-   [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` member-role required.
+-   [x] Create a member-role, `CREATE_MEMBER_ROLE` permission required.
+-   [ ] Create a member-role by copying permissions of an existing member-role, `CREATE_MEMBER_ROLE` permission required.
+-   [x] Find all roles, `GET_MEMBER_ROLES` permission required.
+-   [x] Find a member-role by id, `GET_MEMBER_ROLES` permission required.
+-   [x] Update a member-role by id, `UPDATE_MEMBER_ROLE` permission required.
+-   [x] Delete a member-role by id, delete even if the member-role has members, `DELETE_MEMBER_ROLE` permission required.
+
+member-role doesn't have an 'owner' concept, but the following rules must be applied:
+
+-   [x] The `admin` member-role has full permissions can not be deleted. The `admin` member-role's permissions can not be changed.
+-   [ ] The `admin` member-role can only have one member, and can be transferred to another member, this action can only be performed by the `admin` member-role. `admin` member-role can't be transferred to a frozen member.
 -   [x] The `admin` member can not be deleted.
--   [x] The `default` role has permissions `GET_MEMBER_ME`.
--   [x] The `default` role can not be deleted.
+-   [x] The `default` member-role has permissions `GET_MEMBER_ME`.
+-   [x] The `default` member-role can not be deleted.
 
 ### member-groups
 
-`group` name must be unique. (`everyone` is created when the server is seeded), the server should incrementally name the new group if the name already exists.
+Member group name must be unique. (`everyone` is created when the server is seeded), the server should incrementally name the new member-group if the name already exists.
+Each member-group has a owner, by default, the creater will be added to the group and the owner will be assigned to the creater.
+The owner can transfer the ownership to another member. The owner can't be removed from the group.
 
--   [x] Create a group, `CREATE_MEMBER_GROUP` permission required.
+-   [ ] Create a group, add the creater to the group and and assign the creater as the owner, `CREATE_MEMBER_GROUP` permission required.
 -   [x] Find all groups, `GET_MEMBER_GROUPS` permission required.
 -   [x] Find a group by id, `GET_MEMBER_GROUPS` permission required.
 -   [x] Update a group by id, `UPDATE_MEMBER_GROUP` permission required.
+-   [ ] Transfer ownership of a group, `UPDATE_MEMBER_GROUP` permission required.
 -   [x] Delete a group by id, delete even if the group has members, `DELETE_MEMBER_GROUP` permission required.
 
 ### permissions
@@ -105,73 +110,6 @@ CASL adds fields and conditions to the existing permission system to realize com
 Other permission rule logic must be implemented in corresponding services. For example, the `admin` role must have a member. When changing roles of a member, if the member belongs to the `admin` role, we can't simply remove the member from `admin`. Also, we can't add the `admin` role to a member without removing the current `admin` member.
 
 -   [x] Find all permissions.
-
-## Discord
-
-### discordDrawCampaigns
-
--   id
--   name
--   description
--   rule
--   drawStartDate
--   drawEndDate
--   paidStartDate
--   paidEndDate
--   discordDrawRecords (One-to-Many)
--   chituboxOrders (One-to-Many)
--   createdDate
--   updatedDate
-
--   [ ] Create a draw campaign, `name`, `rule`, `startDate`, `endDate` required. `CREATE_DISCORD_DRAW_CAMPAIGN` permission required.
--   [ ] Fetch orders from CHITUBOX, this will create a required. `CREATE_DISCORD_DRAW_CAMPAIGN` permission required.
--   [ ] Find draw campaigns, by `name`, `startDate`. `FIND_DISCORD_DRAW_CAMPAIGNS` permission required.
--   [ ] Get a campaign by id. `GET_DISCORD_DRAW_CAMPAIGN` permission required.
-
-### discordDrawCampaignRules
-
-```ts
-enum RuleTypes {
-	FIRST_N = "FIRST_N",
-	N_TH = "N_TH",
-	N_CHANCES = "N_CHANCES",
-}
-
-type DiscordDrawCampaignRules = {
-	type: RuleTypes;
-	firstN?: number;
-	nth?: number[];
-	nChances?: number;
-};
-```
-
-### discordDrawRecords
-
--   id
--   discordDrawCampaign (Many-to-One)
--   discordUserId
--   chituboxOrderId
--   drawCount (default `0`, max `nChances`)
--   isHit
--   createdDate
--   updatedDate
-
--   [ ] Create a draw record.
-    -   `chituboxOrderId` and `discordUserId` from discord required.
-    -   `discordDrawCampaign` required.
--   [ ] Find draw records by `discordDrawCampaignId`, `discordUserId`, `email`.
--   [ ] Find hit draw records by `discordDrawCampaignId`.
--   [ ] Find a draw records by `id`.
-
-### chituboxOrders
-
--   id
--   discordDrawCampaign (Many-to-One)
--   chituboxOrderId
--   email
--   paidDate
-
--   [ ] Create orders using `discordDrawCampaignId`, send a request to CHITUBOX server to fetch orders info with given `paidStartDate` and `paidEndDate`. `CREATE_CHITUBOX_ORDERS` permission required.
 
 ## CHITUBOX Manual Analytics
 
@@ -215,6 +153,6 @@ Response example:
 
 ## Todo
 
--   Finish up limitations for unverified members
--   Finish up freeze member logic
--   Check new email logic and sign up logic, if the new email is already taken, return 400 bad request
+-   [ ] Finish up limitations for unverified members
+-   [ ] Finish up freeze member logic
+-   [ ] Check new email logic and sign up logic, if the new email is already taken, return 400 bad request

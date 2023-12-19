@@ -29,7 +29,7 @@ export class MemberGroupsService {
 		@InjectRepository(Member)
 		private membersRepository: Repository<Member>,
 		private caslAbilityFactory: CaslAbilityFactory
-	) {}
+	) { }
 
 	async create(): Promise<MemberGroup> {
 		const requester = this.request.user;
@@ -57,20 +57,31 @@ export class MemberGroupsService {
 			}
 		}
 		const newMemberGroupName = await generateNewMemberGroupName(0);
-		const group = this.groupsRepository.create({
+		const dbRequester = await this.membersRepository.findOne({
+			where: {
+				id: requester.id,
+			},
+		});
+		const memberGroup = this.groupsRepository.create({
 			name: newMemberGroupName,
+			owner: dbRequester,
+			members: [dbRequester],
 		});
 
 		try {
-			ForbiddenError.from(ability).throwUnlessCan(Actions.CREATE, group);
+			/**
+			 * Here the exact subject instance is required instead of the Subject type
+			 * because the subject name need to match the conditions in the AbilityFactory
+			 */
+			ForbiddenError.from(ability).throwUnlessCan(Actions.CREATE, memberGroup);
 		} catch (error) {
 			if (error instanceof ForbiddenError) {
 				throw new BadRequestException(error.message);
 			}
 			throw error;
 		}
-		await this.groupsRepository.save(group);
-		return group;
+		await this.groupsRepository.save(memberGroup);
+		return memberGroup;
 	}
 
 	async findAll(): Promise<MemberGroup[]> {
