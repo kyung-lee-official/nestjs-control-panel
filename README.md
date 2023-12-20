@@ -15,11 +15,11 @@ This pattern reduces security risks and improves compliance, it's also easier to
 
 ### member-auth
 
--   [x] Seed. If a member accesses the sign up page, the sign up page should send a `GET /auth/isSeeded` request to check if at least one member exists, if at least one member already exists, return `{ "isSeeded": true }`, frontend then redirects to the sign in page.
+-   [x] Seed with email. If a member accesses the sign up page, the sign up page should send a `GET /auth/isSeeded` request to check if at least one member exists, if at least one member already exists, return `{ "isSeeded": true }`, frontend then redirects to the sign in page.
         If frontend sends a `GET /auth/seed` request, check if at least one member exists, if at least one member already exists, return `400` bad request.
-        If no member exists, create a new member, `email` saved as lower case. Create an `admin` role, assign the role to the member. Create an `everyone` group, and assign the member as the group owner. Create a `default` role, any newly created member will be assigned to this role and can't be removed from it.
--   [ ] Sign up a new member, `email` saved in lower case, `CREATE_MEMBER` permission required， and assign the member to the `everyone` group.
--   [x] Members must sign in to apply any operations after the server is seeded.
+        If no member exists, create a new member, `email` saved as lower case. Create an `admin` member-role, assign the member-role to the member. Create an `everyone` group, and assign the member as the group owner. Create a `default` member-role, any newly created member will be assigned to this member-role and can't be removed from it.
+-   [ ] Seed with Google.
+-   [ ] Sign up a new member, `email` saved in lower case, `CREATE_MEMBER` permission required, and assign the member to the `everyone` group.
 -   [x] Check if sign-up is available
 
 #### Google OAuth
@@ -54,32 +54,32 @@ To delete connections from third-party apps:
 ### members
 
 -   [ ] Create a new member, `email` saved as lower case, `CREATE_MEMBER` permission required， and assign the member to the `everyone` group.
--   [x] Conditionally find members by query email (case insensitive), nickname, or roleIds. roleIds delimited by comma `','`, use **or** relationship. `GET_MEMBERS` permission required.
--   [x] Find members by ids, `GET_MEMBERS` permission required.
--   [x] Find a member by id, `GET_MEMBERS | GET_MEMBER_ME` permission required.
+-   [x] Conditionally find members by query email (case insensitive), nickname, or member-role ids. member-role ids delimited by comma `','`, use **or** relationship. `GET_MEMBERS` permission required.
+-   [x] Get members by ids, `GET_MEMBERS` permission required.
+-   [x] Get a member by id, `GET_MEMBERS | GET_MEMBER_ME` permission required.
 -   [x] Update a member by id, can update `nickname`, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
 -   [x] Update email by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
--   [x] Update roles by member id, `UPDATE_MEMBER` permission required.
+-   [x] Update member-roles by member id, `UPDATE_MEMBER` permission required.
 -   [x] Update password by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
 -   [ ] Freeze or unfreeze a member by id, `UPDATE_MEMBER` permission required.
 -   [x] Delete a member by id, `DELETE_MEMBER` permission required.
 
 ### member-roles
 
-`member-role` name must be unique (`admin` and `default` are created when the server is seeded), the server should incrementally name the new member-role if the name already exists. The `default` member-role should be assigned to all members by default, but members can be removed from the `default` member-role.
+`member-role` name must be unique (`admin` and `default` are created when the server is seeded), the server should incrementally name the new member-role if the name already exists. The `default` member-role should be assigned to all members by default, but members are allowed to be removed from the `default` member-role.
 
 -   [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` member-role required.
 -   [x] Create a member-role, `CREATE_MEMBER_ROLE` permission required.
 -   [ ] Create a member-role by copying permissions of an existing member-role, `CREATE_MEMBER_ROLE` permission required.
--   [x] Find all roles, `GET_MEMBER_ROLES` permission required.
--   [x] Find a member-role by id, `GET_MEMBER_ROLES` permission required.
+-   [x] Get all member-roles, `GET_MEMBER_ROLES` permission required.
+-   [x] Get a member-role by id, `GET_MEMBER_ROLES` permission required.
 -   [x] Update a member-role by id, `UPDATE_MEMBER_ROLE` permission required.
 -   [x] Delete a member-role by id, delete even if the member-role has members, `DELETE_MEMBER_ROLE` permission required.
 
 member-role doesn't have an 'owner' concept, but the following rules must be applied:
 
 -   [x] The `admin` member-role has full permissions can not be deleted. The `admin` member-role's permissions can not be changed.
--   [ ] The `admin` member-role can only have one member, and can be transferred to another member, this action can only be performed by the `admin` member-role. `admin` member-role can't be transferred to a frozen member.
+-   [ ] The `admin` member-role must have and only only one member, and can be transferred to another member, this action can only be performed by the `admin` member-role. `admin` member-role can't be transferred to a frozen member.
 -   [x] The `admin` member can not be deleted.
 -   [x] The `default` member-role has permissions `GET_MEMBER_ME`.
 -   [x] The `default` member-role can not be deleted.
@@ -91,8 +91,8 @@ Each member-group has a owner, by default, the creater will be added to the grou
 The owner can transfer the ownership to another member. The owner can't be removed from the group.
 
 -   [ ] Create a group, add the creater to the group and and assign the creater as the owner, `CREATE_MEMBER_GROUP` permission required.
--   [x] Find all groups, `GET_MEMBER_GROUPS` permission required.
--   [x] Find a group by id, `GET_MEMBER_GROUPS` permission required.
+-   [x] Get all groups, `GET_MEMBER_GROUPS` permission required.
+-   [x] Get a group by id, `GET_MEMBER_GROUPS` permission required.
 -   [x] Update a group by id, `UPDATE_MEMBER_GROUP` permission required.
 -   [ ] Transfer ownership of a group, `UPDATE_MEMBER_GROUP` permission required.
 -   [x] Delete a group by id, delete even if the group has members, `DELETE_MEMBER_GROUP` permission required.
@@ -107,9 +107,11 @@ CASL adds fields and conditions to the existing permission system to realize com
 
 -   Realize grouping, so requesters can only access resources belongs them. For example, the requestee must belongs to at least one group that is **owned** by the requester.
 
-Other permission rule logic must be implemented in corresponding services. For example, the `admin` role must have a member. When changing roles of a member, if the member belongs to the `admin` role, we can't simply remove the member from `admin`. Also, we can't add the `admin` role to a member without removing the current `admin` member.
+Other permission rule logic must be implemented in corresponding services file instead of the _casl-ability.factory.ts_ file.
 
--   [x] Find all permissions.
+Checkout each service section doc for details.
+
+-   [x] Get all permissions.
 
 ## CHITUBOX Manual Analytics
 

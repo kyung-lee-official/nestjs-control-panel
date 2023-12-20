@@ -56,31 +56,56 @@ describe("Seed flow, before verification (e2e)", () => {
 		expect(res.body.isSeeded).toBe(false);
 	});
 
+	let seedRes: request.Response;
 	it("POST /member-auth/seed simple password should be failed", async () => {
-		const res = await req.post("/member-auth/seed").send({
+		seedRes = await req.post("/member-auth/seed").send({
 			email: process.env.E2E_TEST_ADMIN_EMAIL,
 			nickname: process.env.E2E_TEST_ADMIN_NICKNAME,
 			password: "1234",
 		});
-		expect(res.status).toBe(400);
-		expect(res.body.message.includes("password is too weak")).toBe(true);
+		expect(seedRes.status).toBe(400);
+		expect(seedRes.body.message.includes("password is too weak")).toBe(true);
 	});
 
-	it("POST /member-auth/seed", async () => {
-		const res = await req.post("/member-auth/seed").send({
-			email: process.env.E2E_TEST_ADMIN_EMAIL,
+	it("POST /member-auth/seed with random email cases should be saved as all-lower cases.", async () => {
+		const randomCaseEmail = process.env.E2E_TEST_ADMIN_EMAIL.replace(
+			/[a-zA-Z]/g,
+			(c) => (Math.random() > 0.5 ? c.toUpperCase() : c.toLowerCase())
+		);
+		const lowerCaseEmail = process.env.E2E_TEST_ADMIN_EMAIL.toLowerCase();
+		console.log(`✉️ Using email: ${randomCaseEmail}`);
+		seedRes = await req.post("/member-auth/seed").send({
+			email: randomCaseEmail,
 			nickname: process.env.E2E_TEST_ADMIN_NICKNAME,
 			password: "1234Abcd!",
 		});
-		expect(res.status).toBe(201);
-		expect(res.body.email).toBe(process.env.E2E_TEST_ADMIN_EMAIL);
-		expect(res.body.password).toBe(undefined);
-		expect(res.body.nickname).toBe(process.env.E2E_TEST_ADMIN_NICKNAME);
-		expect(res.body.memberGroups[0].name).toBe("everyone");
-		expect(res.body.ownedGroups[0].name).toBe("everyone");
-		expect(res.body.memberRoles[0].name).toBe("admin");
-		expect(res.body.isVerified).toBe(false);
+		expect(seedRes.status).toBe(201);
+		expect(seedRes.body.email).toBe(lowerCaseEmail);
 	}, 30000);
+
+	it("POST /member-auth/seed should not return plain text password.", async () => {
+		expect(seedRes.body.password).toBe(undefined);
+	}, 30000);
+
+	it("POST /member-auth/seed check nickname", async () => {
+		expect(seedRes.body.nickname).toBe(process.env.E2E_TEST_ADMIN_NICKNAME);
+	});
+
+	it("POST /member-auth/seed check member-groups of admin", async () => {
+		expect(seedRes.body.memberGroups[0].name).toBe("everyone");
+	});
+
+	it("POST /member-auth/seed check owned member-groups of admin", async () => {
+		expect(seedRes.body.ownedGroups[0].name).toBe("everyone");
+	});
+
+	it("POST /member-auth/seed check member-roles of admin", async () => {
+		expect(seedRes.body.memberRoles[0].name).toBe("admin");
+	});
+
+	it("POST /member-auth/seed admin member group should not be verified yet", async () => {
+		expect(seedRes.body.isVerified).toBe(false);
+	});
 
 	it("GET /member-auth/isSeeded should be true", async () => {
 		const res = await req.get("/member-auth/isSeeded").expect(200);
@@ -95,8 +120,10 @@ describe("Seed flow, before verification (e2e)", () => {
 		});
 		expect(res.status).toBe(400);
 	}, 30000);
+});
 
-	it("POST /member-auth/signin sign in with wrong password", async () => {
+describe("Test sign in flow", () => {
+	it("POST /member-auth/signin sign in with wrong password should fail", async () => {
 		const res = await req.post("/member-auth/signin").send({
 			email: process.env.E2E_TEST_ADMIN_EMAIL,
 			password: "4321Abcd!",
@@ -126,10 +153,6 @@ describe("Seed flow, before verification (e2e)", () => {
 			.get("/member-roles")
 			.set("Authorization", `Bearer ${accessToken}`)
 			.expect(403);
-	});
-
-	it("Contains at least one test", () => {
-		expect(true).toBe(true);
 	});
 });
 
