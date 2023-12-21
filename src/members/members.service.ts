@@ -165,25 +165,6 @@ export class MembersService {
 		return dbRequester;
 	}
 
-	async findOne(id: string): Promise<Member> {
-		const requester = this.request.user;
-		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
-		);
-		const member = await this.membersRepository.findOne({
-			where: { id: id },
-			relations: ["memberRoles", "memberGroups", "ownedGroups"],
-		});
-		if (!member) {
-			throw new NotFoundException("Member not found");
-		}
-		if (ability.can(Actions.READ, member)) {
-			return member;
-		} else {
-			throw new ForbiddenException();
-		}
-	}
-
 	async memberVerification(id: string): Promise<Member> {
 		const requester = this.request.user;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(

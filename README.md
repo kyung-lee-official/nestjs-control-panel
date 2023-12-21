@@ -6,6 +6,16 @@ The internal account system is used for internal organization **members**, and t
 
 This pattern reduces security risks and improves compliance, it's also easier to maintain and scale.
 
+## Permission Design
+
+### Permission Granularity and Strategy
+
+Permission Design can be complicated. Most cases, simply applying CRUD permissions to a generic resources is not enough. For example, **member** is a generic resource, a member may have a field called **isFrozen** that cannot be updated by the member himself, but can be updated by the admin. This is a **field-specific** permission. It's improper to use a permission like **UPDATE_MEMBER** to control this field, because you don't want to allow a group owner to be able to update the **isFrozen** field of a member of his group (especially in case the group owner is frozen, or he will be able to unfreeze himself), but at the same time, you might expect the group owner to be able to update other fields of the member of his group.
+
+A solution to this issue is to separate permissions into two types: common permissions and sentitive (field-specific) permissions. Common permissions can be implemented by simply applying CRUD permissions to resources, and field-specific permissions need to be treated separately. In this case, we can create a permission called **UPDATE_MEMBER_IS_FROZEN** to control the **isFrozen** field of a member.
+
+Another pitfall you need to be aware of is where relationships are involved. For example, someone who has the permission of **UPDATE_MEMBER** can update the member's belonging groups, but he doesn't have the permission of **UPDATE_MEMBER_GROUP** to add or remove members from the group. From the perspective of the member, he can update his own belonging groups, but from the perspective of the group, he can't update the group's members. This makes the permission system inconsistent. To solve this problem, we better separate the ability of updating the member's belonging groups out of the **UPDATE_MEMBER** permission, and consist with the **UPDATE_MEMBER_GROUP** permission only to control the group's members.
+
 ## Internal Members
 
 ### member-server-settings
@@ -17,9 +27,13 @@ This pattern reduces security risks and improves compliance, it's also easier to
 
 -   [x] Seed with email. If a member accesses the sign up page, the sign up page should send a `GET /auth/isSeeded` request to check if at least one member exists, if at least one member already exists, return `{ "isSeeded": true }`, frontend then redirects to the sign in page.
         If frontend sends a `GET /auth/seed` request, check if at least one member exists, if at least one member already exists, return `400` bad request.
-        If no member exists, create a new member, `email` saved as lower case. Create an `admin` member-role, assign the member-role to the member. Create an `everyone` group, and assign the member as the group owner. Create a `default` member-role, any newly created member will be assigned to this member-role and can't be removed from it.
+        If no member exists, create a new member, `email` saved as lower case.
+        Create an `admin` member-role, assign the member-role to the member.
+        Create an `everyone` group, and assign the member as the group owner.
+        Create a `default` member-role, any newly created member will be assigned to this member-role and can't be removed from it. The `default` member-role has permissions `GET_MEMBER_ME`.
+        `admin` must be verified before performing any actions.
 -   [ ] Seed with Google.
--   [ ] Sign up a new member, `email` saved in lower case, `CREATE_MEMBER` permission required, and assign the member to the `everyone` group.
+-   [x] Sign up a new member, `email` saved in lower case, and assign the member to the `everyone` group.
 -   [x] Check if sign-up is available
 
 #### Google OAuth
@@ -53,13 +67,13 @@ To delete connections from third-party apps:
 
 ### members
 
--   [ ] Create a new member, `email` saved as lower case, `CREATE_MEMBER` permission required， and assign the member to the `everyone` group.
--   [x] Conditionally find members by query email (case insensitive), nickname, or member-role ids. member-role ids delimited by comma `','`, use **or** relationship. `GET_MEMBERS` permission required.
+-   [ ] Create a new member manually by email, `email` saved as lower case, `CREATE_MEMBER` permission required, and assign the member to the `everyone` group.
+-   [x] Conditionally find members by query email (case nonsensitive), nickname, or member-role ids. member-role ids delimited by comma `','`, use **or** logic. `GET_MEMBERS` permission required.
 -   [x] Get members by ids, `GET_MEMBERS` permission required.
--   [x] Get a member by id, `GET_MEMBERS | GET_MEMBER_ME` permission required.
+-   [x] Get me, `GET_MEMBER_ME` permission required.
 -   [x] Update a member by id, can update `nickname`, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
 -   [x] Update email by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
--   [x] Update member-roles by member id, `UPDATE_MEMBER` permission required.
+-   [x] Update member-roles by member id, `UPDATE_MEMBER_ROLE` permission required.
 -   [x] Update password by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
 -   [ ] Freeze or unfreeze a member by id, `UPDATE_MEMBER` permission required.
 -   [x] Delete a member by id, `DELETE_MEMBER` permission required.

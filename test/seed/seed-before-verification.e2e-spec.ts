@@ -67,15 +67,12 @@ describe("Seed flow, before verification (e2e)", () => {
 		expect(seedRes.body.message.includes("password is too weak")).toBe(true);
 	});
 
-	it("POST /member-auth/seed with random email cases should be saved as all-lower cases.", async () => {
-		const randomCaseEmail = process.env.E2E_TEST_ADMIN_EMAIL.replace(
-			/[a-zA-Z]/g,
-			(c) => (Math.random() > 0.5 ? c.toUpperCase() : c.toLowerCase())
-		);
+	it("POST /member-auth/seed with upper-case email should be saved as all-lower cases.", async () => {
+		const upperCaseEmail = process.env.E2E_TEST_ADMIN_EMAIL.toUpperCase();
 		const lowerCaseEmail = process.env.E2E_TEST_ADMIN_EMAIL.toLowerCase();
-		console.log(`✉️ Using email: ${randomCaseEmail}`);
+		console.log(`✉️ Using email: ${upperCaseEmail}`);
 		seedRes = await req.post("/member-auth/seed").send({
-			email: randomCaseEmail,
+			email: upperCaseEmail,
 			nickname: process.env.E2E_TEST_ADMIN_NICKNAME,
 			password: "1234Abcd!",
 		});
@@ -91,15 +88,15 @@ describe("Seed flow, before verification (e2e)", () => {
 		expect(seedRes.body.nickname).toBe(process.env.E2E_TEST_ADMIN_NICKNAME);
 	});
 
-	it("POST /member-auth/seed check member-groups of admin", async () => {
+	it("POST /member-auth/seed admin should be added to 'everyone' member-group", async () => {
 		expect(seedRes.body.memberGroups[0].name).toBe("everyone");
 	});
 
-	it("POST /member-auth/seed check owned member-groups of admin", async () => {
+	it("POST /member-auth/seed admin should owned 'everyone' member-groups", async () => {
 		expect(seedRes.body.ownedGroups[0].name).toBe("everyone");
 	});
 
-	it("POST /member-auth/seed check member-roles of admin", async () => {
+	it("POST /member-auth/seed admin should be added to 'admin' member-role", async () => {
 		expect(seedRes.body.memberRoles[0].name).toBe("admin");
 	});
 

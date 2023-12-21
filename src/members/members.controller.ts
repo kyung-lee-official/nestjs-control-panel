@@ -84,15 +84,6 @@ export class MembersController {
 
 	@UseInterceptors(ClassSerializerInterceptor)
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.GET_MEMBERS, Permissions.GET_MEMBER_ME)
-	@UseGuards(IsVerifiedGuard)
-	@Get("/:id")
-	findOne(@Param("id") id: string): Promise<Member> {
-		return this.membersService.findOne(id);
-	}
-
-	@UseInterceptors(ClassSerializerInterceptor)
-	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_MEMBER)
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/member-verification/:id")

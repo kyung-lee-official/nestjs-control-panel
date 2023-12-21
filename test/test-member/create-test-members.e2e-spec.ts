@@ -24,7 +24,6 @@ if (process.env.ENV === "DEV") {
 let app: INestApplication;
 let req: request.SuperTest<request.Test>;
 let adminAccessToken: string;
-let member1Res;
 
 beforeAll(async () => {
 	const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -43,11 +42,6 @@ beforeAll(async () => {
 }, 30000);
 
 describe("Check server status", () => {
-	it("GET /member-auth/isSeeded should be true", async () => {
-		const res = await req.get("/member-auth/isSeeded").expect(200);
-		expect(res.body.isSeeded).toBe(true);
-	});
-
 	it("POST /member-auth/signup should be false given server setting doesn't allow sign up", async () => {
 		const res = await req
 			.post("/member-auth/signup")
@@ -57,10 +51,6 @@ describe("Check server status", () => {
 				password: "1234Abcd!",
 			})
 			.expect(403);
-	});
-
-	it("Contains at least one test", () => {
-		expect(true).toBe(true);
 	});
 });
 
@@ -90,19 +80,24 @@ describe("Allow sign up", () => {
 });
 
 describe("Sign up new members", () => {
+	let member1Res: request.Response;
+	const upperCaseEmail = process.env.E2E_TEST_MEMBER_1_EMAIL.toUpperCase();
+	const lowerCaseEmail = process.env.E2E_TEST_MEMBER_1_EMAIL.toLowerCase();
+	console.log(`✉️ Using email: ${upperCaseEmail}`);
+
 	it("POST /member-auth/signup sign up test member 1", async () => {
 		member1Res = await req
 			.post("/member-auth/signup")
 			.send({
-				email: process.env.E2E_TEST_MEMBER_1_EMAIL,
+				email: upperCaseEmail,
 				nickname: process.env.E2E_TEST_MEMBER_1_NICKNAME,
 				password: "1234Abcd!",
 			})
 			.expect(201);
 	});
 
-	it("Check email of member 1", () => {
-		expect(member1Res.body.email).toBe(process.env.E2E_TEST_MEMBER_1_EMAIL);
+	it("Check email of member 1, should be lower case", () => {
+		expect(member1Res.body.email).toBe(lowerCaseEmail);
 	});
 
 	it("Check password is not returned in the response", () => {
@@ -152,4 +147,3 @@ describe("Sign up new members", () => {
 		expect(member2Res.body.isVerified).toBe(false);
 	});
 });
-

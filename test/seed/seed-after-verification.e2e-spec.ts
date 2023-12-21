@@ -6,6 +6,9 @@ import { AppModule } from "../../src/app.module";
 if (process.env.ENV === "DEV") {
 	console.log("✅ Running in DEV mode");
 	console.log(
+		"This test checks if the admin is verified"
+	);
+	console.log(
 		"❕Make sure to verify the member from the email before starting this test"
 	);
 } else {
@@ -35,7 +38,7 @@ beforeAll(async () => {
 	req = request(app.getHttpServer());
 }, 15000);
 
-describe("Seed flow, after verification (e2e)", () => {
+describe("Seed flow, check if the admin is verified", () => {
 	it("POST /member-auth/signin", async () => {
 		const res = await req.post("/member-auth/signin").send({
 			email: process.env.E2E_TEST_ADMIN_EMAIL,
@@ -67,8 +70,4 @@ describe("Seed flow, after verification (e2e)", () => {
 		expect(res.body[0].name).toBe("admin");
 		expect(res.body[1].name).toBe("default");
 	}, 15000);
-
-	it("Contains at least one test", () => {
-		expect(true).toBe(true);
-	});
 });
