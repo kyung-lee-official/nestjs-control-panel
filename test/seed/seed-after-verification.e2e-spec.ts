@@ -6,7 +6,7 @@ import { AppModule } from "../../src/app.module";
 if (process.env.ENV === "DEV") {
 	console.log("✅ Running in DEV mode");
 	console.log(
-		"This test checks if the admin is verified"
+		"This test checks if the admin is verified, and permissions of the admin after verification"
 	);
 	console.log(
 		"❕Make sure to verify the member from the email before starting this test"
@@ -48,20 +48,44 @@ describe("Seed flow, check if the admin is verified", () => {
 		accessToken = res.body.accessToken;
 	}, 15000);
 
-	it("GET /members/me member should be verified", async () => {
-		const res = await req
+	let adminRes: request.Response;
+	it("GET /members/me member should return", async () => {
+		adminRes = await req
 			.get("/members/me")
 			.set("Authorization", `Bearer ${accessToken}`);
-		expect(res.status).toBe(200);
-		expect(res.body.email).toBe(process.env.E2E_TEST_ADMIN_EMAIL);
-		expect(res.body.password).toBe(undefined);
-		expect(res.body.nickname).toBe(process.env.E2E_TEST_ADMIN_NICKNAME);
-		expect(res.body.memberGroups[0].name).toBe("everyone");
-		expect(res.body.ownedGroups[0].name).toBe("everyone");
-		expect(res.body.memberRoles[0].name).toBe("admin");
-		expect(res.body.isVerified).toBe(true);
+		expect(adminRes.status).toBe(200);
 	}, 15000);
 
+	it("GET /members/me check email", async () => {
+		expect(adminRes.body.email).toBe(process.env.E2E_TEST_ADMIN_EMAIL);
+	});
+
+	it("GET /members/me password should be undefined", async () => {
+		expect(adminRes.body.password).toBe(undefined);
+	});
+
+	it("GET /members/me check nickname", async () => {
+		expect(adminRes.body.nickname).toBe(process.env.E2E_TEST_ADMIN_NICKNAME);
+	});
+
+	it("GET /members/me admin should be added to 'everyone' member-group", async () => {
+		expect(adminRes.body.memberGroups[0].name).toBe("everyone");
+	});
+
+	it("GET /members/me admin should owned 'everyone' member-groups", async () => {
+		expect(adminRes.body.ownedGroups[0].name).toBe("everyone");
+	});
+
+	it("GET /members/me admin should have 'admin' member-role", async () => {
+		expect(adminRes.body.memberRoles[0].name).toBe("admin");
+	});
+
+	it("GET /members/me admin should be verified", async () => {
+		expect(adminRes.body.isVerified).toBe(true);
+	});
+});
+
+describe("Permissions test flow", () => {
 	it("GET /member-roles should return 'admin' and 'default' given the member is already verified", async () => {
 		const res = await req
 			.get("/member-roles")

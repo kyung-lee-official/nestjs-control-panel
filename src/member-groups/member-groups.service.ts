@@ -1,6 +1,7 @@
 import {
 	BadRequestException,
 	ConflictException,
+	ForbiddenException,
 	Inject,
 	Injectable,
 	NotFoundException,
@@ -18,6 +19,7 @@ import {
 	CaslAbilityFactory,
 } from "../casl/casl-ability.factory/casl-ability.factory";
 import { ForbiddenError } from "@casl/ability";
+import { TransferMemberGroupOwnershipDto } from "./dto/transfer-member-group-ownershiop.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class MemberGroupsService {
@@ -76,7 +78,7 @@ export class MemberGroupsService {
 			ForbiddenError.from(ability).throwUnlessCan(Actions.CREATE, memberGroup);
 		} catch (error) {
 			if (error instanceof ForbiddenError) {
-				throw new BadRequestException(error.message);
+				throw new ForbiddenException(error.message);
 			}
 			throw error;
 		}
@@ -118,83 +120,127 @@ export class MemberGroupsService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester.id
 		);
+		const dbRequester = await this.membersRepository.findOne({
+			where: {
+				id: requester.id,
+			},
+			relations: ["memberRoles", "ownedGroups", "memberGroups"],
+		});
 		const dbMemberGroup = await this.groupsRepository.findOne({
 			where: { id: id },
-			relations: ["members"],
+			relations: ["owner", "members"],
 		});
 		if (!dbMemberGroup) {
 			throw new NotFoundException("Member Group not found");
 		}
+		const { name, memberIds } = updateMemberGroupDto;
+		if (name) {
+			try {
+				ForbiddenError.from(ability).throwUnlessCan(
+					Actions.UPDATE,
+					dbMemberGroup,
+					"name"
+				);
+				dbMemberGroup.name = name;
+			} catch (error) {
+				if (error instanceof ForbiddenError) {
+					throw new ForbiddenException(error.message);
+				}
+				throw error;
+			}
+		}
+		if (memberIds) {
+			try {
+				ForbiddenError.from(ability).throwUnlessCan(
+					Actions.UPDATE,
+					dbMemberGroup,
+					"memberIds"
+				);
+				if (dbRequester.memberRoles.find((memberRole) => memberRole.name === "admin")) {
+					/* Requester is admin */
+					const admin = dbRequester;
+					if (!memberIds.includes(dbMemberGroup.owner.id)) {
+						/* New members do not include the original owner */
+						if (admin.id === dbMemberGroup.owner.id) {
+							/* Original owner is admin */
+							throw new ForbiddenException(
+								"admin is the owner of the member-group, but admin id is not included in the memberIds array"
+							);
+						} else {
+							/* Original owner is not adimn, assign admin as the owner */
+							dbMemberGroup.owner = admin;
+						}
+					} else {
+						/* New members include the original owner, simply update the members */
+						const dbMembers = await this.membersRepository.find({
+							where: { id: In(memberIds) },
+						});
+						dbMemberGroup.members = dbMembers;
+					}
+				} else {
+					/* Requester is not admin */
+					if (!memberIds.includes(dbMemberGroup.owner.id)) {
+						throw new BadRequestException(
+							"Member group owner is missing from the memberIds array"
+						);
+					} else {
+						const dbMembers = await this.membersRepository.find({
+							where: { id: In(memberIds) },
+						});
+						dbMemberGroup.members = dbMembers;
+					}
+				}
+			} catch (error) {
+				if (error instanceof ForbiddenError) {
+					throw new ForbiddenException(error.message);
+				}
+				throw error;
+			}
+		}
+		await this.groupsRepository.save(dbMemberGroup);
+		return dbMemberGroup;
+	}
+
+	async tranferOwnership(
+		id: number,
+		transferMemberGroupOwnershipDto: TransferMemberGroupOwnershipDto
+	): Promise<MemberGroup> {
+		const requester = this.request.user;
+		const ability = await this.caslAbilityFactory.defineAbilityFor(
+			requester.id
+		);
+		const dbMemberGroup = await this.groupsRepository.findOne({
+			where: { id: id },
+			relations: ["owner", "members"],
+		});
+		if (!dbMemberGroup) {
+			throw new NotFoundException("Member Group not found");
+		}
+		const { ownerId } = transferMemberGroupOwnershipDto;
 		try {
 			ForbiddenError.from(ability).throwUnlessCan(
 				Actions.UPDATE,
-				dbMemberGroup
+				dbMemberGroup,
+				"owner"
 			);
-		} catch (error) {
-			if (error instanceof ForbiddenError) {
-				throw new BadRequestException(error.message);
-			}
-			throw error;
-		}
-		const { name, ownerId, memberIds } = updateMemberGroupDto;
-		if (name) {
-			dbMemberGroup.name = name;
-		}
-		if (ownerId && memberIds) {
-			if (!memberIds.includes(ownerId)) {
+			const groupMemberIds = dbMemberGroup.members.map((member) => {
+				return member.id;
+			});
+			if (!groupMemberIds.includes(ownerId)) {
 				throw new BadRequestException(
 					"Member group owner must be a member of the group"
 				);
-			}
-			const dbMembers = await this.membersRepository.find({
-				where: { id: In(memberIds) },
-			});
-			const dbMemberIds = dbMembers.map((member) => {
-				return member.id;
-			});
-			if (dbMemberIds.includes(ownerId)) {
+			} else {
 				const owner = await this.membersRepository.findOne({
 					where: { id: ownerId },
 				});
 				dbMemberGroup.owner = owner;
-				dbMemberGroup.members = dbMembers;
-			} else {
-				throw new BadRequestException(
-					"Member group owner must be a member of the group"
-				);
 			}
-		} else if (ownerId) {
-			const owner = await this.membersRepository.findOne({
-				where: { id: ownerId },
-			});
-			const groupMemberIds = dbMemberGroup.members.map((member) => {
-				return member.id;
-			});
-			if (groupMemberIds.includes(ownerId)) {
-				dbMemberGroup.owner = owner;
-			} else {
-				throw new BadRequestException(
-					"Member group owner must be a member of the group"
-				);
+		} catch (error) {
+			if (error instanceof ForbiddenError) {
+				throw new ForbiddenException(error.message);
 			}
-		} else if (memberIds) {
-			const dbMembers = await this.membersRepository.find({
-				where: { id: In(memberIds) },
-			});
-			if (!dbMemberGroup.owner) {
-				dbMemberGroup.members = dbMembers;
-			} else {
-				const dbMemberIds = dbMembers.map((member) => {
-					return member.id;
-				});
-				if (dbMemberIds.includes(ownerId)) {
-					dbMemberGroup.members = dbMembers;
-				} else {
-					throw new BadRequestException(
-						"Member group owner must be a member of the group"
-					);
-				}
-			}
+			throw error;
 		}
 		await this.groupsRepository.save(dbMemberGroup);
 		return dbMemberGroup;
@@ -218,7 +264,7 @@ export class MemberGroupsService {
 			);
 		} catch (error) {
 			if (error instanceof ForbiddenError) {
-				throw new BadRequestException(error.message);
+				throw new ForbiddenException(error.message);
 			}
 			throw error;
 		}

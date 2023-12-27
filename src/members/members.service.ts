@@ -39,9 +39,9 @@ export class MembersService {
 		@InjectRepository(Member)
 		private membersRepository: Repository<Member>,
 		@InjectRepository(MemberRole)
-		private rolesRepository: Repository<MemberRole>,
+		private memberRolesRepository: Repository<MemberRole>,
 		@InjectRepository(MemberGroup)
-		private groupsRepository: Repository<MemberGroup>,
+		private memberGroupsRepository: Repository<MemberGroup>,
 		private caslAbilityFactory: CaslAbilityFactory
 	) { }
 
@@ -55,14 +55,18 @@ export class MembersService {
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
-		const everyoneGroup = await this.groupsRepository.find({
+		const defaultRole = await this.memberRolesRepository.findOne({
+			where: { name: "default" },
+		});
+		const everyoneGroup = await this.memberGroupsRepository.findOne({
 			where: { name: "everyone" },
 		});
 		const member = this.membersRepository.create({
 			email,
 			password: hashedPassword,
 			nickname,
-			memberGroups: everyoneGroup,
+			memberRoles: [defaultRole],
+			memberGroups: [everyoneGroup],
 		});
 		await this.membersRepository.save(member);
 		this.memberAuthService.sendVerificationEmail(email);
@@ -251,7 +255,7 @@ export class MembersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester.id
 		);
-		const adminRole = await this.rolesRepository.findOne({
+		const adminRole = await this.memberRolesRepository.findOne({
 			where: { name: "admin" },
 			relations: ["members"],
 		});
@@ -274,7 +278,7 @@ export class MembersService {
 					"Can't assign the 'admin' role to other members"
 				);
 			}
-			memberRoles = await this.rolesRepository.find({
+			memberRoles = await this.memberRolesRepository.find({
 				where: { id: In(updateMemberRolesDto.roleIds) },
 			});
 			if (memberRoles.length !== updateMemberRolesDto.roleIds.length) {
@@ -315,7 +319,7 @@ export class MembersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester.id
 		);
-		const everyoneGroup = await this.groupsRepository.findOne({
+		const everyoneGroup = await this.memberGroupsRepository.findOne({
 			where: { name: "everyone" },
 		});
 		let member: Member;
@@ -326,7 +330,7 @@ export class MembersService {
 					"All members belong to the 'everyone' group by default, you cannot remove any member from group 'everyone'"
 				);
 			}
-			memberGroups = await this.groupsRepository.find({
+			memberGroups = await this.memberGroupsRepository.find({
 				where: { id: In(updateMemberGroupsDto.groupIds) },
 			});
 			member = await this.membersRepository.findOne({
@@ -428,7 +432,7 @@ export class MembersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester.id
 		);
-		const adminRole = await this.rolesRepository.findOne({
+		const adminRole = await this.memberRolesRepository.findOne({
 			where: { name: "admin" },
 			relations: ["members"],
 		});
@@ -464,11 +468,11 @@ export class MembersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester.id
 		);
-		const adminRole = await this.rolesRepository.findOne({
+		const adminRole = await this.memberRolesRepository.findOne({
 			where: { name: "admin" },
 			relations: ["members"],
 		});
-		const defaultRole = await this.rolesRepository.findOne({
+		const defaultRole = await this.memberRolesRepository.findOne({
 			where: { name: "default" },
 			relations: ["members"],
 		});
@@ -478,7 +482,7 @@ export class MembersService {
 				"Only the 'admin' member can transfer ownership"
 			);
 		}
-		const everyoneGroup = await this.groupsRepository.findOne({
+		const everyoneGroup = await this.memberGroupsRepository.findOne({
 			where: { name: "everyone" },
 		});
 		const member = await this.membersRepository.findOne({
@@ -498,8 +502,8 @@ export class MembersService {
 		} else {
 			throw new ForbiddenException("Forbidden, can't update member roles");
 		}
-		const adminRoleResult = await this.rolesRepository.save(adminRole);
-		const everyoneGroupResult = await this.groupsRepository.save(
+		const adminRoleResult = await this.memberRolesRepository.save(adminRole);
+		const everyoneGroupResult = await this.memberGroupsRepository.save(
 			everyoneGroup
 		);
 		return { isTransferred: true };
@@ -512,7 +516,8 @@ export class MembersService {
 		);
 		const member = await this.membersRepository.findOne({
 			where: { id: id },
-			relations: ["memberGroups"],
+			/* CASL need to check permissions as per memberRoles and memberGroups */
+			relations: ["memberRoles", "memberGroups"],
 		});
 		if (!member) {
 			throw new NotFoundException("Member not found");

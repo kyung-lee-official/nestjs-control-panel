@@ -18,6 +18,7 @@ import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
 import { Permissions } from "../permissions/permissions.enum";
 import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
+import { TransferMemberGroupOwnershipDto } from "./dto/transfer-member-group-ownershiop.dto";
 
 @UseGuards(JwtAuthGuard)
 @Controller("member-groups")
@@ -60,6 +61,18 @@ export class GroupsController {
 		@Body() updateGroupDto: UpdateMemberGroupDto
 	) {
 		return this.groupsService.update(+id, updateGroupDto);
+	}
+
+	@UseInterceptors(ClassSerializerInterceptor)
+	@UseGuards(PermissionsGuard)
+	@RequiredPermissions(Permissions.UPDATE_MEMBER_GROUP)
+	@UseGuards(IsVerifiedGuard)
+	@Patch(":id")
+	tranferOwnership(
+		@Param("id", GroupIdPipe) id: string,
+		@Body() transferMemberGroupOwnershipDto: TransferMemberGroupOwnershipDto
+	) {
+		return this.groupsService.tranferOwnership(+id, transferMemberGroupOwnershipDto);
 	}
 
 	@UseGuards(PermissionsGuard)

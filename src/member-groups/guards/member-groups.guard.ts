@@ -11,7 +11,7 @@ export class GroupsGuard implements CanActivate {
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		let { member } = context.switchToHttp().getRequest();
-		member = await this.membersService.findOne(member.id);
+		member = await this.membersService.findMembersByIds({ ids: [member.id] });
 		const isAdmin = member.memberRoles.some((role) => {
 			return role.name === "admin";
 		});

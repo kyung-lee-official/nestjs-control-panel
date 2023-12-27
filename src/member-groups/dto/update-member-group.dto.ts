@@ -6,10 +6,6 @@ export class UpdateMemberGroupDto {
 	name: string;
 
 	@IsOptional()
-	@IsUUID("all")
-	ownerId: string;
-
-	@IsOptional()
 	@IsArray()
 	@IsUUID("all", { each: true })
 	memberIds: string[];

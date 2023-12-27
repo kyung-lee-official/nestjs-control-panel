@@ -15,7 +15,7 @@ if (process.env.ENV === "DEV") {
 
 let app: INestApplication;
 let req: request.SuperTest<request.Test>;
-let accessToken: string;
+let adminAccessToken: string;
 
 beforeAll(async () => {
 	/* Drop database "DATABASE_DEV" and re-create it */
@@ -100,7 +100,7 @@ describe("Seed flow, before verification (e2e)", () => {
 		expect(seedRes.body.memberRoles[0].name).toBe("admin");
 	});
 
-	it("POST /member-auth/seed admin member group should not be verified yet", async () => {
+	it("POST /member-auth/seed admin should not be verified yet", async () => {
 		expect(seedRes.body.isVerified).toBe(false);
 	});
 
@@ -134,22 +134,16 @@ describe("Test sign in flow", () => {
 			password: "1234Abcd!",
 		});
 		expect(res.status).toBe(201);
-		accessToken = res.body.accessToken;
+		adminAccessToken = res.body.accessToken;
+		console.log("adminAccessToken: " + adminAccessToken);
 	}, 30000);
 
 	it("GET /member-auth/isSignedIn should be true", async () => {
 		const res = await req
 			.get("/member-auth/isSignedIn")
-			.set("Authorization", `Bearer ${accessToken}`)
+			.set("Authorization", `Bearer ${adminAccessToken}`)
 			.expect(200);
 		expect(res.body.isSignedIn).toBe(true);
-	});
-
-	it("GET /member-roles should be false given the member is not verified yet", async () => {
-		const res = await req
-			.get("/member-roles")
-			.set("Authorization", `Bearer ${accessToken}`)
-			.expect(403);
 	});
 });
 
@@ -164,5 +158,26 @@ describe("Test server settings", () => {
 		const res = await req.get("/member-server-settings/isGoogleSignInAvailable");
 		expect(res.status).toBe(200);
 		expect(res.body.isGoogleSignInAvailable).toBe(false);
+	});
+});
+
+describe("Operations should be forbidden before verification", () => {
+	it("GET /member-roles should be false given the member is not verified yet", async () => {
+		const res = await req
+			.get("/member-roles")
+			.set("Authorization", `Bearer ${adminAccessToken}`)
+			.expect(403);
+	});
+
+	it("POST /members/create create a member manually by email should fail", async () => {
+		const res = await req
+			.post("/members/create")
+			.set("Authorization", `Bearer ${adminAccessToken}`)
+			.send({
+				email: process.env.E2E_TEST_MEMBER_3_EMAIL,
+				nickname: process.env.E2E_TEST_MEMBER_3_NICKNAME,
+				password: "1234Abcd!",
+			});
+		expect(res.status).toBe(403);
 	});
 });

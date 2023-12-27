@@ -16,7 +16,32 @@ A solution to this issue is to separate permissions into two types: common permi
 
 Another pitfall you need to be aware of is where relationships are involved. For example, someone who has the permission of **UPDATE_MEMBER** can update the member's belonging groups, but he doesn't have the permission of **UPDATE_MEMBER_GROUP** to add or remove members from the group. From the perspective of the member, he can update his own belonging groups, but from the perspective of the group, he can't update the group's members. This makes the permission system inconsistent. To solve this problem, we better separate the ability of updating the member's belonging groups out of the **UPDATE_MEMBER** permission, and consist with the **UPDATE_MEMBER_GROUP** permission only to control the group's members.
 
+We also need something we can used to limit the scope of a permission, **member-group** therefore comes in handy. For example, **UPDATE_MEMBER_IS_FROZEN** permission can be limited to a member-group, so that a group owner can only update the **isFrozen** field of a member of his group. Logically, the owner should not be able to freeze himself, this can be done by using two strategies: either use a 3rd party permission management library like CASL (conditional permissions), or add condition codes to the service that implements the conditional permission manually, so that the owner can't freeze himself.
+
+There is a rule that should be followed when designing a permission system: members with the same sensitive permissions should not be able to update each other. For example, if two members have the permission of **UPDATE_MEMBER_IS_FROZEN**, they should not be able to update each other's **isFrozen** field.
+
 ## Internal Members
+
+### Common Compliance
+
+-   Any newly created (including seeded, signed-up) member must be assigned to the `everyone` member-group, and cannot be removed from the `everyone` member-group.
+-   member-group name must be unique. The server should incrementally name the new member-group if the name already exists.
+-   Each member-group has a owner. By default, the creater will be added to the member-group and the owner will be assigned to the creater.
+-   member-group owner can't remove himself from the member-group.
+-   The owner of a member-group can be transferred to another member of the member-group by admin.
+-   Only admin can freeze or unfreeze a member-group owner, then admin will be assigned to the owner of the member-group.
+-   Only admin can delete a member-group owner, then admin will be assigned to the owner of the member-group.
+
+-   Any newly created (including seeded, signed-up) member must be assigned to the `default` member-role, but members are allowed to be removed from the `default` member-role.
+-   member-role name must be unique. The server should incrementally name new member-roles if the name already exists.
+-   The `admin` member-role must be verified before performing any actions.
+-   The `admin` member-role has full permissions and `admin` member-role cannot be frozen or deleted. The `admin` member-role's permissions cannot be changed.
+-   The `admin` member-role must have and only have one member, and can be transferred to another member, this action can only be performed by the `admin` member-role. `admin` member-role can't be transferred to a frozen member.
+-   The `default` member-role has permission `GET_MEMBER_ME` and `default` member-role cannot be deleted.
+
+-   All members can't freeze themselves.
+
+-   All email must be saved in lower case.
 
 ### member-server-settings
 
@@ -27,14 +52,13 @@ Another pitfall you need to be aware of is where relationships are involved. For
 
 -   [x] Seed with email. If a member accesses the sign up page, the sign up page should send a `GET /auth/isSeeded` request to check if at least one member exists, if at least one member already exists, return `{ "isSeeded": true }`, frontend then redirects to the sign in page.
         If frontend sends a `GET /auth/seed` request, check if at least one member exists, if at least one member already exists, return `400` bad request.
-        If no member exists, create a new member, `email` saved as lower case.
+        If no member exists, create a new member.
         Create an `admin` member-role, assign the member-role to the member.
-        Create an `everyone` group, and assign the member as the group owner.
-        Create a `default` member-role, any newly created member will be assigned to this member-role and can't be removed from it. The `default` member-role has permissions `GET_MEMBER_ME`.
-        `admin` must be verified before performing any actions.
+        Create an `everyone` member-group, and assign the member-group owner to the member.
+        Create a `default` member-role, The `default` member-role has permissions `GET_MEMBER_ME`.
 -   [ ] Seed with Google.
--   [x] Sign up a new member, `email` saved in lower case, and assign the member to the `everyone` group.
--   [x] Check if sign-up is available
+-   [x] Sign up a new member.
+-   [x] Check if sign-up is available.
 
 #### Google OAuth
 
@@ -60,14 +84,12 @@ Example `request.user` send from Google to our server:
 To delete connections from third-party apps:
 
 1. Go to [Google Account](https://myaccount.google.com/).
-
 1. On the left navigation panel, click **Security**.
-
 1. On the **Your connections to third-party apps & services** panel, select the app or service you want to remove.
 
 ### members
 
--   [ ] Create a new member manually by email, `email` saved as lower case, `CREATE_MEMBER` permission required, and assign the member to the `everyone` group.
+-   [x] Create a new member manually by email, `CREATE_MEMBER` permission required.
 -   [x] Conditionally find members by query email (case nonsensitive), nickname, or member-role ids. member-role ids delimited by comma `','`, use **or** logic. `GET_MEMBERS` permission required.
 -   [x] Get members by ids, `GET_MEMBERS` permission required.
 -   [x] Get me, `GET_MEMBER_ME` permission required.
@@ -80,8 +102,6 @@ To delete connections from third-party apps:
 
 ### member-roles
 
-`member-role` name must be unique (`admin` and `default` are created when the server is seeded), the server should incrementally name the new member-role if the name already exists. The `default` member-role should be assigned to all members by default, but members are allowed to be removed from the `default` member-role.
-
 -   [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` member-role required.
 -   [x] Create a member-role, `CREATE_MEMBER_ROLE` permission required.
 -   [ ] Create a member-role by copying permissions of an existing member-role, `CREATE_MEMBER_ROLE` permission required.
@@ -90,26 +110,14 @@ To delete connections from third-party apps:
 -   [x] Update a member-role by id, `UPDATE_MEMBER_ROLE` permission required.
 -   [x] Delete a member-role by id, delete even if the member-role has members, `DELETE_MEMBER_ROLE` permission required.
 
-member-role doesn't have an 'owner' concept, but the following rules must be applied:
-
--   [x] The `admin` member-role has full permissions can not be deleted. The `admin` member-role's permissions can not be changed.
--   [ ] The `admin` member-role must have and only only one member, and can be transferred to another member, this action can only be performed by the `admin` member-role. `admin` member-role can't be transferred to a frozen member.
--   [x] The `admin` member can not be deleted.
--   [x] The `default` member-role has permissions `GET_MEMBER_ME`.
--   [x] The `default` member-role can not be deleted.
-
 ### member-groups
 
-Member group name must be unique. (`everyone` is created when the server is seeded), the server should incrementally name the new member-group if the name already exists.
-Each member-group has a owner, by default, the creater will be added to the group and the owner will be assigned to the creater.
-The owner can transfer the ownership to another member. The owner can't be removed from the group.
-
--   [ ] Create a group, add the creater to the group and and assign the creater as the owner, `CREATE_MEMBER_GROUP` permission required.
--   [x] Get all groups, `GET_MEMBER_GROUPS` permission required.
--   [x] Get a group by id, `GET_MEMBER_GROUPS` permission required.
--   [x] Update a group by id, `UPDATE_MEMBER_GROUP` permission required.
--   [ ] Transfer ownership of a group, `UPDATE_MEMBER_GROUP` permission required.
--   [x] Delete a group by id, delete even if the group has members, `DELETE_MEMBER_GROUP` permission required.
+-   [ ] Create a member-group, `CREATE_MEMBER_GROUP` permission required.
+-   [x] Get all member-groups, `GET_MEMBER_GROUPS` permission required.
+-   [x] Get a member-group by id, `GET_MEMBER_GROUPS` permission required.
+-   [x] Update a member-group by id, `UPDATE_MEMBER_GROUP` permission required.
+-   [ ] Transfer ownership of a member-group, `TRANSFER_MEMBER_GROUP_OWNERSHIP` permission required.
+-   [x] Delete a member-group by id, delete even if the group has members, `DELETE_MEMBER_GROUP` permission required.
 
 ### permissions
 
@@ -119,7 +127,7 @@ CASL adds fields and conditions to the existing permission system to realize com
 
 -   Realize field-specific rules: https://casl.js.org/v6/en/guide/restricting-fields
 
--   Realize grouping, so requesters can only access resources belongs them. For example, the requestee must belongs to at least one group that is **owned** by the requester.
+-   Realize grouping, so requesters can only access resources belongs them. For example, the requestee must belongs to at least one member-group that is **owned** by the requester.
 
 Other permission rule logic must be implemented in corresponding services file instead of the _casl-ability.factory.ts_ file.
 
@@ -169,6 +177,9 @@ Response example:
 
 ## Todo
 
+-   [ ] Refactor project to comply the OpenAPI 3.1.0 standard.
+-   [ ] Audit `update` & `tranferOwnership` in member-groups.service.ts
+-   [ ] Finish up admin-permissions.e2e-spec.ts
 -   [ ] Finish up limitations for unverified members
 -   [ ] Finish up freeze member logic
 -   [ ] Check new email logic and sign up logic, if the new email is already taken, return 400 bad request
