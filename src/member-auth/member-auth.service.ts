@@ -40,9 +40,9 @@ export class MemberAuthService {
 		private settingsRepository: Repository<MemberServerSetting>,
 		private jwtService: JwtService,
 		private mailerService: MailerService
-	) { }
+	) {}
 
-	async isSeeded(): Promise<{ isSeeded: boolean; }> {
+	async isSeeded(): Promise<{ isSeeded: boolean }> {
 		const memberQb = this.membersRepository.createQueryBuilder("member");
 		memberQb.limit(3);
 		const members = await memberQb.getMany();
@@ -125,7 +125,7 @@ export class MemberAuthService {
 
 	async signIn(
 		memberAuthCredentialsDto: MemberAuthCredentialsDto
-	): Promise<{ accessToken: string; }> {
+	): Promise<{ accessToken: string }> {
 		const { email, password } = memberAuthCredentialsDto;
 		const member = await this.membersRepository.findOne({
 			where: {
@@ -143,12 +143,12 @@ export class MemberAuthService {
 		}
 	}
 
-	async isSignedIn(): Promise<{ isSignedIn: boolean; }> {
+	async isSignedIn(): Promise<{ isSignedIn: boolean }> {
 		/* JwtAuthGuard already validated the member */
 		return { isSignedIn: true };
 	}
 
-	async refreshAccessToken(req: any): Promise<{ accessToken: string; }> {
+	async refreshAccessToken(req: any): Promise<{ accessToken: string }> {
 		const { email } = req.user;
 		const payload: JwtPayload = { email };
 		const accessToken: string = this.jwtService.sign(payload);
@@ -164,7 +164,8 @@ export class MemberAuthService {
 		if (!req.user) {
 			throw new NotFoundException("Google user not found");
 		} else {
-			const memberQb = this.membersRepository.createQueryBuilder("member");
+			const memberQb =
+				this.membersRepository.createQueryBuilder("member");
 			memberQb.limit(3);
 			const members = await memberQb.getMany();
 			if (members.length > 0) {
@@ -484,7 +485,7 @@ export class MemberAuthService {
 
 	async resetPassword(
 		resetPasswordDto: MemberResetPasswordDto
-	): Promise<{ isReset: boolean; }> {
+	): Promise<{ isReset: boolean }> {
 		const { password, resetPasswordToken } = resetPasswordDto;
 		let payload: JwtPayload;
 		let member: Member;

@@ -14,7 +14,6 @@ Content-Type: application/json
 ### Sign up
 POST {{$dotenv LOCAL_HOST}}/member-auth/signup
 Content-Type: application/json
-Authorization: {{$dotenv AUTHORIZATION}}
 
 {
 	"email": "kyung.lee@qq.com",
