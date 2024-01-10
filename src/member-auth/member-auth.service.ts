@@ -26,6 +26,7 @@ import { MemberForgetPasswordDto } from "./dto/member-forget-password.dto";
 import { MemberResetPasswordDto } from "./dto/member-reset-password.dto";
 import { CredentialData, getCredential } from "qcloud-cos-sts";
 import { MemberUpdateEmailRequestDto } from "./dto/member-update-email-request";
+import axios from "axios";
 
 @Injectable()
 export class MemberAuthService {
@@ -155,13 +156,38 @@ export class MemberAuthService {
 		return { accessToken };
 	}
 
-	async googleSignIn(req: any): Promise<{
-		isSeedMember: boolean;
-		isNewMember: boolean;
-		accessToken: string;
-		googleAccessToken: string;
-	}> {
-		if (!req.user) {
+	async googleSignIn(req: any): Promise<any> {
+		/* Get the code from query string */
+		const url = `https://oauth2.googleapis.com/token`;
+		const { code } = req.query;
+		const values = {
+			code,
+			client_id: process.env.GOOGLE_OAUTH20_CLIENT_ID,
+			client_secret: process.env.GOOGLE_OAUTH20_SECRET,
+			redirect_uri: process.env.GOOGLE_OAUTH20_REDIRECT_URI,
+			grant_type: "authorization_code",
+		};
+
+		/* Get the id and access token with the code */
+		let tokenRes: any;
+		try {
+			tokenRes = await axios.post(url, null, {
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded",
+				},
+				params: values,
+			});
+		} catch (error) {
+			console.error(error, "Failed to get Google OAuth2 token.");
+			throw new Error(error.message);
+		}
+
+		/* Decode id_token to get google user info */
+		const { id_token, access_token: googleAccessToken } = tokenRes.data;
+		const googleUser = this.jwtService.decode(id_token) as any;
+		const { email_verified, picture } = googleUser;
+
+		if (!googleUser.email) {
 			throw new NotFoundException("Google user not found");
 		} else {
 			const memberQb =
@@ -178,8 +204,7 @@ export class MemberAuthService {
 						"Google sign in is not allowed"
 					);
 				}
-				const googleAccessToken = req.user.accessToken;
-				const email = req.user.email.toLowerCase();
+				const email = googleUser.email.toLowerCase();
 				const isMemberExists = await this.membersRepository.findOne({
 					where: { email: email },
 				});
@@ -198,8 +223,7 @@ export class MemberAuthService {
 					const member = this.membersRepository.create({
 						email: email,
 						password: hashedPassword,
-						nickname:
-							req.user.givenName + " " + req.user.familyName,
+						nickname: googleUser.name,
 						memberRoles: [dbDefaultRole],
 						memberGroups: [dbEveryoneGroup],
 						isVerified: true,
@@ -246,8 +270,7 @@ export class MemberAuthService {
 					name: "everyone",
 				});
 				await this.groupsRepository.save(everyoneGroup);
-				const googleAccessToken = req.user.accessToken;
-				const email = req.user.email.toLowerCase();
+				const email = googleUser.email.toLowerCase();
 				const password = generatePassword();
 				const salt = await bcrypt.genSalt();
 				const hashedPassword = await bcrypt.hash(password, salt);
@@ -257,7 +280,7 @@ export class MemberAuthService {
 				const member = this.membersRepository.create({
 					email,
 					password: hashedPassword,
-					nickname: req.user.givenName + " " + req.user.familyName,
+					nickname: googleUser.name,
 					memberRoles: [adminRole, defaultRole],
 					memberGroups: [dbEveryoneGroup],
 					ownedGroups: [dbEveryoneGroup],

@@ -14,10 +14,8 @@ import { CreateMemberDto } from "../members/dto/create-member.dto";
 import { MemberAuthService } from "./member-auth.service";
 import { MemberAuthCredentialsDto } from "./dto/member-auth-credential.dto";
 import { Member } from "../members/entities/member.entity";
-import { GoogleOAuth20AuthGuard } from "./guards/google-oauth20.guard";
 import { AllowPublicSignUpGuard } from "../member-server-settings/guards/allow-public-sign-up.guard";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
-import { AuthGuard } from "@nestjs/passport";
 import { MemberVerifyEmailDto } from "./dto/member-verify-email.dto";
 import { MemberForgetPasswordDto } from "./dto/member-forget-password.dto";
 import { MemberResetPasswordDto } from "./dto/member-reset-password.dto";
@@ -327,7 +325,7 @@ Note: The old accessToken will not be invalid after refreshing`,
 					"Refresh the accessToken": {
 						value: {
 							accessToken:
-								"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imt5dW5nLmxlZUBxcS5jb20iLCJpYXQiOjE3MDM3NTkzODcsImV4cCI6MTcwMzc3MDE4N30.VoI_5t6lBm_56L7RP7DESpfQocPv49DpPJc766MhX3M",
+								"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwiaWF0IjoxNzAzNzU5Mzg3LCJleHAiOjE3MDM3NzAxODd9.lT3Q6ldWJGoMuuQ0gheQeLH4_pdgty29AAfa6utjZPw",
 						},
 					},
 				},
@@ -342,24 +340,24 @@ Note: The old accessToken will not be invalid after refreshing`,
 	}
 
 	@ApiOperation({
-		description: `# Sign in with Google
-This is not a RESTful API, it should be called by the browser directly.
-
-A Google OAuth2 popup will be opened, once authorized, the browser will be redirected to /member-auth/google/redirect`,
-	})
-	@Get("/google")
-	@UseGuards(GoogleOAuth20AuthGuard)
-	googleAuth(@Req() req: any) {}
-
-	@ApiOperation({
-		description: `# Google OAuth2 redirect
-This is not a RESTful API, it should be called by the browser directly.`,
+		description: `# Google OAuth2 Redirect
+This API should not be called directly, it will be called by Google Consent Screen automatically after the user authorized the app.`,
 	})
 	@ApiForbiddenResponse({
 		description: "Check if Google sign in is allowed in server settings",
 		content: {
 			"application/json": {
 				examples: {
+					"Google sign in is allowed": {
+						value: {
+							isSeedMember: false,
+							isNewMember: false,
+							accessToken:
+								"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwiaWF0IjoxNzA0ODcxODU2LCJleHAiOjE3MDQ4ODI2NTZ9.M2dUmrOBMtk-26zSg9484mVRNYCZmXEI417rmVUcko8",
+							googleAccessToken:
+								"ya29.a0AfB_byC2avNbte4iUFSZoywkcnu6MSyp5swQwjfQwYRDWCrSb2Dq6kmOfcofuMuKFx2-EEBpRAIuWjW-hW2MVO1GuxBiuClfW9F43gy8Ql83sM6rSfS5PCSL8mwGFSOLRa6iirnNkEeowvp9Mds9sp0h_nZTi5MVwEQfaCgYKAbESARESFQHGX2MiHzK9w_0tHYVSFCPodd5Q8A0171",
+						},
+					},
 					"Google sign in is not allowed": {
 						value: {
 							message: "Google sign in is not allowed",
@@ -372,31 +370,29 @@ This is not a RESTful API, it should be called by the browser directly.`,
 		},
 	})
 	@Get("/google/redirect")
-	@UseGuards(GoogleOAuth20AuthGuard)
 	async googleAuthRedirect(@Req() req: any, @Res() res: any) {
 		const googleOauth2Info = await this.memberAuthService.googleSignIn(req);
-		console.log(googleOauth2Info);
-		return {
-			message: "User information from google",
-			user: req.user,
-		};
-		// if (googleOauth2Info.isNewMember) {
-		// 	if (googleOauth2Info.isSeedMember) {
-		// 		return res.redirect(
-		// 			`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewMember=true&isSeedMember=true`
-		// 		);
-		// 	} else {
-		// 		return res.redirect(
-		// 			`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewMember=true&isSeedMember=false`
-		// 		);
-		// 	}
-		// } else {
-		// 	return res.redirect(
-		// 		`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewMember=false&isSeedMember=false`
-		// 	);
-		// }
+
+		if (googleOauth2Info.isNewMember) {
+			if (googleOauth2Info.isSeedMember) {
+				return res.redirect(
+					`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewMember=true&isSeedMember=true`
+				);
+			} else {
+				return res.redirect(
+					`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewMember=true&isSeedMember=false`
+				);
+			}
+		} else {
+			return res.redirect(
+				`http://localhost:3000/signin/googleOauth2Redirect?accessToken=${googleOauth2Info.accessToken}&isNewMember=false&isSeedMember=false`
+			);
+		}
 	}
 
+	@ApiOperation({
+		description: `# Send verification email`,
+	})
 	@ApiBearerAuth()
 	@UseGuards(JwtAuthGuard)
 	@Post("/sendVerificationEmail")
