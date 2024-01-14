@@ -43,7 +43,7 @@ export class MembersService {
 		@InjectRepository(MemberGroup)
 		private memberGroupsRepository: Repository<MemberGroup>,
 		private caslAbilityFactory: CaslAbilityFactory
-	) { }
+	) {}
 
 	/**
 	 * Create a new member, and assign to the "everyone" group.
@@ -87,13 +87,9 @@ export class MembersService {
 		nickname?: string,
 		roleIds?: any
 	): Promise<Member[]> {
-		const requester = this.request.user;
-		const dbRequester = await this.membersRepository.findOne({
-			where: { id: requester.id },
-			relations: ["ownedGroups"],
-		});
-		const requesterOwnedGroupIds: number[] = dbRequester.ownedGroups.map(
-			(group) => {
+		const { requester } = this.request;
+		const requesterOwnedGroupIds: number[] = requester.ownedGroups.map(
+			(group: any) => {
 				return group.id;
 			}
 		);
@@ -103,12 +99,17 @@ export class MembersService {
 			.leftJoinAndSelect("member.memberGroups", "memberGroups")
 			.leftJoinAndSelect("member.ownedGroups", "ownedGroups");
 		if (email) {
-			memberQb.where("member.email = :email", { email: email.toLowerCase() });
+			memberQb.where("member.email = :email", {
+				email: email.toLowerCase(),
+			});
 		}
 		if (nickname) {
-			memberQb.andWhere("(LOWER(member.nickname) LIKE LOWER(:nickname))", {
-				nickname: `%${nickname}%`,
-			});
+			memberQb.andWhere(
+				"(LOWER(member.nickname) LIKE LOWER(:nickname))",
+				{
+					nickname: `%${nickname}%`,
+				}
+			);
 		}
 		memberQb.andWhere("(memberGroups.id IN (:...groupIds))", {
 			groupIds: requesterOwnedGroupIds,
@@ -141,7 +142,7 @@ export class MembersService {
 	async findMembersByIds(
 		findMembersByIdsDto: FindMembersByIdsDto
 	): Promise<Member[]> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const { ids } = findMembersByIdsDto;
 		const members = await this.membersRepository.find({
 			where: {
@@ -150,7 +151,7 @@ export class MembersService {
 			relations: ["memberRoles", "memberGroups", "ownedGroups"],
 		});
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		for (const member of members) {
 			if (!ability.can(Actions.READ, member)) {
@@ -161,18 +162,14 @@ export class MembersService {
 	}
 
 	async findMe(): Promise<Member> {
-		const requester = this.request.user;
-		const dbRequester = await this.membersRepository.findOne({
-			where: { id: requester.id },
-			relations: ["memberRoles", "memberGroups", "ownedGroups"],
-		});
-		return dbRequester;
+		const { requester } = this.request;
+		return requester;
 	}
 
 	async memberVerification(id: string): Promise<Member> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const member = await this.membersRepository.findOne({
 			where: { id: id },
@@ -194,9 +191,9 @@ export class MembersService {
 		id: string,
 		updateMemberDto: Partial<UpdateMemberDto>
 	): Promise<Member> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const member = await this.membersRepository.findOne({
 			where: { id: id },
@@ -218,9 +215,9 @@ export class MembersService {
 		id: string,
 		updateMemberEmailDto: UpdateMemberEmailDto
 	): Promise<Member> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const member = await this.membersRepository.findOne({
 			where: { id: id },
@@ -251,9 +248,9 @@ export class MembersService {
 		id: string,
 		updateMemberRolesDto: UpdateMemberRolesDto
 	): Promise<Member> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const adminRole = await this.memberRolesRepository.findOne({
 			where: { name: "admin" },
@@ -307,7 +304,9 @@ export class MembersService {
 			const result = await this.membersRepository.save(member);
 			return result;
 		} else {
-			throw new ForbiddenException("Forbidden, can't update member roles");
+			throw new ForbiddenException(
+				"Forbidden, can't update member roles"
+			);
 		}
 	}
 
@@ -315,9 +314,9 @@ export class MembersService {
 		id: string,
 		updateMemberGroupsDto: UpdateMemberGroupsDto
 	): Promise<Member> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const everyoneGroup = await this.memberGroupsRepository.findOne({
 			where: { name: "everyone" },
@@ -353,7 +352,9 @@ export class MembersService {
 			const result = await this.membersRepository.save(member);
 			return result;
 		} else {
-			throw new ForbiddenException("Forbidden, can't update member groups");
+			throw new ForbiddenException(
+				"Forbidden, can't update member groups"
+			);
 		}
 	}
 
@@ -361,11 +362,13 @@ export class MembersService {
 		id: string,
 		updateMemberPasswordDto: UpdateMemberPasswordDto
 	): Promise<Member> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
-		const member = await this.membersRepository.findOne({ where: { id: id } });
+		const member = await this.membersRepository.findOne({
+			where: { id: id },
+		});
 		if (!member) {
 			throw new NotFoundException("Member not found");
 		}
@@ -396,14 +399,14 @@ export class MembersService {
 
 	async updateAvatar(req: any, file: Express.Multer.File): Promise<any> {
 		const { mimetype } = file;
-		if (!req.user) {
+		if (!req.requester) {
 			throw new UnauthorizedException();
 		}
 		if (mimetype === "image/png") {
 			if (file.size > 1024 * 1024) {
 				throw new BadRequestException("File size too large");
 			}
-			const directoryPath = `storage/app/avatar/${req.user.id}`;
+			const directoryPath = `storage/app/avatar/${req.requester.id}`;
 			if (!existsSync(directoryPath)) {
 				mkdirSync(directoryPath, { recursive: true });
 			}
@@ -416,7 +419,7 @@ export class MembersService {
 	}
 
 	async downloadAvatar(id: string, req: any, res: any): Promise<any> {
-		if (!req.user) {
+		if (!req.requester) {
 			throw new UnauthorizedException();
 		}
 		const directoryPath = `storage/app/avatar/${id}`;
@@ -427,10 +430,13 @@ export class MembersService {
 		res.download(filePath);
 	}
 
-	async freeze(id: string, freezeMemberDto: FreezeMemberDto): Promise<Member> {
-		const requester = this.request.user;
+	async freeze(
+		id: string,
+		freezeMemberDto: FreezeMemberDto
+	): Promise<Member> {
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const adminRole = await this.memberRolesRepository.findOne({
 			where: { name: "admin" },
@@ -463,10 +469,10 @@ export class MembersService {
 		return result;
 	}
 
-	async transferOwnership(id: string): Promise<{ isTransferred: boolean; }> {
-		const requester = this.request.user;
+	async transferOwnership(id: string): Promise<{ isTransferred: boolean }> {
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const adminRole = await this.memberRolesRepository.findOne({
 			where: { name: "admin" },
@@ -500,9 +506,13 @@ export class MembersService {
 			adminRole.members = [member];
 			everyoneGroup.owner = member;
 		} else {
-			throw new ForbiddenException("Forbidden, can't update member roles");
+			throw new ForbiddenException(
+				"Forbidden, can't update member roles"
+			);
 		}
-		const adminRoleResult = await this.memberRolesRepository.save(adminRole);
+		const adminRoleResult = await this.memberRolesRepository.save(
+			adminRole
+		);
 		const everyoneGroupResult = await this.memberGroupsRepository.save(
 			everyoneGroup
 		);
@@ -510,9 +520,9 @@ export class MembersService {
 	}
 
 	async remove(id: string): Promise<any> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const member = await this.membersRepository.findOne({
 			where: { id: id },
@@ -532,7 +542,9 @@ export class MembersService {
 		}
 		const result = await this.membersRepository.delete({ id: id });
 		if (!result.affected) {
-			throw new ServiceUnavailableException("Failed to delete the member");
+			throw new ServiceUnavailableException(
+				"Failed to delete the member"
+			);
 		}
 		return result;
 	}

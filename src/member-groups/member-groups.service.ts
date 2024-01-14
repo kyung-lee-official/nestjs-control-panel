@@ -31,15 +31,17 @@ export class MemberGroupsService {
 		@InjectRepository(Member)
 		private membersRepository: Repository<Member>,
 		private caslAbilityFactory: CaslAbilityFactory
-	) { }
+	) {}
 
 	async create(): Promise<MemberGroup> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const groupsRepository = this.groupsRepository;
-		async function generateNewMemberGroupName(newMemberGroupNameIndex: number) {
+		async function generateNewMemberGroupName(
+			newMemberGroupNameIndex: number
+		) {
 			let newMemberGroupName = "New Group";
 			if (newMemberGroupNameIndex === 0) {
 				newMemberGroupName = "New Group";
@@ -53,21 +55,18 @@ export class MemberGroupsService {
 			});
 			if (newMemberGroup) {
 				newMemberGroupNameIndex++;
-				return await generateNewMemberGroupName(newMemberGroupNameIndex);
+				return await generateNewMemberGroupName(
+					newMemberGroupNameIndex
+				);
 			} else {
 				return newMemberGroupName;
 			}
 		}
 		const newMemberGroupName = await generateNewMemberGroupName(0);
-		const dbRequester = await this.membersRepository.findOne({
-			where: {
-				id: requester.id,
-			},
-		});
 		const memberGroup = this.groupsRepository.create({
 			name: newMemberGroupName,
-			owner: dbRequester,
-			members: [dbRequester],
+			owner: requester,
+			members: [requester],
 		});
 
 		try {
@@ -75,7 +74,10 @@ export class MemberGroupsService {
 			 * Here the exact subject instance is required instead of the Subject type
 			 * because the subject name need to match the conditions in the AbilityFactory
 			 */
-			ForbiddenError.from(ability).throwUnlessCan(Actions.CREATE, memberGroup);
+			ForbiddenError.from(ability).throwUnlessCan(
+				Actions.CREATE,
+				memberGroup
+			);
 		} catch (error) {
 			if (error instanceof ForbiddenError) {
 				throw new ForbiddenException(error.message);
@@ -116,16 +118,10 @@ export class MemberGroupsService {
 		id: number,
 		updateMemberGroupDto: Partial<UpdateMemberGroupDto>
 	): Promise<MemberGroup> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
-		const dbRequester = await this.membersRepository.findOne({
-			where: {
-				id: requester.id,
-			},
-			relations: ["memberRoles", "ownedGroups", "memberGroups"],
-		});
 		const dbMemberGroup = await this.groupsRepository.findOne({
 			where: { id: id },
 			relations: ["owner", "members"],
@@ -156,9 +152,13 @@ export class MemberGroupsService {
 					dbMemberGroup,
 					"memberIds"
 				);
-				if (dbRequester.memberRoles.find((memberRole) => memberRole.name === "admin")) {
+				if (
+					requester.memberRoles.find(
+						(memberRole) => memberRole.name === "admin"
+					)
+				) {
 					/* Requester is admin */
-					const admin = dbRequester;
+					const admin = requester;
 					if (!memberIds.includes(dbMemberGroup.owner.id)) {
 						/* New members do not include the original owner */
 						if (admin.id === dbMemberGroup.owner.id) {
@@ -205,9 +205,9 @@ export class MemberGroupsService {
 		id: number,
 		transferMemberGroupOwnershipDto: TransferMemberGroupOwnershipDto
 	): Promise<MemberGroup> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const dbMemberGroup = await this.groupsRepository.findOne({
 			where: { id: id },
@@ -247,9 +247,9 @@ export class MemberGroupsService {
 	}
 
 	async remove(id: number): Promise<any> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const dbMemberGroup = await this.groupsRepository.findOne({
 			where: { id: id },
@@ -268,7 +268,9 @@ export class MemberGroupsService {
 			}
 			throw error;
 		}
-		const result = await this.groupsRepository.delete({ id: dbMemberGroup.id });
+		const result = await this.groupsRepository.delete({
+			id: dbMemberGroup.id,
+		});
 		if (!result.affected) {
 			throw new ServiceUnavailableException("Failed to delete the group");
 		}

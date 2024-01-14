@@ -24,11 +24,11 @@ export enum Actions {
 
 export type Subjects =
 	| InferSubjects<
-		| typeof Member
-		| typeof MemberRole
-		| typeof MemberGroup
-		| typeof ChituboxManualFeedback
-	>
+			| typeof Member
+			| typeof MemberRole
+			| typeof MemberGroup
+			| typeof ChituboxManualFeedback
+	  >
 	| "all";
 
 export type AppAbility = MongoAbility<[Actions, Subjects]>;
@@ -39,25 +39,17 @@ export class CaslAbilityFactory {
 		@InjectRepository(Member)
 		private membersRepository: Repository<Member>,
 		private permissionsService: PermissionsService
-	) { }
-	async defineAbilityFor(requesterId: string): Promise<AppAbility> {
-		const dbRequester = await this.membersRepository.findOne({
-			where: {
-				id: requesterId,
-			},
-			relations: [
-				"memberRoles", "ownedGroups", "memberGroups"
-			],
-		});
+	) {}
+	async defineAbilityFor(requester: Member): Promise<AppAbility> {
 		const requesterPermissions =
 			await this.permissionsService.getPermissionsByMemberId(
-				dbRequester.id
+				requester.id
 			);
 		const abilityBuilder = new AbilityBuilder<AppAbility>(
 			createMongoAbility
 		);
 		const { can, cannot, build } = abilityBuilder;
-		const ownedGroupIds = dbRequester.ownedGroups.map((ownedGroup) => {
+		const ownedGroupIds = requester.ownedGroups.map((ownedGroup) => {
 			return ownedGroup.id;
 		});
 
@@ -73,7 +65,7 @@ export class CaslAbilityFactory {
 			});
 		}
 		if (requesterPermissions.includes(Permissions.UPDATE_MEMBER_ME)) {
-			can(Actions.UPDATE, Member, { id: dbRequester.id });
+			can(Actions.UPDATE, Member, { id: requester.id });
 		}
 		if (requesterPermissions.includes(Permissions.TRANSFER_MEMBER_ADMIN)) {
 			can(Actions.UPDATE, MemberRole);
@@ -84,7 +76,7 @@ export class CaslAbilityFactory {
 			});
 		}
 		if (requesterPermissions.includes(Permissions.GET_MEMBER_ME)) {
-			can(Actions.READ, Member, { id: dbRequester.id });
+			can(Actions.READ, Member, { id: requester.id });
 		}
 		if (requesterPermissions.includes(Permissions.DELETE_MEMBER)) {
 			can(Actions.DELETE, Member, {
@@ -128,7 +120,11 @@ export class CaslAbilityFactory {
 				'Can\'t update "everyone" member-group'
 			);
 		}
-		if (requesterPermissions.includes(Permissions.TRANSFER_MEMBER_GROUP_OWNER)) {
+		if (
+			requesterPermissions.includes(
+				Permissions.TRANSFER_MEMBER_GROUP_OWNER
+			)
+		) {
 			can(Actions.UPDATE, MemberGroup, ["owner"]);
 			cannot(Actions.UPDATE, MemberGroup, { name: "everyone" }).because(
 				'Can\'t update "everyone" member-group'

@@ -12,6 +12,6 @@ import { Member } from "../members/entities/member.entity";
 		PermissionsModule,
 	],
 	controllers: [ServerSettingsController],
-	providers: [MemberServerSettingsService ],
+	providers: [MemberServerSettingsService],
 })
-export class MemberServerSettingsModule { }
+export class MemberServerSettingsModule {}

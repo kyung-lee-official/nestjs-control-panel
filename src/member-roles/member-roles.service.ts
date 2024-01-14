@@ -46,9 +46,9 @@ export class MemberRolesService {
 	}
 
 	async create(): Promise<MemberRole> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const rolesRepository = this.rolesRepository;
 		async function generateNewRoleName(newRoleNameIndex: number) {
@@ -129,9 +129,9 @@ export class MemberRolesService {
 		id: number,
 		updateMemberRoleDto: Partial<UpdateMemberRoleDto>
 	): Promise<MemberRole> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const role = await this.rolesRepository.findOne({ where: { id: id } });
 		if (!role) {
@@ -180,9 +180,9 @@ export class MemberRolesService {
 	}
 
 	async remove(id: number): Promise<any> {
-		const requester = this.request.user;
+		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
-			requester.id
+			requester
 		);
 		const role = await this.rolesRepository.findOne({
 			where: { id: id },

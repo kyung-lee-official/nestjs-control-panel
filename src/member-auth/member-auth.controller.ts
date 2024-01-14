@@ -397,8 +397,7 @@ This API should not be called directly, it will be called by Google Consent Scre
 	@UseGuards(JwtAuthGuard)
 	@Post("/sendVerificationEmail")
 	sendVerificationEmail(@Req() req: any): Promise<void> {
-		const member = req.user;
-		const email = member.email;
+		const { email } = req.requester;
 		return this.memberAuthService.sendVerificationEmail(email);
 	}
 
@@ -427,8 +426,7 @@ This API should not be called directly, it will be called by Google Consent Scre
 		@Req() req: any,
 		@Body() updateEmailRequestDto: MemberUpdateEmailRequestDto
 	): Promise<{ isSent: boolean }> {
-		const member = req.user;
-		const email = member.email;
+		const { email } = req.requester;
 		return this.memberAuthService.sendUpdateEmailVerificationRequest(
 			email,
 			updateEmailRequestDto
