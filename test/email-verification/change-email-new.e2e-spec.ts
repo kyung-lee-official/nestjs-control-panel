@@ -45,9 +45,9 @@ describe("Change email flow (e2e)", () => {
 		adminAccessToken = res.body.accessToken;
 	}, 30000);
 
-	it("PATCH /auth/update-email-request request to update email", async () => {
+	it("PATCH /auth/updateEmailRequest request to update email", async () => {
 		const res = await req
-			.patch("/auth/update-email-request")
+			.patch("/auth/updateEmailRequest")
 			.set("Authorization", `Bearer ${adminAccessToken}`)
 			.send({
 				newEmail: process.env.E2E_TEST_ADMIN_NEW_EMAIL

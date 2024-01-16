@@ -12,7 +12,9 @@ async function bootstrap() {
 	);
 	app.enableCors();
 
-	setupSwagger(app);
+	if (process.env.ENV === "DEV") {
+		setupSwagger(app);
+	}
 
 	await app.listen(3001);
 }

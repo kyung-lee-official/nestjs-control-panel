@@ -150,7 +150,7 @@ export class MemberAuthService {
 	}
 
 	async refreshAccessToken(req: any): Promise<{ accessToken: string }> {
-		const { email } = req.requester;
+		const { email } = req.jwtPayload;
 		const payload: JwtPayload = { email };
 		const accessToken: string = this.jwtService.sign(payload);
 		return { accessToken };
@@ -435,6 +435,11 @@ export class MemberAuthService {
 		return { isVerified: true };
 	}
 
+	/**
+	 * Send initial password email to the member
+	 * @param email Email
+	 * @param password Initial password
+	 */
 	async sendInitialPasswordEmail(email: string, password: string) {
 		try {
 			await this.mailerService.sendMail({

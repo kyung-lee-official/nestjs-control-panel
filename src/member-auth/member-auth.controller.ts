@@ -26,8 +26,10 @@ import {
 	ApiBearerAuth,
 	ApiBody,
 	ApiForbiddenResponse,
+	ApiNotFoundResponse,
 	ApiOkResponse,
 	ApiOperation,
+	ApiQuery,
 	ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 
@@ -340,11 +342,41 @@ Note: The old accessToken will not be invalid after refreshing`,
 	}
 
 	@ApiOperation({
+		summary: "Google OAuth2 redirect",
 		description: `# Google OAuth2 Redirect
-This API should not be called directly, it will be called by Google Consent Screen automatically after the user authorized the app.`,
+This API should not be called directly, it will be called by Google Consent Screen automatically after the user authorized the app.
+
+Google Consent Screen will redirect to this API with some query parameters, one of them is the authorization code, which will be used to get the access token from Google OAuth2 server.
+`,
+		externalDocs: {
+			description: "Using OAuth 2.0 for Web Server Applications",
+			url: "https://developers.google.com/identity/protocols/oauth2/web-server",
+		},
 	})
-	@ApiForbiddenResponse({
-		description: "Check if Google sign in is allowed in server settings",
+	@ApiQuery({
+		name: "prompt",
+		description: "The prompt that the user granted",
+		required: true,
+		example: "consent",
+	})
+	@ApiQuery({
+		name: "authuser",
+		description: "The user account that the user granted",
+		required: true,
+	})
+	@ApiQuery({
+		name: "scope",
+		description: "The scopes that the user granted",
+		required: true,
+	})
+	@ApiQuery({
+		name: "code",
+		description: "The authorization code",
+		required: true,
+	})
+	@ApiOkResponse({
+		description:
+			"Note that this API returns a **redirect response** so the browser will be redirected to the frontend with information in the query parameters, it doesn't return a JSON response like the example below",
 		content: {
 			"application/json": {
 				examples: {
@@ -358,6 +390,15 @@ This API should not be called directly, it will be called by Google Consent Scre
 								"ya29.a0AfB_byC2avNbte4iUFSZoywkcnu6MSyp5swQwjfQwYRDWCrSb2Dq6kmOfcofuMuKFx2-EEBpRAIuWjW-hW2MVO1GuxBiuClfW9F43gy8Ql83sM6rSfS5PCSL8mwGFSOLRa6iirnNkEeowvp9Mds9sp0h_nZTi5MVwEQfaCgYKAbESARESFQHGX2MiHzK9w_0tHYVSFCPodd5Q8A0171",
 						},
 					},
+				},
+			},
+		},
+	})
+	@ApiForbiddenResponse({
+		description: "Check if Google sign in is allowed in server settings",
+		content: {
+			"application/json": {
+				examples: {
 					"Google sign in is not allowed": {
 						value: {
 							message: "Google sign in is not allowed",
@@ -390,17 +431,6 @@ This API should not be called directly, it will be called by Google Consent Scre
 		}
 	}
 
-	@ApiOperation({
-		description: `# Send verification email`,
-	})
-	@ApiBearerAuth()
-	@UseGuards(JwtAuthGuard)
-	@Post("/sendVerificationEmail")
-	sendVerificationEmail(@Req() req: any): Promise<void> {
-		const { email } = req.requester;
-		return this.memberAuthService.sendVerificationEmail(email);
-	}
-
 	/**
 	 * For member-auth.http testing only, should be commented out in production
 	 */
@@ -412,6 +442,48 @@ This API should not be called directly, it will be called by Google Consent Scre
 	// 	);
 	// }
 
+	@ApiOperation({
+		description: `# Send a Verification Email to the Member
+Send a verification email to the member. Valid for 1 day.`,
+	})
+	@ApiBearerAuth()
+	@UseGuards(JwtAuthGuard)
+	@Post("/sendVerificationEmail")
+	sendVerificationEmail(@Req() req: any): Promise<void> {
+		const { email } = req.jwtPayload;
+		return this.memberAuthService.sendVerificationEmail(email);
+	}
+
+	@ApiOperation({
+		description: `# Verify the Member's Email
+Verify the member's email with the verification token sent to the member's email
+`,
+	})
+	@ApiBody({
+		description: "Verification token",
+		examples: {
+			"Verification token": {
+				value: {
+					verificationToken:
+						"eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3MDUyMjEyNTcsImV4cCI6MTcwNTMwNzY1N30.aa0f_7yfIX0G4DJMCotKS-hIk2SonIKnaIrJoRG6eKo",
+				},
+			},
+		},
+	})
+	@ApiOkResponse({
+		description: "Return true if the email is verified",
+		content: {
+			"application/json": {
+				examples: {
+					"Email is verified": {
+						value: {
+							isVerified: true,
+						},
+					},
+				},
+			},
+		},
+	})
 	@Post("/verifyEmail")
 	verifyEmail(
 		@Body() verifyEmailDto: MemberVerifyEmailDto
@@ -419,20 +491,77 @@ This API should not be called directly, it will be called by Google Consent Scre
 		return this.memberAuthService.verifyEmail(verifyEmailDto);
 	}
 
+	@ApiOperation({
+		description: `# Send an Update Email to the Member
+Send a update email verification request to the member's new email. Valid for 1 day.`,
+	})
+	@ApiBody({
+		description: "The new email",
+		examples: {
+			"New Email": {
+				value: {
+					newEmail: "test@example.com",
+				},
+			},
+		},
+	})
+	@ApiOkResponse({
+		description: "Return true if the email is sent",
+		content: {
+			"application/json": {
+				examples: {
+					"Email is sent": {
+						value: {
+							isSent: true,
+						},
+					},
+				},
+			},
+		},
+	})
 	@ApiBearerAuth()
 	@UseGuards(JwtAuthGuard)
-	@Patch("/update-email-request")
+	@Patch("/updateEmailRequest")
 	sendUpdateEmailVerificationRequest(
 		@Req() req: any,
 		@Body() updateEmailRequestDto: MemberUpdateEmailRequestDto
 	): Promise<{ isSent: boolean }> {
-		const { email } = req.requester;
+		const { email } = req.jwtPayload;
 		return this.memberAuthService.sendUpdateEmailVerificationRequest(
 			email,
 			updateEmailRequestDto
 		);
 	}
 
+	@ApiOperation({
+		description: `# Verify the Member's New Email
+Verify the member's new email with the verification token sent to the member's new email`,
+	})
+	@ApiBody({
+		description: "Verification token",
+		examples: {
+			"Verification token": {
+				value: {
+					verificationToken:
+						"eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3MDUyMjEyNTcsImV4cCI6MTcwNTMwNzY1N30.aa0f_7yfIX0G4DJMCotKS-hIk2SonIKnaIrJoRG6eKo",
+				},
+			},
+		},
+	})
+	@ApiOkResponse({
+		description: "Return true if the email is verified",
+		content: {
+			"application/json": {
+				examples: {
+					"Email is verified": {
+						value: {
+							isVerified: true,
+						},
+					},
+				},
+			},
+		},
+	})
 	@Patch("/verifyNewEmail")
 	veryfyNewEmail(
 		@Body() verifyEmailDto: MemberVerifyEmailDto
@@ -440,6 +569,36 @@ This API should not be called directly, it will be called by Google Consent Scre
 		return this.memberAuthService.verifyNewEmail(verifyEmailDto);
 	}
 
+	@ApiOperation({
+		description: `# Send a Forget Password Email to the Member
+Send a forget password email to the member's email that contains a reset password token. Valid for 10 minutes.`,
+	})
+	@ApiBody({
+		description: "The member's email",
+		examples: {
+			"Member's Email": {
+				value: {
+					email: "test@example.com",
+				},
+			},
+		},
+	})
+	@ApiNotFoundResponse({
+		description: "Member not found",
+		content: {
+			"application/json": {
+				examples: {
+					"Member not found": {
+						value: {
+							message: "Member not found",
+							error: "Not Found",
+							statusCode: 404,
+						},
+					},
+				},
+			},
+		},
+	})
 	@Post("/forgetPassword")
 	forgetPassword(
 		@Body() forgetPasswordDto: MemberForgetPasswordDto
@@ -447,6 +606,37 @@ This API should not be called directly, it will be called by Google Consent Scre
 		return this.memberAuthService.forgetPassword(forgetPasswordDto);
 	}
 
+	@ApiOperation({
+		summary: "# Reset the Member's Password",
+	})
+	@ApiBody({
+		schema: {
+			properties: {
+				password: {
+					type: "string",
+					format: "password",
+					description: "The new password",
+					example: "1234Abcd!",
+				},
+				resetPasswordToken: {
+					type: "string",
+					description: "The reset password token",
+					example:
+						"eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3MDUzODE1MDYsImV4cCI6MTcwNTM4MjEwNn0.9jltcXaagYqJ-6Cq8d0z_GuQj8BL-NguAKvrp3QqJq0",
+				},
+			},
+		},
+		description: "Reset password with the reset password token",
+		examples: {
+			"Reset Password": {
+				value: {
+					password: "1234Abcd!",
+					resetPasswordToken:
+						"eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJpYXQiOjE3MDUzODE1MDYsImV4cCI6MTcwNTM4MjEwNn0.9jltcXaagYqJ-6Cq8d0z_GuQj8BL-NguAKvrp3QqJq0",
+				},
+			},
+		},
+	})
 	@Post("/resetPassword")
 	resetPassword(
 		@Body() resetPasswordDto: MemberResetPasswordDto
@@ -454,6 +644,44 @@ This API should not be called directly, it will be called by Google Consent Scre
 		return this.memberAuthService.resetPassword(resetPasswordDto);
 	}
 
+	@ApiOperation({
+		summary: "Get the temporary credential for Tencent COS",
+		description: `# Get the temporary credential for Tencent COS
+secretId, secretKey, bucket, region are stored in the server environment variables, the frontend should not know them.
+
+* [临时密钥生成及使用指引](https://cloud.tencent.com/document/product/436/14048)
+* [使用临时密钥访问 COS](https://cloud.tencent.com/document/product/436/68283)
+`,
+		externalDocs: {
+			description: "使用临时密钥访问 COS",
+			url: "https://cloud.tencent.com/document/product/436/68283",
+		},
+	})
+	@ApiOkResponse({
+		description: "Return the temporary credential for Tencent COS",
+		content: {
+			"application/json": {
+				examples: {
+					"Temporary credential for Tencent COS": {
+						value: {
+							expiredTime: 1705383233,
+							expiration: "2024-01-16T05:33:53Z",
+							credentials: {
+								sessionToken:
+									"***********************************************************************************************************************************oYEUgyE4Vvl0i0-K21kB****************************************************7f3Xb9ii9-****2NzOm_******************************yGPRWWvNAsspVBGfY2pfdhaXUxIxFUHDBDf8RZnjyxTz*************_0bxk********-*******************************ehSIFFviZAyDS-oM****z-vJu-6uP************************************************vPNxP-xKI**************************************-hFhRNWHBosM1kb_BZbfu****************************************Wks0980VpFJc3MZya6NVFS*********************************************************JV2cZ9NvaRVbe0dLBkZD******************************************GclS2TWOdzO02L*************g_feCCU**P_j******",
+								tmpSecretId:
+									"*******lJ_*************UgG0-_*************mlXZIlBSZbFWbyx***********",
+								tmpSecretKey:
+									"wl****/*****************xZ**********4Ke****=",
+							},
+							requestId: "1351****-****-****-****-ef****90****",
+							startTime: 1705383113,
+						},
+					},
+				},
+			},
+		},
+	})
 	@Get("tencentCosTempCredential")
 	async getTemporaryCredential(): Promise<CredentialData> {
 		return this.memberAuthService.getTemporaryCredential();

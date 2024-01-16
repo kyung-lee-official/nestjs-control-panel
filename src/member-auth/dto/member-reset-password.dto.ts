@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import {
 	IsDefined,
 	IsString,
@@ -7,6 +8,7 @@ import {
 } from "class-validator";
 
 export class MemberResetPasswordDto {
+	@ApiProperty()
 	@IsDefined()
 	@IsString()
 	@MinLength(8)
@@ -16,6 +18,7 @@ export class MemberResetPasswordDto {
 	})
 	password: string;
 
+	@ApiProperty()
 	@IsDefined()
 	@IsString()
 	resetPasswordToken: string;
