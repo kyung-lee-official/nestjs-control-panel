@@ -4,5 +4,5 @@ export class UpdateMemberGroupsDto {
 	@IsOptional()
 	@IsArray()
 	@IsNumber({}, { each: true })
-	groupIds?: number[];
+	newGroupIds: number[];
 }

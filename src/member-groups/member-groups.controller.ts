@@ -8,7 +8,6 @@ import {
 	Delete,
 	UseGuards,
 	UseInterceptors,
-	ClassSerializerInterceptor,
 } from "@nestjs/common";
 import { MemberGroupsService } from "./member-groups.service";
 import { UpdateMemberGroupDto } from "./dto/update-member-group.dto";
@@ -19,12 +18,16 @@ import { RequiredPermissions } from "../permissions/decorators/required-permissi
 import { Permissions } from "../permissions/permissions.enum";
 import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
 import { TransferMemberGroupOwnershipDto } from "./dto/transfer-member-group-ownershiop.dto";
+import { ExcludePasswordInterceptor } from "../interceptors/exclude-password.interceptor";
+import { ApiBearerAuth, ApiBody, ApiOperation } from "@nestjs/swagger";
 
 @UseGuards(JwtAuthGuard)
 @Controller("member-groups")
 export class GroupsController {
-	constructor(private readonly groupsService: MemberGroupsService) { }
+	constructor(private readonly groupsService: MemberGroupsService) {}
 
+	@ApiOperation({ summary: "Create a member group" })
+	@ApiBearerAuth()
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.CREATE_MEMBER_GROUP)
 	@UseGuards(IsVerifiedGuard)
@@ -33,7 +36,9 @@ export class GroupsController {
 		return this.groupsService.create();
 	}
 
-	@UseInterceptors(ClassSerializerInterceptor)
+	@ApiOperation({ summary: "Get all member groups" })
+	@ApiBearerAuth()
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_MEMBER_GROUPS)
 	@UseGuards(IsVerifiedGuard)
@@ -42,7 +47,7 @@ export class GroupsController {
 		return this.groupsService.findAll();
 	}
 
-	@UseInterceptors(ClassSerializerInterceptor)
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.GET_MEMBER_GROUPS)
 	@UseGuards(IsVerifiedGuard)
@@ -51,28 +56,37 @@ export class GroupsController {
 		return this.groupsService.findOne(+id);
 	}
 
-	@UseInterceptors(ClassSerializerInterceptor)
+	@ApiOperation({ summary: "Update name and members of a member group" })
+	@ApiBearerAuth()
+	@ApiBody({ type: UpdateMemberGroupDto })
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.UPDATE_MEMBER_GROUP)
 	@UseGuards(IsVerifiedGuard)
 	@Patch(":id")
 	update(
-		@Param("id", GroupIdPipe) id: string,
+		@Param("id", GroupIdPipe) id: number,
 		@Body() updateGroupDto: UpdateMemberGroupDto
 	) {
-		return this.groupsService.update(+id, updateGroupDto);
+		return this.groupsService.update(id, updateGroupDto);
 	}
 
-	@UseInterceptors(ClassSerializerInterceptor)
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.UPDATE_MEMBER_GROUP)
+	@RequiredPermissions(
+		Permissions.UPDATE_MEMBER_GROUP,
+		Permissions.TRANSFER_MEMBER_GROUP_OWNER
+	)
 	@UseGuards(IsVerifiedGuard)
-	@Patch(":id")
-	tranferOwnership(
+	@Patch(":id/transfer-ownership")
+	transferOwnership(
 		@Param("id", GroupIdPipe) id: string,
 		@Body() transferMemberGroupOwnershipDto: TransferMemberGroupOwnershipDto
 	) {
-		return this.groupsService.tranferOwnership(+id, transferMemberGroupOwnershipDto);
+		return this.groupsService.transferOwnership(
+			+id,
+			transferMemberGroupOwnershipDto
+		);
 	}
 
 	@UseGuards(PermissionsGuard)

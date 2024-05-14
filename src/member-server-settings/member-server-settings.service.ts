@@ -1,16 +1,12 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { CreateMemberServerSettingDto } from "./dto/create-member-server-setting.dto";
 import { UpdateMemberServerSettingDto } from "./dto/update-member-server-setting.dto";
-import { MemberServerSetting } from "./entities/member-server-setting.entity";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { PrismaService } from "../prisma/prisma.service";
+import { MemberServerSetting } from "@prisma/client";
 
 @Injectable()
 export class MemberServerSettingsService {
-	constructor(
-		@InjectRepository(MemberServerSetting)
-		private settingsRepository: Repository<MemberServerSetting>
-	) { }
+	constructor(private readonly prisonService: PrismaService) {}
 
 	/**
 	 * !!! Danger, test only !!!
@@ -21,20 +17,23 @@ export class MemberServerSettingsService {
 	async create(
 		createMemberServerSettingDto: CreateMemberServerSettingDto
 	): Promise<MemberServerSetting> {
-		const serverSetting = this.settingsRepository.create(
-			createMemberServerSettingDto
-		);
-		await this.settingsRepository.save(serverSetting);
+		const serverSetting =
+			await this.prisonService.memberServerSetting.create({
+				data: createMemberServerSettingDto,
+			});
 		return serverSetting;
 	}
 
-	async isSignUpAvailable(): Promise<{ isSignUpAvailable: boolean; }> {
-		const dbSettings = await this.settingsRepository.find();
-		if (dbSettings.length !== 1) {
+	async isSignUpAvailable(): Promise<{ isSignUpAvailable: boolean }> {
+		const dbSettingCounts =
+			await this.prisonService.memberServerSetting.count();
+		if (dbSettingCounts !== 1) {
 			throw new InternalServerErrorException(
 				"Server setting number is not 1"
 			);
 		}
+		const dbSettings =
+			await this.prisonService.memberServerSetting.findMany();
 		const setting = dbSettings[0];
 		if (setting.allowPublicSignUp) {
 			return { isSignUpAvailable: true };
@@ -46,12 +45,15 @@ export class MemberServerSettingsService {
 	async isGoogleSignInAvailable(): Promise<{
 		isGoogleSignInAvailable: boolean;
 	}> {
-		const dbSettings = await this.settingsRepository.find();
-		if (dbSettings.length !== 1) {
+		const dbSettingCounts =
+			await this.prisonService.memberServerSetting.count();
+		if (dbSettingCounts !== 1) {
 			throw new InternalServerErrorException(
 				"Server setting number is not 1"
 			);
 		}
+		const dbSettings =
+			await this.prisonService.memberServerSetting.findMany();
 		const setting = dbSettings[0];
 		if (setting.allowGoogleSignIn) {
 			return { isGoogleSignInAvailable: true };
@@ -61,16 +63,16 @@ export class MemberServerSettingsService {
 	}
 
 	async findAll(): Promise<MemberServerSetting> {
-		const settingQb =
-			this.settingsRepository.createQueryBuilder("serverSetting");
-		settingQb.limit(1);
-		const setting = await settingQb.getMany();
-		if (setting.length !== 1) {
+		const dbSettingCounts =
+			await this.prisonService.memberServerSetting.count();
+		if (dbSettingCounts !== 1) {
 			throw new InternalServerErrorException(
 				"Server setting number is not 1"
 			);
 		}
-		return setting[0];
+		const dbSettings =
+			await this.prisonService.memberServerSetting.findMany();
+		return dbSettings[0];
 	}
 
 	// findOne(id: number) {
@@ -80,25 +82,21 @@ export class MemberServerSettingsService {
 	async update(
 		updateMemberServerSettingDto: UpdateMemberServerSettingDto
 	): Promise<MemberServerSetting> {
-		const { allowPublicSignUp, allowGoogleSignIn } = updateMemberServerSettingDto;
-		const settingQb =
-			this.settingsRepository.createQueryBuilder("serverSetting");
-		settingQb.limit(1);
-		const settings = await settingQb.getMany();
-		if (settings.length !== 1) {
+		const dbSettingCounts =
+			await this.prisonService.memberServerSetting.count();
+		if (dbSettingCounts !== 1) {
 			throw new InternalServerErrorException(
 				"Server setting number is not 1"
 			);
 		}
-		const setting = settings[0];
-		if (allowPublicSignUp !== null && allowPublicSignUp !== undefined) {
-			setting.allowPublicSignUp = allowPublicSignUp;
-		}
-		if (allowGoogleSignIn !== null && allowGoogleSignIn !== undefined) {
-			setting.allowGoogleSignIn = allowGoogleSignIn;
-		}
-		await this.settingsRepository.save(setting);
-		return setting;
+		const settings =
+			await this.prisonService.memberServerSetting.findFirst();
+		const updatedSettings =
+			await this.prisonService.memberServerSetting.update({
+				where: { id: settings.id },
+				data: updateMemberServerSettingDto,
+			});
+		return updatedSettings;
 	}
 
 	// remove(id: number) {

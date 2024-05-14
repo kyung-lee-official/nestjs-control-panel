@@ -4,19 +4,15 @@ import {
 	InternalServerErrorException,
 } from "@nestjs/common";
 import { CreateChituboxManualFeedbackDto } from "./dto/create-chitubox-manual-feedback.dto";
-import { InjectRepository } from "@nestjs/typeorm";
-import { ChituboxManualFeedback } from "./entities/chitubox-manual-feedback-record.entity";
-import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
 import dayjs from "dayjs";
 import axios from "axios";
 import { Iso8601DateRangeDto } from "./dto/iso8601-date-range.dto";
+import { PrismaService } from "../prisma/prisma.service";
+import { ChituboxManualFeedback } from "@prisma/client";
 
 @Injectable()
 export class ChituboxManualFeedbacksService {
-	constructor(
-		@InjectRepository(ChituboxManualFeedback)
-		private feedbacksRepository: Repository<ChituboxManualFeedback>
-	) {}
+	constructor(private readonly prismaService: PrismaService) {}
 
 	async create(
 		createChituboxManualFeedbackDto: CreateChituboxManualFeedbackDto,
@@ -41,21 +37,18 @@ export class ChituboxManualFeedbacksService {
 		if (!country) {
 			throw new InternalServerErrorException("Country API error");
 		}
-		const feedback = this.feedbacksRepository.create({
-			pageId,
-			url,
-			payload,
-			ip,
-			country: country || "Unknown",
+		const feedback = this.prismaService.chituboxManualFeedback.create({
+			data: {
+				pageId,
+				url,
+				payload,
+				ip,
+				country: country || "Unknown",
+			},
 		});
-		await this.feedbacksRepository.save(feedback);
-		return null;
+		return feedback;
 	}
 
-	/**
-	 * Since the server timezone is always UTC (use `timedatectl` command to check),
-	 * the front end need to convert dates to UTC before sending the request.
-	 */
 	async find(
 		dateRangeDto: Iso8601DateRangeDto
 	): Promise<ChituboxManualFeedback[]> {
@@ -66,31 +59,39 @@ export class ChituboxManualFeedbacksService {
 					"endDate cannot be earlier than startDate"
 				);
 			}
-			const feedbacks = await this.feedbacksRepository.find({
-				where: {
-					createdDate: Between(
-						dayjs(startDate).toDate(),
-						dayjs(endDate).toDate()
-					),
-				},
-			});
+			const feedbacks =
+				await this.prismaService.chituboxManualFeedback.findMany({
+					where: {
+						createdAt: {
+							gte: dayjs(startDate).toDate(),
+							lte: dayjs(endDate).toDate(),
+						},
+					},
+				});
 			return feedbacks;
 		} else if (startDate) {
-			const feedbacks = await this.feedbacksRepository.find({
-				where: {
-					createdDate: MoreThanOrEqual(dayjs(startDate).toDate()),
-				},
-			});
+			const feedbacks =
+				await this.prismaService.chituboxManualFeedback.findMany({
+					where: {
+						createdAt: {
+							gte: dayjs(startDate).toDate(),
+						},
+					},
+				});
 			return feedbacks;
 		} else if (endDate) {
-			const feedbacks = await this.feedbacksRepository.find({
-				where: {
-					createdDate: LessThanOrEqual(dayjs(endDate).toDate()),
-				},
-			});
+			const feedbacks =
+				await this.prismaService.chituboxManualFeedback.findMany({
+					where: {
+						createdAt: {
+							lte: dayjs(endDate).toDate(),
+						},
+					},
+				});
 			return feedbacks;
 		} else {
-			const feedbacks = await this.feedbacksRepository.find();
+			const feedbacks =
+				await this.prismaService.chituboxManualFeedback.findMany();
 			return feedbacks;
 		}
 	}

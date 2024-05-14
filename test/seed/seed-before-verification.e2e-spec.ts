@@ -2,10 +2,12 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 import { AppModule } from "../../src/app.module";
-import { Client } from "pg";
 
 if (process.env.ENV === "DEV") {
 	console.log("✅ Running in DEV mode");
+	console.log(
+		"Run 'pnpm exec prisma migrate reset' to reset the database before running this test."
+	);
 } else {
 	console.error(
 		"❌ Fatal! Running e2e tests in modes other than DEV is not allowed!"
@@ -18,23 +20,6 @@ let req: request.SuperTest<request.Test>;
 let adminAccessToken: string;
 
 beforeAll(async () => {
-	/* Drop database "DATABASE_DEV" and re-create it */
-	const dbClient = new Client({
-		host: process.env.DATABASE_HOST_DEV,
-		port: parseInt(process.env.DATABASE_PORT_DEV),
-		user: process.env.DATABASE_USERNAME_DEV,
-		password: process.env.DATABASE_PASSWORD_DEV,
-		database: "postgres",
-	});
-	await dbClient.connect();
-	await dbClient.query(
-		`DROP DATABASE IF EXISTS "${process.env.DATABASE_DEV}" WITH (FORCE)`
-	);
-	await dbClient.query(
-		`CREATE DATABASE "${process.env.DATABASE_DEV}" OWNER ${process.env.DATABASE_USERNAME_DEV}`
-	);
-	await dbClient.end();
-
 	const moduleFixture: TestingModule = await Test.createTestingModule({
 		imports: [AppModule],
 	}).compile();
@@ -64,7 +49,9 @@ describe("Seed flow, before verification (e2e)", () => {
 			password: "1234",
 		});
 		expect(seedRes.status).toBe(400);
-		expect(seedRes.body.message.includes("password is too weak")).toBe(true);
+		expect(seedRes.body.message.includes("password is too weak")).toBe(
+			true
+		);
 	});
 
 	it("POST /member-auth/seed with upper-case email should be saved as all-lower cases.", async () => {
@@ -155,16 +142,18 @@ describe("Test server settings", () => {
 	});
 
 	it("GET /member-server-settings/isGoogleSignInAvailable should be false by default", async () => {
-		const res = await req.get("/member-server-settings/isGoogleSignInAvailable");
+		const res = await req.get(
+			"/member-server-settings/isGoogleSignInAvailable"
+		);
 		expect(res.status).toBe(200);
 		expect(res.body.isGoogleSignInAvailable).toBe(false);
 	});
 });
 
 describe("Operations should be forbidden before verification", () => {
-	it("GET /member-roles should be false given the member is not verified yet", async () => {
+	it("POST /member-roles/find should be false given the member is not verified yet", async () => {
 		const res = await req
-			.get("/member-roles")
+			.post("/member-roles/find")
 			.set("Authorization", `Bearer ${adminAccessToken}`)
 			.expect(403);
 	});

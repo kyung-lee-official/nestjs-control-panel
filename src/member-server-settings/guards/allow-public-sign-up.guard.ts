@@ -3,27 +3,23 @@ import {
 	ExecutionContext,
 	Injectable,
 	InternalServerErrorException,
-	ServiceUnavailableException,
-} from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { MemberServerSetting } from '../entities/member-server-setting.entity';
-import { InjectRepository } from '@nestjs/typeorm';
+} from "@nestjs/common";
+import { PrismaService } from "../../prisma/prisma.service";
 
 @Injectable()
 export class AllowPublicSignUpGuard implements CanActivate {
-	constructor(
-		@InjectRepository(MemberServerSetting)
-		private settingsRepository: Repository<MemberServerSetting>,
-	) { }
+	constructor(private readonly prismaService: PrismaService) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
-		const dbSettings = await this.settingsRepository.find();
-		if (dbSettings.length !== 1) {
+		const dbSettingsCount =
+			await this.prismaService.memberServerSetting.count();
+		if (dbSettingsCount !== 1) {
 			throw new InternalServerErrorException(
-				"Illegitimate, more then 1 server setting was found.",
+				"Illegitimate, more then 1 server setting was found."
 			);
 		}
-		const setting = dbSettings[0];
+		const setting =
+			await this.prismaService.memberServerSetting.findFirst();
 		if (setting.allowPublicSignUp) {
 			return true;
 		} else {

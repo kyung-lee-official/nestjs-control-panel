@@ -1,27 +1,24 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Permissions } from "./permissions.enum";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { Member } from "../members/entities/member.entity";
 import { uniq } from "lodash";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class PermissionsService {
-	constructor(
-		@InjectRepository(Member)
-		private membersRepository: Repository<Member>
-	) { }
+	constructor(private readonly prismService: PrismaService) {}
 
 	find() {
 		return Object.values(Permissions);
 	}
 
 	async getPermissionsByMemberId(id: string): Promise<Permissions[]> {
-		const member = await this.membersRepository.findOne({
+		const member = await this.prismService.member.findUnique({
 			where: {
 				id: id,
 			},
-			relations: ["memberRoles"],
+			include: {
+				memberRoles: true,
+			},
 		});
 		if (!member) {
 			throw new NotFoundException("Member not exists");

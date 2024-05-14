@@ -1,9 +1,6 @@
 import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
 import { CreateMemberDto } from "./dto/create-member.dto";
 import { UpdateMemberDto } from "./dto/update-member.dto";
-import { InjectRepository } from "@nestjs/typeorm/dist/common";
-import { In, Repository } from "typeorm";
-import { Member } from "./entities/member.entity";
 import bcrypt from "bcrypt";
 import { REQUEST } from "@nestjs/core";
 import {
@@ -20,15 +17,17 @@ import {
 	Actions,
 	CaslAbilityFactory,
 } from "../casl/casl-ability.factory/casl-ability.factory";
-import { ForbiddenError } from "@casl/ability";
-import { MemberGroup } from "../member-groups/entities/member-group.entity";
-import { MemberRole } from "../member-roles/entities/member-role.entity";
+import { ForbiddenError, subject } from "@casl/ability";
 import { uniq } from "lodash";
 import { UpdateMemberGroupsDto } from "./dto/update-member-groups.dto";
 import { MemberAuthService } from "../member-auth/member-auth.service";
 import { writeFile } from "fs/promises";
 import { existsSync, mkdirSync } from "fs";
 import { FreezeMemberDto } from "./dto/freeze-member.dto";
+import { PrismaService } from "../prisma/prisma.service";
+import { Member, MemberRole } from "@prisma/client";
+import { FindMembersDto } from "./dto/find-members.dto";
+import { MemberWithoutPassword } from "../utils/types";
 
 @Injectable({ scope: Scope.REQUEST })
 export class MembersService {
@@ -36,13 +35,8 @@ export class MembersService {
 		@Inject(REQUEST)
 		private request: any,
 		private memberAuthService: MemberAuthService,
-		@InjectRepository(Member)
-		private membersRepository: Repository<Member>,
-		@InjectRepository(MemberRole)
-		private memberRolesRepository: Repository<MemberRole>,
-		@InjectRepository(MemberGroup)
-		private memberGroupsRepository: Repository<MemberGroup>,
-		private caslAbilityFactory: CaslAbilityFactory
+		private caslAbilityFactory: CaslAbilityFactory,
+		private readonly prismaService: PrismaService
 	) {}
 
 	/**
@@ -55,82 +49,60 @@ export class MembersService {
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
-		const defaultRole = await this.memberRolesRepository.findOne({
-			where: { name: "default" },
+		const member = await this.prismaService.member.create({
+			data: {
+				email,
+				password: hashedPassword,
+				nickname,
+				memberRoles: {
+					connect: { name: "default" },
+				},
+				memberGroups: {
+					connect: { name: "everyone" },
+				},
+			},
+			include: {
+				memberRoles: true,
+				memberGroups: true,
+				ownedGroups: true,
+			},
 		});
-		const everyoneGroup = await this.memberGroupsRepository.findOne({
-			where: { name: "everyone" },
-		});
-		const member = this.membersRepository.create({
-			email,
-			password: hashedPassword,
-			nickname,
-			memberRoles: [defaultRole],
-			memberGroups: [everyoneGroup],
-		});
-		await this.membersRepository.save(member);
 		this.memberAuthService.sendVerificationEmail(email);
 		return member;
 	}
 
 	/**
-	 * Find members conditionally.
-	 * Since CASL only determines "can" or "can not",
+	 * Find a members conditionally.
+	 * Since CASL only determines "can" or "cannot",
 	 * this function only returns members belonging to owned groups of the requester only.
-	 * @param email member email
-	 * @param nickname member nickname
-	 * @param roleIds member's role ids
 	 * @returns member
 	 */
-	async find(
-		email?: string,
-		nickname?: string,
-		roleIds?: any
-	): Promise<Member[]> {
+	async find(findMembersDto: FindMembersDto): Promise<Member[]> {
+		const { email, nickname } = findMembersDto;
 		const { requester } = this.request;
 		const requesterOwnedGroupIds: number[] = requester.ownedGroups.map(
 			(group: any) => {
 				return group.id;
 			}
 		);
-		const memberQb = this.membersRepository
-			.createQueryBuilder("member")
-			.leftJoinAndSelect("member.memberRoles", "memberRoles")
-			.leftJoinAndSelect("member.memberGroups", "memberGroups")
-			.leftJoinAndSelect("member.ownedGroups", "ownedGroups");
-		if (email) {
-			memberQb.where("member.email = :email", {
-				email: email.toLowerCase(),
-			});
-		}
-		if (nickname) {
-			memberQb.andWhere(
-				"(LOWER(member.nickname) LIKE LOWER(:nickname))",
-				{
-					nickname: `%${nickname}%`,
-				}
-			);
-		}
-		memberQb.andWhere("(memberGroups.id IN (:...groupIds))", {
-			groupIds: requesterOwnedGroupIds,
+		let members = await this.prismaService.member.findMany({
+			where: {
+				email: email ? email.toLowerCase() : undefined,
+				nickname: nickname ? { contains: nickname } : undefined,
+				memberGroups: {
+					some: {
+						id: {
+							in: requesterOwnedGroupIds,
+						},
+					},
+				},
+			},
+			include: {
+				memberRoles: true,
+				memberGroups: true,
+				ownedGroups: true,
+			},
 		});
-		let members = await memberQb.getMany();
-		if (roleIds) {
-			roleIds = roleIds.map((roleId) => {
-				return parseInt(roleId);
-			});
-			members = members.filter((member) => {
-				const memberRoleIds = member.memberRoles.map((role) => {
-					return role.id;
-				});
-				for (const roleId of roleIds) {
-					if (memberRoleIds.includes(roleId)) {
-						return true;
-					}
-				}
-				return false;
-			});
-		}
 		return members;
 	}
 
@@ -144,24 +116,30 @@ export class MembersService {
 	): Promise<Member[]> {
 		const { requester } = this.request;
 		const { ids } = findMembersByIdsDto;
-		const members = await this.membersRepository.find({
+		const members = await this.prismaService.member.findMany({
 			where: {
-				id: In(ids),
+				id: {
+					in: ids,
+				},
 			},
-			relations: ["memberRoles", "memberGroups", "ownedGroups"],
+			include: {
+				memberRoles: true,
+				memberGroups: true,
+				ownedGroups: true,
+			},
 		});
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
 		for (const member of members) {
-			if (!ability.can(Actions.READ, member)) {
+			if (!ability.can(Actions.READ, subject("Member", member))) {
 				throw new ForbiddenException();
 			}
 		}
 		return members;
 	}
 
-	async findMe(): Promise<Member> {
+	async findMe(): Promise<MemberWithoutPassword> {
 		const { requester } = this.request;
 		return requester;
 	}
@@ -171,17 +149,32 @@ export class MembersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const member = await this.membersRepository.findOne({
-			where: { id: id },
-			relations: ["memberGroups"],
+		const member = await this.prismaService.member.findUnique({
+			where: {
+				id: id,
+			},
+			include: {
+				memberRoles: true,
+				memberGroups: true,
+				ownedGroups: true,
+			},
 		});
 		if (!member) {
 			throw new NotFoundException("Member not found");
 		}
-		if (ability.can(Actions.UPDATE, member)) {
-			member.isVerified = true;
-			const result = await this.membersRepository.save(member);
-			return result;
+		if (ability.can(Actions.UPDATE, subject("Member", member))) {
+			const member = await this.prismaService.member.update({
+				where: { id: id },
+				data: {
+					isVerified: true,
+				},
+				include: {
+					memberRoles: true,
+					memberGroups: true,
+					ownedGroups: true,
+				},
+			});
+			return member;
 		} else {
 			throw new ForbiddenException();
 		}
@@ -195,17 +188,30 @@ export class MembersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const member = await this.membersRepository.findOne({
-			where: { id: id },
-			relations: ["memberRoles", "memberGroups"],
+		const member = await this.prismaService.member.findUnique({
+			where: {
+				id: id,
+			},
+			include: {
+				memberRoles: true,
+				memberGroups: true,
+				ownedGroups: true,
+			},
 		});
 		if (!member) {
 			throw new NotFoundException("Member not found");
 		}
-		if (ability.can(Actions.UPDATE, member)) {
-			Object.assign(member, updateMemberDto);
-			const result = await this.membersRepository.save(member);
-			return result;
+		if (ability.can(Actions.UPDATE, subject("Member", member))) {
+			const member = await this.prismaService.member.update({
+				where: { id: id },
+				data: updateMemberDto,
+				include: {
+					memberRoles: true,
+					memberGroups: true,
+					ownedGroups: true,
+				},
+			});
+			return member;
 		} else {
 			throw new ForbiddenException();
 		}
@@ -219,17 +225,29 @@ export class MembersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const member = await this.membersRepository.findOne({
-			where: { id: id },
-			relations: ["memberRoles", "memberGroups"],
+		const member = await this.prismaService.member.findUnique({
+			where: {
+				id: id,
+			},
+			include: {
+				memberRoles: true,
+				memberGroups: true,
+			},
 		});
 		if (!member) {
 			throw new NotFoundException("Member not found");
 		}
-		if (ability.can(Actions.UPDATE, member)) {
-			Object.assign(member, updateMemberEmailDto);
-			const result = await this.membersRepository.save(member);
-			return result;
+		if (ability.can(Actions.UPDATE, subject("Member", member))) {
+			const { email } = updateMemberEmailDto;
+			const member = await this.prismaService.member.update({
+				where: { id: id },
+				data: { email: email.toLowerCase() },
+				include: {
+					memberRoles: true,
+					memberGroups: true,
+				},
+			});
+			return member;
 		} else {
 			throw new ForbiddenException();
 		}
@@ -241,6 +259,7 @@ export class MembersService {
 	 * If the requestee is an admin member, and the 'admin' role is not included in updateMemberRolesDto, throw a forbidden exception.
 	 * If the 'default' role is not included in updateMemberRolesDto, throw a forbidden exception.
 	 * If updateMemberRolesDto contains unknown roleIds, throw a not found exception.
+	 * @param id requestee's id
 	 * @param updateMemberRolesDto
 	 * @returns member
 	 */
@@ -252,57 +271,88 @@ export class MembersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const adminRole = await this.memberRolesRepository.findOne({
+		const { newRoleIds } = updateMemberRolesDto;
+		const adminRole = await this.prismaService.memberRole.findUnique({
 			where: { name: "admin" },
-			relations: ["members"],
+			include: {
+				members: true,
+			},
 		});
 		const adminMemberId = adminRole.members[0].id;
-		let member: Member;
-		let memberRoles: MemberRole[];
-		if (updateMemberRolesDto.roleIds) {
-			if (id === adminMemberId) {
-				if (!updateMemberRolesDto.roleIds.includes(adminRole.id)) {
-					throw new ForbiddenException(
-						"'admin' cannot be resigned without transferring it to another member"
-					);
-				}
-			}
-			if (
-				id !== adminMemberId &&
-				updateMemberRolesDto.roleIds.includes(adminRole.id)
-			) {
+
+		if (id === adminMemberId) {
+			if (!newRoleIds.includes(adminRole.id)) {
 				throw new ForbiddenException(
-					"Can't assign the 'admin' role to other members"
+					"'admin' cannot be resigned without transferring it to another member"
 				);
 			}
-			memberRoles = await this.memberRolesRepository.find({
-				where: { id: In(updateMemberRolesDto.roleIds) },
-			});
-			if (memberRoles.length !== updateMemberRolesDto.roleIds.length) {
-				throw new NotFoundException("At least one role not found");
-			}
-			member = await this.membersRepository.findOne({
-				where: { id: id },
-				relations: ["memberRoles", "memberGroups"],
-			});
-			if (!member) {
-				throw new NotFoundException("Member not found");
-			}
-			const memberRoleIds = member.memberRoles.map((role) => {
-				return role.id;
-			});
-			if (memberRoleIds.includes(adminRole.id)) {
-				/* Requestee has 'admin' role */
-				memberRoles.push(adminRole);
-				memberRoles = uniq(memberRoles);
-			}
-		} else {
-			throw new BadRequestException("Empty body, missing 'roleIds'");
 		}
-		if (ability.can(Actions.UPDATE, MemberRole)) {
-			member.memberRoles = memberRoles;
-			const result = await this.membersRepository.save(member);
-			return result;
+		if (id !== adminMemberId && newRoleIds.includes(adminRole.id)) {
+			throw new ForbiddenException(
+				"Can't assign the 'admin' role to other members"
+			);
+		}
+		const newRoles = await this.prismaService.memberRole.findMany({
+			where: { id: { in: newRoleIds } },
+		});
+		if (newRoles.length !== newRoleIds.length) {
+			throw new NotFoundException("At least one role not found");
+		}
+
+		const dbRequestee = await this.prismaService.member.findUnique({
+			where: { id: id },
+			include: {
+				memberRoles: true,
+				memberGroups: true,
+			},
+		});
+		if (!dbRequestee) {
+			throw new NotFoundException("Requestee not found");
+		}
+		const dbRequesteeRoleIds = dbRequestee.memberRoles.map(
+			(role: MemberRole) => {
+				return role.id;
+			}
+		);
+
+		if (ability.can(Actions.UPDATE, subject("Member", dbRequestee))) {
+			if (dbRequesteeRoleIds.includes(adminRole.id)) {
+				/* Requestee originally has 'admin' role */
+				newRoleIds.push(adminRole.id);
+				const uniqueNewRoleIds = uniq(newRoleIds);
+				const newRequestee = await this.prismaService.member.update({
+					where: { id: id },
+					data: {
+						memberRoles: {
+							connect: uniqueNewRoleIds.map((roleId) => {
+								return { id: roleId };
+							}),
+						},
+					},
+					include: {
+						memberRoles: true,
+						memberGroups: true,
+					},
+				});
+				return newRequestee;
+			} else {
+				/* Requestee originally doesn't have 'admin' role */
+				const newRequestee = await this.prismaService.member.update({
+					where: { id: id },
+					data: {
+						memberRoles: {
+							connect: newRoleIds.map((roleId) => {
+								return { id: roleId };
+							}),
+						},
+					},
+					include: {
+						memberRoles: true,
+						memberGroups: true,
+					},
+				});
+				return newRequestee;
+			}
 		} else {
 			throw new ForbiddenException(
 				"Forbidden, can't update member roles"
@@ -318,39 +368,44 @@ export class MembersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const everyoneGroup = await this.memberGroupsRepository.findOne({
+		const { newGroupIds } = updateMemberGroupsDto;
+		const everyoneGroup = await this.prismaService.memberGroup.findUnique({
 			where: { name: "everyone" },
 		});
-		let member: Member;
-		let memberGroups: MemberGroup[];
-		if (updateMemberGroupsDto.groupIds) {
-			if (!updateMemberGroupsDto.groupIds.includes(everyoneGroup.id)) {
-				throw new ForbiddenException(
-					"All members belong to the 'everyone' group by default, you cannot remove any member from group 'everyone'"
-				);
-			}
-			memberGroups = await this.memberGroupsRepository.find({
-				where: { id: In(updateMemberGroupsDto.groupIds) },
-			});
-			member = await this.membersRepository.findOne({
-				where: { id: id },
-				relations: ["memberRoles", "memberGroups"],
-			});
-			if (!member) {
-				throw new NotFoundException("Member not found");
-			}
-			const memberGroupIds = uniq(
-				member.memberGroups.map((group) => {
-					return group.id;
-				})
+
+		if (!newGroupIds.includes(everyoneGroup.id)) {
+			throw new ForbiddenException(
+				"All members belong to the 'everyone' group, you cannot remove any member from group 'everyone'"
 			);
-		} else {
-			throw new BadRequestException("Empty body, missing 'groupIds'");
 		}
-		if (ability.can(Actions.UPDATE, MemberGroup)) {
-			member.memberGroups = memberGroups;
-			const result = await this.membersRepository.save(member);
-			return result;
+
+		const dbRequestee = await this.prismaService.member.findUnique({
+			where: { id: id },
+			include: {
+				memberRoles: true,
+				memberGroups: true,
+			},
+		});
+		if (!dbRequestee) {
+			throw new NotFoundException("Member not found");
+		}
+
+		if (ability.can(Actions.UPDATE, subject("Member", dbRequestee))) {
+			const newRequestee = await this.prismaService.member.update({
+				where: { id: id },
+				data: {
+					memberGroups: {
+						connect: newGroupIds.map((groupId) => {
+							return { id: groupId };
+						}),
+					},
+				},
+				include: {
+					memberRoles: true,
+					memberGroups: true,
+				},
+			});
+			return newRequestee;
 		} else {
 			throw new ForbiddenException(
 				"Forbidden, can't update member groups"
@@ -366,17 +421,17 @@ export class MembersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const member = await this.membersRepository.findOne({
+		const requestee = await this.prismaService.member.findUnique({
 			where: { id: id },
 		});
-		if (!member) {
+		if (!requestee) {
 			throw new NotFoundException("Member not found");
 		}
-		if (ability.can(Actions.UPDATE, member)) {
+		if (ability.can(Actions.UPDATE, subject("Member", requestee))) {
 			const { oldPassword, newPassword } = updateMemberPasswordDto;
 			const isOldPasswordCorrect: boolean = await bcrypt.compare(
 				oldPassword,
-				member.password
+				requestee.password
 			);
 			if (isOldPasswordCorrect) {
 				if (oldPassword === newPassword) {
@@ -386,9 +441,11 @@ export class MembersService {
 				}
 				const salt = await bcrypt.genSalt();
 				const hashedPassword = await bcrypt.hash(newPassword, salt);
-				member.password = hashedPassword;
-				await this.membersRepository.save(member);
-				return member;
+				const newRequestee = await this.prismaService.member.update({
+					where: { id: id },
+					data: { password: hashedPassword },
+				});
+				return newRequestee;
 			} else {
 				throw new UnauthorizedException();
 			}
@@ -438,14 +495,19 @@ export class MembersService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const adminRole = await this.memberRolesRepository.findOne({
+		const { isFrozen } = freezeMemberDto;
+		const adminRole = await this.prismaService.memberRole.findUnique({
 			where: { name: "admin" },
-			relations: ["members"],
+			include: {
+				members: true,
+			},
 		});
 		const admin = adminRole.members[0];
-		const member = await this.membersRepository.findOne({
+		const requestee = await this.prismaService.member.findUnique({
 			where: { id: id },
-			relations: ["memberGroups"],
+			include: {
+				memberGroups: true,
+			},
 		});
 		if (id === admin.id) {
 			throw new ForbiddenException("Can't freeze the 'admin' member");
@@ -453,99 +515,120 @@ export class MembersService {
 		if (requester.id === id) {
 			throw new ForbiddenException("Can't freeze yourself");
 		}
-		if (!member) {
+		if (!requestee) {
 			throw new NotFoundException("Member not found");
 		}
 		try {
-			ForbiddenError.from(ability).throwUnlessCan(Actions.UPDATE, member);
+			ForbiddenError.from(ability).throwUnlessCan(
+				Actions.UPDATE,
+				subject("Member", requestee)
+			);
 		} catch (error) {
 			if (error instanceof ForbiddenError) {
 				throw new ForbiddenException(error.message);
 			}
 			throw error;
 		}
-		member.isFrozen = freezeMemberDto.isFrozen;
-		const result = await this.membersRepository.save(member);
-		return result;
+		const frozenRequestee = await this.prismaService.member.update({
+			where: { id: id },
+			data: { isFrozen: isFrozen },
+			include: {
+				memberGroups: true,
+			},
+		});
+		return frozenRequestee;
 	}
 
-	async transferOwnership(id: string): Promise<{ isTransferred: boolean }> {
+	async transferMemberAdmin(id: string): Promise<Member> {
+		console.log(" ========== id ========== ", id);
+		
 		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const adminRole = await this.memberRolesRepository.findOne({
+		const adminRole = await this.prismaService.memberRole.findUnique({
 			where: { name: "admin" },
-			relations: ["members"],
+			include: {
+				members: true,
+			},
 		});
-		const defaultRole = await this.memberRolesRepository.findOne({
-			where: { name: "default" },
-			relations: ["members"],
-		});
+
 		const admin = adminRole.members[0];
 		if (requester.id !== admin.id) {
 			throw new ForbiddenException(
-				"Only the 'admin' member can transfer ownership"
+				"You're not the admin, can't transfer ownership"
 			);
 		}
-		const everyoneGroup = await this.memberGroupsRepository.findOne({
-			where: { name: "everyone" },
-		});
-		const member = await this.membersRepository.findOne({
+
+		const requestee = await this.prismaService.member.findUnique({
 			where: { id: id },
 		});
-		if (member.isFrozen) {
+		if (!requestee) {
+			throw new NotFoundException("Member not found");
+		}
+		if (requestee.isFrozen) {
 			throw new ForbiddenException(
 				"Can't transfer ownership to a frozen member"
 			);
 		}
-		if (!member) {
-			throw new NotFoundException("Member not found");
-		}
-		if (ability.can(Actions.UPDATE, MemberRole)) {
-			adminRole.members = [member];
-			everyoneGroup.owner = member;
-		} else {
-			throw new ForbiddenException(
-				"Forbidden, can't update member roles"
-			);
-		}
-		const adminRoleResult = await this.memberRolesRepository.save(
-			adminRole
-		);
-		const everyoneGroupResult = await this.memberGroupsRepository.save(
-			everyoneGroup
-		);
-		return { isTransferred: true };
+
+		await this.prismaService.memberRole.update({
+			where: { name: "admin" },
+			data: {
+				members: {
+					set: { id: id },
+				},
+			},
+		});
+		await this.prismaService.memberGroup.update({
+			where: { name: "everyone" },
+			data: {
+				owner: {
+					connect: { id: id },
+				},
+			},
+		});
+
+		const newAdmin = await this.prismaService.member.findUnique({
+			where: { id: id },
+			include: {
+				memberRoles: true,
+				ownedGroups: true,
+			},
+		});
+		return newAdmin;
 	}
 
-	async remove(id: string): Promise<any> {
+	async remove(id: string): Promise<Member> {
 		const { requester } = this.request;
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const member = await this.membersRepository.findOne({
+		const requestee = await this.prismaService.member.findUnique({
 			where: { id: id },
-			/* CASL need to check permissions as per memberRoles and memberGroups */
-			relations: ["memberRoles", "memberGroups"],
+			include: {
+				/* CASL need to check permissions as per memberRoles and memberGroups */
+				memberRoles: true,
+				memberGroups: true,
+			},
 		});
-		if (!member) {
+		if (!requestee) {
 			throw new NotFoundException("Member not found");
 		}
 		try {
-			ForbiddenError.from(ability).throwUnlessCan(Actions.DELETE, member);
+			ForbiddenError.from(ability).throwUnlessCan(
+				Actions.DELETE,
+				subject("Member", requestee)
+			);
 		} catch (error) {
 			if (error instanceof ForbiddenError) {
 				throw new ForbiddenException(error.message);
 			}
 			throw error;
 		}
-		const result = await this.membersRepository.delete({ id: id });
-		if (!result.affected) {
-			throw new ServiceUnavailableException(
-				"Failed to delete the member"
-			);
-		}
-		return result;
+		const deletedRequestee = await this.prismaService.member.delete({
+			where: { id: id },
+		});
+		return deletedRequestee;
 	}
 }

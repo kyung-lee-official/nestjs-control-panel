@@ -10,9 +10,8 @@ import { REQUIRED_PERMISSIONS_KEY } from "../decorators/required-permissions.dec
 import { PermissionsService } from "../permissions.service";
 import { Permissions } from "../permissions.enum";
 import { JwtService } from "@nestjs/jwt";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Member } from "src/members/entities/member.entity";
-import { Repository } from "typeorm";
+import { PrismaService } from "../../prisma/prisma.service";
+import { Member } from "@prisma/client";
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -20,8 +19,7 @@ export class PermissionsGuard implements CanActivate {
 		private reflector: Reflector,
 		private permissionsService: PermissionsService,
 		private jwtService: JwtService,
-		@InjectRepository(Member)
-		private membersRepository: Repository<Member>
+		private readonly prismaService: PrismaService
 	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -39,11 +37,15 @@ export class PermissionsGuard implements CanActivate {
 			);
 			if (payload) {
 				const email = payload["email"];
-				member = await this.membersRepository.findOne({
+				member = await this.prismaService.member.findUnique({
 					where: {
 						email: email,
 					},
-					relations: ["memberRoles", "ownedGroups", "memberGroups"],
+					include: {
+						memberRoles: true,
+						ownedGroups: true,
+						memberGroups: true,
+					},
 				});
 				if (!member) {
 					throw new UnauthorizedException("Invalid token");

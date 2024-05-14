@@ -1,28 +1,18 @@
-import {
-	Controller,
-	Get,
-	Post,
-	Body,
-	Patch,
-	Param,
-	Delete,
-	UseGuards,
-} from "@nestjs/common";
+import { Controller, Get, Body, Patch, UseGuards } from "@nestjs/common";
 import { MemberServerSettingsService } from "./member-server-settings.service";
-import { CreateMemberServerSettingDto } from "./dto/create-member-server-setting.dto";
 import { UpdateMemberServerSettingDto } from "./dto/update-member-server-setting.dto";
-import { MemberServerSetting } from "./entities/member-server-setting.entity";
 import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
 import { Permissions } from "../permissions/permissions.enum";
 import { JwtAuthGuard } from "../member-auth/guards/jwt-auth.guard";
 import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
+import { MemberServerSetting } from "@prisma/client";
 
 @Controller("member-server-settings")
 export class ServerSettingsController {
 	constructor(
 		private readonly serverSettingsService: MemberServerSettingsService
-	) { }
+	) {}
 
 	/**
 	 * !!! Danger, test only !!!
@@ -36,12 +26,12 @@ export class ServerSettingsController {
 	// }
 
 	@Get("/isSignUpAvailable")
-	isSignUpAvailable(): Promise<{ isSignUpAvailable: boolean; }> {
+	isSignUpAvailable(): Promise<{ isSignUpAvailable: boolean }> {
 		return this.serverSettingsService.isSignUpAvailable();
 	}
 
 	@Get("/isGoogleSignInAvailable")
-	isGoogleSignInAvailable(): Promise<{ isGoogleSignInAvailable: boolean; }> {
+	isGoogleSignInAvailable(): Promise<{ isGoogleSignInAvailable: boolean }> {
 		return this.serverSettingsService.isGoogleSignInAvailable();
 	}
 

@@ -1,8 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { MemberAuthController } from "./member-auth.controller";
-import { getRepositoryToken } from "@nestjs/typeorm";
-import { MemberServerSetting } from "../member-server-settings/entities/member-server-setting.entity";
 import { MemberAuthService } from "./member-auth.service";
+import { PrismaService } from "../prisma/prisma.service";
 
 describe("MemberAuthController", () => {
 	let controller: MemberAuthController;
@@ -25,15 +24,7 @@ describe("MemberAuthController", () => {
 						verifyEmail: jest.fn(),
 					}),
 				},
-				{
-					provide: getRepositoryToken(MemberServerSetting),
-					useValue: () => ({
-						create: jest.fn(),
-						createQueryBuilder: jest.fn(),
-						find: jest.fn(),
-						save: jest.fn(),
-					}),
-				},
+				PrismaService,
 			],
 		}).compile();
 

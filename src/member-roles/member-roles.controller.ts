@@ -8,24 +8,26 @@ import {
 	Delete,
 	UseGuards,
 	UseInterceptors,
-	ClassSerializerInterceptor,
 	ParseIntPipe,
+	HttpCode,
 } from "@nestjs/common";
 import { MemberRolesService } from "./member-roles.service";
 import { UpdateMemberRoleDto } from "./dto/update-member-role.dto";
-import { MemberRole } from "./entities/member-role.entity";
 import { JwtAuthGuard } from "../member-auth/guards/jwt-auth.guard";
 import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
-import { Permissions } from "../permissions/permissions.enum";
 import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredMemberRoles } from "./decorators/required-member-roles.decorator";
 import { MemberRolesGuard } from "./guards/member-roles.guard";
 import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
+import { MemberRole, Permission } from "@prisma/client";
+import { FindMemberRoleDto } from "./dto/find-member-role.dto";
+import { ApiBearerAuth, ApiBody, ApiOperation } from "@nestjs/swagger";
+import { ExcludePasswordInterceptor } from "../interceptors/exclude-password.interceptor";
 
 @UseGuards(JwtAuthGuard)
 @Controller("member-roles")
 export class MemberRolesController {
-	constructor(private readonly memberRolesService: MemberRolesService) { }
+	constructor(private readonly memberRolesService: MemberRolesService) {}
 
 	@UseGuards(MemberRolesGuard)
 	@RequiredMemberRoles("admin")
@@ -36,48 +38,64 @@ export class MemberRolesController {
 	}
 
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.CREATE_MEMBER_ROLE)
+	@RequiredPermissions(Permission.CREATE_MEMBER_ROLE)
 	@UseGuards(IsVerifiedGuard)
 	@Post()
 	create() {
 		return this.memberRolesService.create();
 	}
 
-	@UseInterceptors(ClassSerializerInterceptor)
+	@ApiOperation({ summary: "Find member roles by ids" })
+	@ApiBody({
+		type: FindMemberRoleDto,
+		examples: {
+			"Find member roles by ids": {
+				value: {
+					roleIds: [],
+				},
+			},
+		},
+	})
+	@ApiBearerAuth()
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.GET_MEMBER_ROLES)
+	@RequiredPermissions(Permission.GET_MEMBER_ROLES)
 	@UseGuards(IsVerifiedGuard)
-	@Get()
-	find(roleIds?: number[]): Promise<MemberRole[]> {
-		return this.memberRolesService.find(roleIds);
+	@HttpCode(200)
+	@Post("/find")
+	find(@Body() findMemberRoleDto: FindMemberRoleDto): Promise<MemberRole[]> {
+		return this.memberRolesService.find(findMemberRoleDto);
 	}
 
-	@UseInterceptors(ClassSerializerInterceptor)
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.GET_MEMBER_ROLES)
+	@RequiredPermissions(Permission.GET_MEMBER_ROLES)
 	@UseGuards(IsVerifiedGuard)
 	@Get(":id")
 	findOne(@Param("id") id: string) {
 		return this.memberRolesService.findOne(+id);
 	}
 
-	@UseInterceptors(ClassSerializerInterceptor)
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.UPDATE_MEMBER_ROLE)
+	@RequiredPermissions(Permission.UPDATE_MEMBER_ROLE)
 	@UseGuards(IsVerifiedGuard)
 	@Patch(":id")
 	updateMemberRoleById(
-		@Param("id") id: string,
+		@Param("id", ParseIntPipe) id: number,
 		@Body() updateMemberRoleDto: UpdateMemberRoleDto
 	): Promise<MemberRole> {
-		return this.memberRolesService.updateMemberRoleById(+id, updateMemberRoleDto);
+		return this.memberRolesService.updateMemberRoleById(
+			id,
+			updateMemberRoleDto
+		);
 	}
 
 	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.DELETE_MEMBER_ROLE)
+	@RequiredPermissions(Permission.DELETE_MEMBER_ROLE)
 	@UseGuards(IsVerifiedGuard)
 	@Delete(":id")
-	remove(@Param("id", new ParseIntPipe()) id: number) {
+	remove(@Param("id", ParseIntPipe) id: number) {
 		return this.memberRolesService.remove(id);
 	}
 }

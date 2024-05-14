@@ -1,9 +1,8 @@
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { MembersModule } from "./members/members.module";
 import { MemberAuthModule } from "./member-auth/member-auth.module";
-import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
 import { MemberRolesModule } from "./member-roles/member-roles.module";
 import { PermissionsModule } from "./permissions/permissions.module";
@@ -14,33 +13,12 @@ import { PaypalModule } from "./paypal/paypal.module";
 import { MemberServerSettingsModule } from "./member-server-settings/member-server-settings.module";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { DevtoolsModule } from "@nestjs/devtools-integration";
+import { PrismaModule } from "./prisma/prisma.module";
+import { RequesterMiddleware } from "./middleware/requester.middleware";
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
-		TypeOrmModule.forRoot(
-			process.env.ENV === "DEV"
-				? {
-						type: "postgres",
-						host: process.env.DATABASE_HOST_DEV,
-						port: parseInt(process.env.DATABASE_PORT_DEV),
-						username: process.env.DATABASE_USERNAME_DEV,
-						password: process.env.DATABASE_PASSWORD_DEV,
-						database: process.env.DATABASE_DEV,
-						autoLoadEntities: true,
-						synchronize: true,
-				  }
-				: {
-						type: "postgres",
-						host: process.env.DATABASE_HOST,
-						port: parseInt(process.env.DATABASE_PORT),
-						username: process.env.DATABASE_USERNAME,
-						password: process.env.DATABASE_PASSWORD,
-						database: process.env.DATABASE,
-						autoLoadEntities: true,
-						synchronize: true,
-				  }
-		),
 		MembersModule,
 		MemberAuthModule,
 		MemberRolesModule,
@@ -67,8 +45,13 @@ import { DevtoolsModule } from "@nestjs/devtools-integration";
 		DevtoolsModule.register({
 			http: true,
 		}),
+		PrismaModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+	configure(consumer: MiddlewareConsumer) {
+		consumer.apply(RequesterMiddleware).forRoutes("*");
+	}
+}

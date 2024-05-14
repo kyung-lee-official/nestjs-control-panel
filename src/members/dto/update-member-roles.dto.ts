@@ -1,8 +1,8 @@
-import { IsArray, IsNumber, IsOptional } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber } from "class-validator";
 
 export class UpdateMemberRolesDto {
-	@IsOptional()
+	@IsNotEmpty()
 	@IsArray()
 	@IsNumber({}, { each: true })
-	roleIds?: number[];
+	newRoleIds: number[];
 }

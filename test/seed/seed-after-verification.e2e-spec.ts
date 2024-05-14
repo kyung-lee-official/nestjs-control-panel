@@ -9,7 +9,7 @@ if (process.env.ENV === "DEV") {
 		"This test checks if the admin is verified, and permissions of the admin after verification"
 	);
 	console.log(
-		"❕Make sure to verify the member from the email before starting this test"
+		"❕Make sure to verify the member from the email or API before starting this test"
 	);
 } else {
 	console.error(
@@ -46,6 +46,7 @@ describe("Seed flow, check if the admin is verified", () => {
 		});
 		expect(res.status).toBe(201);
 		accessToken = res.body.accessToken;
+		console.log("Admin token: ", accessToken);
 	}, 15000);
 
 	let adminRes: request.Response;
@@ -65,7 +66,9 @@ describe("Seed flow, check if the admin is verified", () => {
 	});
 
 	it("GET /members/me check nickname", async () => {
-		expect(adminRes.body.nickname).toBe(process.env.E2E_TEST_ADMIN_NICKNAME);
+		expect(adminRes.body.nickname).toBe(
+			process.env.E2E_TEST_ADMIN_NICKNAME
+		);
 	});
 
 	it("GET /members/me admin should be added to 'everyone' member-group", async () => {
@@ -86,10 +89,13 @@ describe("Seed flow, check if the admin is verified", () => {
 });
 
 describe("Permissions test flow", () => {
-	it("GET /member-roles should return 'admin' and 'default' given the member is already verified", async () => {
+	it("POST /member-roles should return 'admin' and 'default' given the member is already verified", async () => {
 		const res = await req
-			.get("/member-roles")
-			.set("Authorization", `Bearer ${accessToken}`);
+			.post("/member-roles/find")
+			.set("Authorization", `Bearer ${accessToken}`)
+			.send({
+				roleIds: [],
+			});
 		expect(res.status).toBe(200);
 		expect(res.body[0].name).toBe("admin");
 		expect(res.body[1].name).toBe("default");

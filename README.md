@@ -99,6 +99,7 @@ To delete connections from third-party apps:
 -   [x] Update password by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
 -   [ ] Freeze or unfreeze a member by id, `UPDATE_MEMBER` permission required.
 -   [x] Delete a member by id, `DELETE_MEMBER` permission required.
+-   [ ] Transfer the `admin` member-role to another member, `TRANSFER_MEMBER_ADMIN` permission required.
 
 ### member-roles
 
@@ -116,7 +117,7 @@ To delete connections from third-party apps:
 -   [x] Get all member-groups, `GET_MEMBER_GROUPS` permission required.
 -   [x] Get a member-group by id, `GET_MEMBER_GROUPS` permission required.
 -   [x] Update a member-group by id, `UPDATE_MEMBER_GROUP` permission required.
--   [ ] Transfer ownership of a member-group, `TRANSFER_MEMBER_GROUP_OWNERSHIP` permission required.
+-   [ ] Transfer ownership of a member-group, `TRANSFER_MEMBER_GROUP_OWNER` permission required.
 -   [x] Delete a member-group by id, delete even if the group has members, `DELETE_MEMBER_GROUP` permission required.
 
 ### permissions
@@ -159,8 +160,8 @@ Response example:
 		payload: "USEFUL",
 		ip: "65.49.207.134",
 		country: "US",
-		createdDate: "2023-06-20T04:05:53.606Z",
-		updatedDate: "2023-06-20T04:05:53.606Z",
+		createdAt: "2023-06-20T04:05:53.606Z",
+		updatedAt: "2023-06-20T04:05:53.606Z",
 	},
 	{
 		id: "3",
@@ -169,16 +170,28 @@ Response example:
 		payload: "USEFUL",
 		ip: "65.49.207.134",
 		country: "US",
-		createdDate: "2023-06-21T10:05:27.467Z",
-		updatedDate: "2023-06-21T10:05:27.467Z",
+		createdAt: "2023-06-21T10:05:27.467Z",
+		updatedAt: "2023-06-21T10:05:27.467Z",
 	},
 ];
 ```
 
-## Todo
+# API
+
+[Member Auth](http://localhost:3001/api/member-auth)
+
+[Members](http://localhost:3001/api/members)
+
+[Member Groups](http://localhost:3001/api/member-groups)
+
+[Member Roles](http://localhost:3001/api/member-roles)
+
+[Member Server Settings](http://localhost:3001/api/member-server-settings)
+
+# Todo
 
 -   [ ] Refactor project to comply the OpenAPI 3.1.0 standard.
--   [ ] Audit `update` & `tranferOwnership` in member-groups.service.ts
+-   [ ] Audit `update` & `transferOwnership` in member-groups.service.ts
 -   [ ] Finish up admin-permissions.e2e-spec.ts
 -   [ ] Finish up limitations for unverified members
 -   [ ] Finish up freeze member logic

@@ -2,6 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 import { AppModule } from "../../src/app.module";
+import { inspect } from "../test-utils";
 
 if (process.env.ENV === "DEV") {
 	console.log("✅ Running in DEV mode");
@@ -68,17 +69,19 @@ describe("Check server status and disable sign up", () => {
 
 	it("DELETE /members/:id delete test members should be successful", async () => {
 		const member1Res = await req
-			.get("/members?email=" + process.env.E2E_TEST_MEMBER_1_EMAIL)
+			.post("/members/find")
+			.send({ email: process.env.E2E_TEST_MEMBER_1_EMAIL })
 			.set("Authorization", `Bearer ${adminAccessToken}`);
-		console.log(member1Res.body);
+		console.log("find test member 1: ", inspect(member1Res.body));
 		await req
 			.delete(`/members/${member1Res.body[0].id}`)
 			.set("Authorization", `Bearer ${adminAccessToken}`)
 			.expect(200);
 		const member2Res = await req
-			.get("/members?email=" + process.env.E2E_TEST_MEMBER_2_EMAIL)
+			.post("/members/find")
+			.send({ email: process.env.E2E_TEST_MEMBER_2_EMAIL })
 			.set("Authorization", `Bearer ${adminAccessToken}`);
-		console.log(member2Res.body);
+		console.log("find test member 2: ", inspect(member2Res.body));
 		await req
 			.delete(`/members/${member2Res.body[0].id}`)
 			.set("Authorization", `Bearer ${adminAccessToken}`)

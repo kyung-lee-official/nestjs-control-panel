@@ -1,13 +1,16 @@
-import util from "util";
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
-import { AppModule } from "../src/app.module";
+import { AppModule } from "../../src/app.module";
+import { inspect } from "../test-utils";
 
 if (process.env.ENV === "DEV") {
 	console.log("✅ Running in DEV mode");
 	console.log(
 		"This test flow assumes that the server is seeded, the admin member is verified already, and test members has been created."
+	);
+	console.log(
+		"The `test member 1` must be verified as well, otherwise he can't find members after signing in."
 	);
 } else {
 	console.error(
@@ -49,36 +52,40 @@ describe("Transfer admin ownership flow", () => {
 			.expect(201);
 		adminAccessToken = res.body.accessToken;
 		const membersRes = await req
-			.get("/members")
+			.post("/members/find")
 			.set("Authorization", `Bearer ${adminAccessToken}`)
 			.expect(200);
-		console.log(util.inspect(membersRes.body, false, null, true));
+		console.log(
+			"get members as admin response: ",
+			inspect(membersRes.body)
+		);
 		testMember1 = membersRes.body.find((member: any) => {
 			return member.email === process.env.E2E_TEST_MEMBER_1_EMAIL;
 		});
 	}, 30000);
 
-	it("PATCH /members/transferOwnership/:id transfer admin ownership to test member 1", async () => {
+	it("PATCH /members/:id/transfer-member-admin transfer admin ownership to 'test member 1'", async () => {
 		const res = await req
-			.patch(`/members/transferOwnership/${testMember1.id}`)
-			.set("Authorization", `Bearer ${adminAccessToken}`)
-			.expect(200);
+			.patch(`/members/${testMember1.id}/transfer-member-admin`)
+			.set("Authorization", `Bearer ${adminAccessToken}`);
+		expect(res.status).toBe(200);
 	});
 
-	it("POST /member-auth/signin sign in as test member 1", async () => {
-		const res = await req
-			.post("/member-auth/signin")
-			.send({
-				email: process.env.E2E_TEST_MEMBER_1_EMAIL,
-				password: "1234Abcd!",
-			})
-			.expect(201);
+	it("POST /member-auth/signin sign in as 'test member 1'", async () => {
+		const res = await req.post("/member-auth/signin").send({
+			email: process.env.E2E_TEST_MEMBER_1_EMAIL,
+			password: "1234Abcd!",
+		});
+		expect(res.status).toBe(201);
 		testMember1AccessToken = res.body.accessToken;
 		const membersRes = await req
-			.get("/members")
-			.set("Authorization", `Bearer ${testMember1AccessToken}`)
-			.expect(200);
-		console.log(util.inspect(membersRes.body, false, null, true));
+			.post("/members/find")
+			.set("Authorization", `Bearer ${testMember1AccessToken}`);
+		expect(membersRes.status).toBe(200);
+		console.log(
+			"get members as admin 'test member 1' (new admin) error: ",
+			inspect(membersRes.body)
+		);
 	});
 
 	it("Contains at least one test", () => {

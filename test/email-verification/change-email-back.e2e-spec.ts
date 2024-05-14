@@ -5,7 +5,9 @@ import request from "supertest";
 
 if (process.env.ENV === "DEV") {
 	console.log("✅ Running in DEV mode");
-	console.log("Note: this test should only run after the change-email-new.e2e-spec.ts test has been run, and the new email has been verified.");
+	console.log(
+		"Note: this test should only run after the change-email-new.e2e-spec.ts test has been run, and the new email has been verified."
+	);
 } else {
 	console.error(
 		"❌ Fatal! Running e2e tests in modes other than DEV is not allowed!"
@@ -34,9 +36,9 @@ beforeAll(async () => {
 }, 30000);
 
 describe("Change email back flow (e2e)", () => {
-	it("POST /auth/signin sign in as admin", async () => {
+	it("POST /member-auth/signin sign in as admin", async () => {
 		const res = await req
-			.post("/auth/signin")
+			.post("/member-auth/signin")
 			.send({
 				email: process.env.E2E_TEST_ADMIN_NEW_EMAIL,
 				password: "1234Abcd!",
@@ -45,12 +47,12 @@ describe("Change email back flow (e2e)", () => {
 		adminAccessToken = res.body.accessToken;
 	}, 30000);
 
-	it("PATCH /auth/updateEmailRequest request to update email", async () => {
+	it("PATCH /member-auth/updateEmailRequest request to update email", async () => {
 		const res = await req
-			.patch("/auth/updateEmailRequest")
+			.patch("/member-auth/updateEmailRequest")
 			.set("Authorization", `Bearer ${adminAccessToken}`)
 			.send({
-				newEmail: process.env.E2E_TEST_ADMIN_EMAIL
+				newEmail: process.env.E2E_TEST_ADMIN_EMAIL,
 			});
 		expect(res.status).toBe(200);
 	});

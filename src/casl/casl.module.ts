@@ -1,11 +1,9 @@
 import { Module } from "@nestjs/common";
 import { CaslAbilityFactory } from "./casl-ability.factory/casl-ability.factory";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { Member } from "../members/entities/member.entity";
-import { PermissionsModule } from "../permissions/permissions.module";
+import { PrismaModule } from "../prisma/prisma.module";
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Member]), PermissionsModule],
+	imports: [PrismaModule],
 	providers: [CaslAbilityFactory],
 	exports: [CaslAbilityFactory],
 })

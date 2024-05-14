@@ -1,6 +1,5 @@
 import {
 	Body,
-	ClassSerializerInterceptor,
 	Controller,
 	Get,
 	Patch,
@@ -13,7 +12,6 @@ import {
 import { CreateMemberDto } from "../members/dto/create-member.dto";
 import { MemberAuthService } from "./member-auth.service";
 import { MemberAuthCredentialsDto } from "./dto/member-auth-credential.dto";
-import { Member } from "../members/entities/member.entity";
 import { AllowPublicSignUpGuard } from "../member-server-settings/guards/allow-public-sign-up.guard";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { MemberVerifyEmailDto } from "./dto/member-verify-email.dto";
@@ -32,6 +30,9 @@ import {
 	ApiQuery,
 	ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
+import { Member } from "@prisma/client";
+import { MemberWithoutPassword } from "../utils/types";
+import { ExcludePasswordInterceptor } from "../interceptors/exclude-password.interceptor";
 
 @Controller("member-auth")
 export class MemberAuthController {
@@ -116,36 +117,36 @@ Only available when the server is not seeded, the seed member will be the admin`
 										"GET_PERMISSIONS",
 										"FIND_CHITUBOX_MANUAL_FEEDBACKS",
 									],
-									createdDate: "2023-12-28T10:05:06.274Z",
-									updatedDate: "2023-12-28T10:05:06.274Z",
+									createdAt: "2023-12-28T10:05:06.274Z",
+									updatedAt: "2023-12-28T10:05:06.274Z",
 								},
 								{
 									id: 2,
 									name: "default",
 									permissions: ["GET_MEMBER_ME"],
-									createdDate: "2023-12-28T10:05:06.279Z",
-									updatedDate: "2023-12-28T10:05:06.279Z",
+									createdAt: "2023-12-28T10:05:06.279Z",
+									updatedAt: "2023-12-28T10:05:06.279Z",
 								},
 							],
 							ownedGroups: [
 								{
 									id: 1,
 									name: "everyone",
-									createdDate: "2023-12-28T10:05:06.280Z",
-									updatedDate: "2023-12-28T10:05:06.280Z",
+									createdAt: "2023-12-28T10:05:06.280Z",
+									updatedAt: "2023-12-28T10:05:06.280Z",
 								},
 							],
 							memberGroups: [
 								{
 									id: 1,
 									name: "everyone",
-									createdDate: "2023-12-28T10:05:06.280Z",
-									updatedDate: "2023-12-28T10:05:06.280Z",
+									createdAt: "2023-12-28T10:05:06.280Z",
+									updatedAt: "2023-12-28T10:05:06.280Z",
 								},
 							],
 							id: "cde0cd3b-cd65-4372-a60b-427c3348cf6d",
-							createdDate: "2023-12-28T10:05:06.354Z",
-							updatedDate: "2023-12-28T10:05:06.354Z",
+							createdAt: "2023-12-28T10:05:06.354Z",
+							updatedAt: "2023-12-28T10:05:06.354Z",
 						},
 					},
 				},
@@ -168,9 +169,11 @@ Only available when the server is not seeded, the seed member will be the admin`
 			},
 		},
 	})
-	@UseInterceptors(ClassSerializerInterceptor)
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@Post("/seed")
-	seed(@Body() createMemberDto: CreateMemberDto): Promise<Member> {
+	seed(
+		@Body() createMemberDto: CreateMemberDto
+	): Promise<MemberWithoutPassword> {
 		return this.memberAuthService.seed(createMemberDto);
 	}
 
@@ -206,21 +209,21 @@ Only available when the server is not seeded, the seed member will be the admin`
 									id: 2,
 									name: "default",
 									permissions: ["GET_MEMBER_ME"],
-									createdDate: "2023-12-25T07:05:19.299Z",
-									updatedDate: "2023-12-25T07:05:19.299Z",
+									createdAt: "2023-12-25T07:05:19.299Z",
+									updatedAt: "2023-12-25T07:05:19.299Z",
 								},
 							],
 							memberGroups: [
 								{
 									id: 1,
 									name: "everyone",
-									createdDate: "2023-12-25T07:05:19.302Z",
-									updatedDate: "2023-12-25T07:05:19.375Z",
+									createdAt: "2023-12-25T07:05:19.302Z",
+									updatedAt: "2023-12-25T07:05:19.375Z",
 								},
 							],
 							id: "e20788d7-f623-4c2c-af27-509b0dbe66a9",
-							createdDate: "2023-12-28T07:49:36.512Z",
-							updatedDate: "2023-12-28T07:49:36.512Z",
+							createdAt: "2023-12-28T07:49:36.512Z",
+							updatedAt: "2023-12-28T07:49:36.512Z",
 						},
 					},
 				},
@@ -230,7 +233,7 @@ Only available when the server is not seeded, the seed member will be the admin`
 	@ApiForbiddenResponse({
 		description: "Check if server settings allow public sign up",
 	})
-	@UseInterceptors(ClassSerializerInterceptor)
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(AllowPublicSignUpGuard)
 	@Post("/signup")
 	signUp(@Body() createMemberDto: CreateMemberDto): Promise<Member> {
@@ -244,9 +247,9 @@ Return the accessToken`,
 	@ApiBody({
 		description: "The member to be signed in",
 		examples: {
-			"Sign In Member": {
+			"Sign in as admin": {
 				value: {
-					email: "member@example.com",
+					email: process.env.E2E_TEST_ADMIN_EMAIL,
 					password: "1234Abcd!",
 				},
 			},

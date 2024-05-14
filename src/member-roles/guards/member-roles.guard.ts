@@ -1,17 +1,14 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Member } from "../../members/entities/member.entity";
-import { Repository } from "typeorm";
 import { REQUIRED_MEMBER_ROLES_KEY } from "../decorators/required-member-roles.decorator";
+import { PrismaService } from "../../prisma/prisma.service";
 
 @Injectable()
 export class MemberRolesGuard implements CanActivate {
 	constructor(
 		private reflector: Reflector,
-		@InjectRepository(Member)
-		private membersRepository: Repository<Member>
-	) { }
+		private readonly prismaService: PrismaService
+	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const requiredRoles = this.reflector.getAllAndOverride<string[]>(
@@ -22,11 +19,13 @@ export class MemberRolesGuard implements CanActivate {
 			return true;
 		}
 		let { member } = context.switchToHttp().getRequest();
-		member = await this.membersRepository.findOne({
+		member = await this.prismaService.member.findUnique({
 			where: {
 				id: member.id,
 			},
-			relations: ["memberRoles"],
+			include: {
+				memberRoles: true,
+			},
 		});
 		const rolesOfMember: string[] = member.memberRoles?.map((role) => {
 			return role.name;

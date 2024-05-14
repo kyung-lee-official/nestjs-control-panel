@@ -5,6 +5,9 @@ import { AppModule } from "../src/app.module";
 
 if (process.env.ENV === "DEV") {
 	console.log("✅ Running in DEV mode");
+	console.log(
+		"Run 'pnpm exec prisma migrate reset' to reset the database before running this test."
+	);
 } else {
 	console.error(
 		"❌ Fatal! Running e2e tests in modes other than DEV is not allowed!"
@@ -14,26 +17,8 @@ if (process.env.ENV === "DEV") {
 
 describe("Drop database (e2e)", () => {
 	let app: INestApplication;
-	let accessToken: string;
 
 	beforeAll(async () => {
-		/* Drop database "DATABASE_DEV" and re-create it */
-		const dbClient = new Client({
-			host: process.env.DATABASE_HOST_DEV,
-			port: parseInt(process.env.DATABASE_PORT_DEV),
-			user: process.env.DATABASE_USERNAME_DEV,
-			password: process.env.DATABASE_PASSWORD_DEV,
-			database: "postgres",
-		});
-		await dbClient.connect();
-		await dbClient.query(
-			`DROP DATABASE IF EXISTS "${process.env.DATABASE_DEV}" WITH (FORCE)`
-		);
-		await dbClient.query(
-			`CREATE DATABASE "${process.env.DATABASE_DEV}" OWNER ${process.env.DATABASE_USERNAME_DEV}`
-		);
-		await dbClient.end();
-
 		const moduleFixture: TestingModule = await Test.createTestingModule({
 			imports: [AppModule],
 		}).compile();
@@ -42,7 +27,7 @@ describe("Drop database (e2e)", () => {
 		await app.init();
 	}, 30000);
 
-	it("As the AppModule been compiled, tables should be initialized, and table numbers should not be 0", async () => {
+	it("By running 'pnpm exec prisma migrate reset', tables should be initialized, and table numbers should not be 0", async () => {
 		const dbClient = new Client({
 			host: process.env.DATABASE_HOST_DEV,
 			port: parseInt(process.env.DATABASE_PORT_DEV),
@@ -56,14 +41,20 @@ describe("Drop database (e2e)", () => {
 		);
 		expect(res.rows.length).not.toBe(0);
 		expect(res.rows).toContainEqual({
-			table_name: "chitubox_manual_feedback",
+			table_name: "ChituboxManualFeedback",
 		});
-		expect(res.rows).toContainEqual({ table_name: "member_group" });
-		expect(res.rows).toContainEqual({ table_name: "member_role" });
-		expect(res.rows).toContainEqual({ table_name: "member_server_setting" });
-		expect(res.rows).toContainEqual({ table_name: "member" });
-		expect(res.rows).toContainEqual({ table_name: "member_member_groups_member_group" });
-		expect(res.rows).toContainEqual({ table_name: "member_member_roles_member_role" });
+		expect(res.rows).toContainEqual({ table_name: "MemberGroup" });
+		expect(res.rows).toContainEqual({ table_name: "MemberRole" });
+		expect(res.rows).toContainEqual({
+			table_name: "MemberServerSetting",
+		});
+		expect(res.rows).toContainEqual({ table_name: "Member" });
+		expect(res.rows).toContainEqual({
+			table_name: "_MemberToMemberGroup",
+		});
+		expect(res.rows).toContainEqual({
+			table_name: "_MemberToMemberRole",
+		});
 		await dbClient.end();
 	}, 30000);
 
@@ -80,9 +71,12 @@ describe("Drop database (e2e)", () => {
 			`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name;`
 		);
 		for (const row of res.rows) {
-			const tableName = row.table_name;
-			const res = await dbClient.query(`SELECT * FROM "${tableName}"`);
-			expect(res.rows.length).toBe(0);
+			if (row.table_name !== "_prisma_migrations") {
+				const res = await dbClient.query(
+					`SELECT * FROM "${row.table_name}"`
+				);
+				expect(res.rows.length).toBe(0);
+			}
 		}
 		await dbClient.end();
 	}, 30000);

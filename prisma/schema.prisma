@@ -1,0 +1,94 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Member {
+    id           String        @id @default(uuid())
+    email        String        @unique
+    nickname     String
+    password     String
+    isVerified   Boolean?
+    isFrozen     Boolean?      @default(false)
+    memberRoles  MemberRole[]
+    ownedGroups  MemberGroup[] @relation("Owner")
+    memberGroups MemberGroup[]
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+}
+
+model MemberGroup {
+    id        Int      @id @default(autoincrement())
+    name      String   @unique
+    owner     Member   @relation("Owner", fields: [ownerId], references: [id])
+    ownerId   String
+    members   Member[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model MemberRole {
+    id          Int          @id @default(autoincrement())
+    name        String       @unique
+    permissions Permission[]
+    members     Member[]
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+}
+
+model MemberServerSetting {
+    id                Int     @id @default(autoincrement())
+    allowPublicSignUp Boolean
+    allowGoogleSignIn Boolean
+}
+
+enum Permission {
+    // Server settings
+    GET_MEMBER_SERVER_SETTING
+    UPDATE_MEMBER_SERVER_SETTING
+
+    // Auth permissions
+    CREATE_MEMBER
+
+    // Member permissions
+    UPDATE_MEMBER
+    UPDATE_MEMBER_ME
+    TRANSFER_MEMBER_ADMIN
+    GET_MEMBERS
+    GET_MEMBER_ME
+    DELETE_MEMBER
+
+    // Member role permissions
+    CREATE_MEMBER_ROLE
+    UPDATE_MEMBER_ROLE
+    GET_MEMBER_ROLES
+    DELETE_MEMBER_ROLE
+
+    // Member group permissions
+    CREATE_MEMBER_GROUP
+    UPDATE_MEMBER_GROUP
+    TRANSFER_MEMBER_GROUP_OWNER
+    GET_MEMBER_GROUPS
+    DELETE_MEMBER_GROUP
+
+    // Permission permissions
+    GET_PERMISSIONS
+
+    // ====== CHITUBOX Manual ======
+    FIND_CHITUBOX_MANUAL_FEEDBACKS
+}
+
+model ChituboxManualFeedback {
+    id        BigInt   @id @default(autoincrement())
+    pageId    String
+    url       String
+    payload   String
+    ip        String
+    country   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

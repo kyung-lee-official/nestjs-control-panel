@@ -2,6 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 import { AppModule } from "../../src/app.module";
+import { inspect } from "../test-utils";
 
 if (process.env.ENV === "DEV") {
 	console.log("✅ Running in DEV mode");
@@ -54,7 +55,7 @@ describe("Check server status", () => {
 	});
 });
 
-describe("Allow sign up", () => {
+describe("Enable sign up", () => {
 	it("POST /member-auth/signin sign in as admin and change server settings to allow sign up", async () => {
 		const res = await req
 			.post("/member-auth/signin")
@@ -85,7 +86,7 @@ describe("Sign up new members", () => {
 	const lowerCaseEmail = process.env.E2E_TEST_MEMBER_1_EMAIL.toLowerCase();
 	console.log(`✉️ Using email: ${upperCaseEmail}`);
 
-	it("POST /member-auth/signup sign up test member 1", async () => {
+	it("POST /member-auth/signup sign up 'test member 1'", async () => {
 		member1Res = await req
 			.post("/member-auth/signup")
 			.send({
@@ -96,7 +97,7 @@ describe("Sign up new members", () => {
 			.expect(201);
 	});
 
-	it("Check email of member 1, should be lower case", () => {
+	it("Check email of 'test member 1', should be lower case", () => {
 		expect(member1Res.body.email).toBe(lowerCaseEmail);
 	});
 
@@ -104,29 +105,29 @@ describe("Sign up new members", () => {
 		expect(member1Res.body.password).toBe(undefined);
 	});
 
-	it("Check nickname of member 1", () => {
+	it("Check nickname of 'test member 1'", () => {
 		expect(member1Res.body.nickname).toBe(
 			process.env.E2E_TEST_MEMBER_1_NICKNAME
 		);
 	});
 
-	it("Check member 1 is in the \"everyone\" group", () => {
+	it("Check 'test member 1' is in the 'everyone' group", () => {
 		expect(member1Res.body.memberGroups[0].name).toBe("everyone");
 	});
 
-	it("Check member 1 doesn't have owned groups", () => {
-		expect(member1Res.body.ownedGroups).toBe(undefined);
+	it("Check 'test member 1' doesn't have owned groups", () => {
+		expect(member1Res.body.ownedGroups).toEqual([]);
 	});
 
-	it("Check member 1 has the role \"default\"", () => {
+	it("Check 'test member 1' has the role 'default'", () => {
 		expect(member1Res.body.memberRoles[0].name).toBe("default");
 	});
 
-	it("Check member 1 is not verified", () => {
+	it("Check 'test member 1' is not verified", () => {
 		expect(member1Res.body.isVerified).toBe(false);
 	});
 
-	it("POST /member-auth/signup sign up as test member 2 and repeat the check flow", async () => {
+	it("POST /member-auth/signup sign up as 'test member 2' and repeat the check flow", async () => {
 		const req = request(app.getHttpServer());
 		const member2Res = await req
 			.post("/member-auth/signup")
@@ -142,7 +143,7 @@ describe("Sign up new members", () => {
 			process.env.E2E_TEST_MEMBER_2_NICKNAME
 		);
 		expect(member2Res.body.memberGroups[0].name).toBe("everyone");
-		expect(member2Res.body.ownedGroups).toBe(undefined);
+		expect(member2Res.body.ownedGroups).toEqual([]);
 		expect(member2Res.body.memberRoles[0].name).toBe("default");
 		expect(member2Res.body.isVerified).toBe(false);
 	});

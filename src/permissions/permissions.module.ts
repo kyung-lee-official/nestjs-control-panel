@@ -1,12 +1,11 @@
 import { Module } from "@nestjs/common";
 import { PermissionsService } from "./permissions.service";
 import { PermissionsController } from "./permissions.controller";
-import { Member } from "../members/entities/member.entity";
-import { TypeOrmModule } from "@nestjs/typeorm";
 import { PermissionsGuard } from "./guards/permissions.guard";
+import { PrismaModule } from "../prisma/prisma.module";
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Member])],
+	imports: [PrismaModule],
 	controllers: [PermissionsController],
 	providers: [PermissionsService, PermissionsGuard],
 	exports: [PermissionsService],

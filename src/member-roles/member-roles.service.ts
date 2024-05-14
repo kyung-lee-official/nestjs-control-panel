@@ -1,47 +1,40 @@
 import {
 	BadRequestException,
-	ConflictException,
 	Inject,
 	Injectable,
 	NotFoundException,
 	Scope,
-	ServiceUnavailableException,
 } from "@nestjs/common";
-import { CreateMemberRoleDto } from "./dto/create-member-role.dto";
 import { UpdateMemberRoleDto } from "./dto/update-member-role.dto";
-import { InjectRepository } from "@nestjs/typeorm";
-import { In, Repository } from "typeorm";
-import { MemberRole } from "./entities/member-role.entity";
-import { Permissions } from "../permissions/permissions.enum";
-import { Member } from "../members/entities/member.entity";
 import { REQUEST } from "@nestjs/core";
 import {
 	Actions,
 	CaslAbilityFactory,
 } from "../casl/casl-ability.factory/casl-ability.factory";
-import { ForbiddenError } from "@casl/ability";
+import { ForbiddenError, subject } from "@casl/ability";
+import { PrismaService } from "../prisma/prisma.service";
+import { MemberRole, Permission } from "@prisma/client";
+import { FindMemberRoleDto } from "./dto/find-member-role.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class MemberRolesService {
 	constructor(
 		@Inject(REQUEST)
 		private request: any,
-		@InjectRepository(MemberRole)
-		private rolesRepository: Repository<MemberRole>,
-		@InjectRepository(Member)
-		private membersRepository: Repository<Member>,
+		private readonly prismaService: PrismaService,
 		private caslAbilityFactory: CaslAbilityFactory
-	) { }
+	) {}
 
 	async updateAdminPermissions(): Promise<MemberRole> {
-		const permissions = Object.values(Permissions);
-		let adminRole = await this.rolesRepository.findOne({
+		const permissions = Object.values(Permission);
+		const adminRole = await this.prismaService.memberRole.update({
 			where: {
 				name: "admin",
 			},
+			data: {
+				permissions: permissions,
+			},
 		});
-		adminRole.permissions = permissions;
-		adminRole = await this.rolesRepository.save(adminRole);
 		return adminRole;
 	}
 
@@ -50,7 +43,6 @@ export class MemberRolesService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const rolesRepository = this.rolesRepository;
 		async function generateNewRoleName(newRoleNameIndex: number) {
 			let newRoleName = "New Role";
 			if (newRoleNameIndex === 0) {
@@ -58,7 +50,7 @@ export class MemberRolesService {
 			} else {
 				newRoleName = "New Role" + newRoleNameIndex;
 			}
-			let newRole = await rolesRepository.findOne({
+			let newRole = await this.prismaService.memberRole.findUnique({
 				where: {
 					name: newRoleName,
 				},
@@ -71,53 +63,54 @@ export class MemberRolesService {
 			}
 		}
 		const newRoleName = await generateNewRoleName(0);
-		const role = this.rolesRepository.create({
-			name: newRoleName,
-			permissions: [],
-		});
-
 		try {
-			ForbiddenError.from(ability).throwUnlessCan(Actions.CREATE, role);
+			ForbiddenError.from(ability).throwUnlessCan(
+				Actions.CREATE,
+				subject("MemberRole", {
+					name: newRoleName,
+					permissions: [],
+				} as any)
+			);
 		} catch (error) {
 			if (error instanceof ForbiddenError) {
 				throw new BadRequestException(error.message);
 			}
 			throw error;
 		}
-		await this.rolesRepository.save(role);
+		const role = await this.prismaService.memberRole.create({
+			data: {
+				name: newRoleName,
+				permissions: [],
+			},
+		});
 		return role;
 	}
 
-	async find(roleIds?: number[]): Promise<MemberRole[]> {
-		let ids: number[];
-		if (roleIds) {
-			ids = roleIds.map((id: number) => {
-				if (Number.isNaN(id)) {
-					throw new BadRequestException(
-						"The values of ids must be numeric"
-					);
-				}
-				return id;
-			});
-			const roles = await this.rolesRepository.find({
-				where: {
-					id: In(ids),
-				},
-				relations: ["members"],
-			});
-			return roles;
-		} else {
-			const roles = await this.rolesRepository.find({
-				relations: ["members"],
-			});
-			return roles;
-		}
+	async find(findMemberRoleDto: FindMemberRoleDto): Promise<MemberRole[]> {
+		const { roleIds } = findMemberRoleDto;
+		const roles = await this.prismaService.memberRole.findMany({
+			where: roleIds.length
+				? {
+						id: {
+							in: roleIds,
+						},
+				  }
+				: undefined,
+			include: {
+				members: true,
+			},
+		});
+		return roles;
 	}
 
 	async findOne(id: number): Promise<MemberRole> {
-		const role = await this.rolesRepository.findOne({
-			where: { id: id },
-			relations: ["members"],
+		const role = await this.prismaService.memberRole.findUnique({
+			where: {
+				id: id,
+			},
+			include: {
+				members: true,
+			},
 		});
 		if (!role) {
 			throw new NotFoundException("Member Role not found");
@@ -133,12 +126,17 @@ export class MemberRolesService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const role = await this.rolesRepository.findOne({ where: { id: id } });
+		const role = await this.prismaService.memberRole.findUnique({
+			where: { id: id },
+		});
 		if (!role) {
 			throw new NotFoundException("Member Role not found");
 		}
 		try {
-			ForbiddenError.from(ability).throwUnlessCan(Actions.UPDATE, role);
+			ForbiddenError.from(ability).throwUnlessCan(
+				Actions.UPDATE,
+				subject("MemberRole", role)
+			);
 		} catch (error) {
 			if (error instanceof ForbiddenError) {
 				throw new BadRequestException(error.message);
@@ -146,37 +144,34 @@ export class MemberRolesService {
 			throw error;
 		}
 		const { name, permissions, memberIds } = updateMemberRoleDto;
-		if (role.name === "admin") {
-			throw new BadRequestException("Can not update admin role");
-		}
 		if (name) {
 			if (name.toLowerCase() === "admin") {
-				throw new BadRequestException("Can't rename the role to admin");
+				throw new BadRequestException(
+					'Can\'t rename the role to "admin"'
+				);
 			}
 			if (name.toLowerCase() === "default") {
 				throw new BadRequestException(
-					"Can't rename the role to default"
+					'Can\'t rename the role to "default"'
 				);
 			}
 			if (name === "") {
-				throw new BadRequestException("Member Role name can not be empty");
+				throw new BadRequestException(
+					"Member Role name can not be empty"
+				);
 			}
-			role.name = name;
 		}
-		if (permissions) {
-			role.permissions = permissions;
-		}
-		if (memberIds) {
-			const members = await this.membersRepository.find({
-				where: { id: In(memberIds) },
-			});
-			role.members = members;
-		}
-		await this.rolesRepository.save(role);
-		const dbMemberRole = await this.rolesRepository.findOne({
+		const newRole = await this.prismaService.memberRole.update({
 			where: { id: id },
+			data: {
+				name: name,
+				permissions: permissions,
+				members: {
+					connect: memberIds?.map((id) => ({ id })),
+				},
+			},
 		});
-		return dbMemberRole;
+		return newRole;
 	}
 
 	async remove(id: number): Promise<any> {
@@ -184,24 +179,28 @@ export class MemberRolesService {
 		const ability = await this.caslAbilityFactory.defineAbilityFor(
 			requester
 		);
-		const role = await this.rolesRepository.findOne({
+		const role = await this.prismaService.memberRole.findUnique({
 			where: { id: id },
 		});
 		if (!role) {
-			throw new BadRequestException(`Member Role with ID ${id} not found`);
+			throw new BadRequestException(
+				`Member Role with ID ${id} not found`
+			);
 		}
 		try {
-			ForbiddenError.from(ability).throwUnlessCan(Actions.DELETE, role);
+			ForbiddenError.from(ability).throwUnlessCan(
+				Actions.DELETE,
+				subject("MemberRole", role)
+			);
 		} catch (error) {
 			if (error instanceof ForbiddenError) {
 				throw new BadRequestException(error.message);
 			}
 			throw error;
 		}
-		const result = await this.rolesRepository.delete(id);
-		if (!result.affected) {
-			throw new ServiceUnavailableException("Failed to delete the role");
-		}
-		return result;
+		const deletedMemberRole = await this.prismaService.memberRole.delete({
+			where: { id: id },
+		});
+		return deletedMemberRole;
 	}
 }

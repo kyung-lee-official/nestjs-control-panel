@@ -1,24 +1,16 @@
 import {
 	BadRequestException,
 	ForbiddenException,
-	Inject,
 	Injectable,
 	InternalServerErrorException,
 	NotFoundException,
 	UnauthorizedException,
 } from "@nestjs/common";
 import { CreateMemberDto } from "../members/dto/create-member.dto";
-import { Member } from "../members/entities/member.entity";
 import { MemberAuthCredentialsDto } from "./dto/member-auth-credential.dto";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
 import { JwtService } from "@nestjs/jwt";
 import bcrypt from "bcrypt";
 import { JwtPayload } from "./jwt-payload.interface";
-import { MemberRole } from "../member-roles/entities/member-role.entity";
-import { Permissions } from "../permissions/permissions.enum";
-import { MemberGroup } from "../member-groups/entities/member-group.entity";
-import { MemberServerSetting } from "../member-server-settings/entities/member-server-setting.entity";
 import { MailerService } from "@nestjs-modules/mailer";
 import { MemberVerifyEmailDto } from "./dto/member-verify-email.dto";
 import { generatePassword } from "../utils/algorithms";
@@ -27,74 +19,81 @@ import { MemberResetPasswordDto } from "./dto/member-reset-password.dto";
 import { CredentialData, getCredential } from "qcloud-cos-sts";
 import { MemberUpdateEmailRequestDto } from "./dto/member-update-email-request";
 import axios from "axios";
+import { PrismaService } from "../prisma/prisma.service";
+import { Member, Permission } from "@prisma/client";
+import { exclude } from "../utils/data";
+import { MemberWithoutPassword } from "../utils/types";
 
 @Injectable()
 export class MemberAuthService {
 	constructor(
-		@InjectRepository(Member)
-		private membersRepository: Repository<Member>,
-		@InjectRepository(MemberRole)
-		private rolesRepository: Repository<MemberRole>,
-		@InjectRepository(MemberGroup)
-		private groupsRepository: Repository<MemberGroup>,
-		@InjectRepository(MemberServerSetting)
-		private settingsRepository: Repository<MemberServerSetting>,
+		private readonly prismaService: PrismaService,
 		private jwtService: JwtService,
 		private mailerService: MailerService
 	) {}
 
 	async isSeeded(): Promise<{ isSeeded: boolean }> {
-		const memberQb = this.membersRepository.createQueryBuilder("member");
-		memberQb.limit(3);
-		const members = await memberQb.getMany();
-		if (members.length > 0) {
+		const memberCount = await this.prismaService.member.count();
+		if (memberCount > 0) {
 			return { isSeeded: true };
 		} else {
 			return { isSeeded: false };
 		}
 	}
 
-	async seed(createMemberDto: CreateMemberDto): Promise<Member> {
-		const memberQb = this.membersRepository.createQueryBuilder("member");
-		memberQb.limit(3);
-		const members = await memberQb.getMany();
-		if (members.length > 0) {
+	async seed(
+		createMemberDto: CreateMemberDto
+	): Promise<MemberWithoutPassword> {
+		const memberCount = await this.prismaService.member.count();
+		if (memberCount > 0) {
 			throw new BadRequestException("Server already seeded");
 		}
-		const serverSettings = this.settingsRepository.create({
-			allowPublicSignUp: false,
-			allowGoogleSignIn: false,
+		await this.prismaService.memberServerSetting.create({
+			data: {
+				allowPublicSignUp: false,
+				allowGoogleSignIn: false,
+			},
 		});
-		await this.settingsRepository.save(serverSettings);
-		const adminRole = this.rolesRepository.create({ name: "admin" });
-		adminRole.permissions =
-			Object.values(Permissions); /* Full permissions */
-		await this.rolesRepository.save(adminRole);
-		let defaultRole = this.rolesRepository.create({ name: "default" });
-		defaultRole.permissions = [Permissions.GET_MEMBER_ME];
-		defaultRole = await this.rolesRepository.save(defaultRole);
-		const everyoneGroup = this.groupsRepository.create({
-			name: "everyone",
-		});
-		await this.groupsRepository.save(everyoneGroup);
 		let { email, password, nickname } = createMemberDto;
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
-		const dbEveryoneGroup = await this.groupsRepository.findOne({
-			where: { name: "everyone" },
+		const member = await this.prismaService.member.create({
+			data: {
+				email,
+				password: hashedPassword,
+				nickname,
+				isVerified: false,
+				memberRoles: {
+					create: [
+						{
+							name: "admin",
+							permissions:
+								Object.values(
+									Permission
+								) /* Full permissions */,
+						},
+						{
+							name: "default",
+							permissions: [Permission.GET_MEMBER_ME],
+						},
+					],
+				},
+				ownedGroups: {
+					create: {
+						name: "everyone",
+						members: {
+							connect: [{ email }],
+						},
+					},
+				},
+			},
+			include: {
+				memberRoles: true,
+				memberGroups: true,
+				ownedGroups: true,
+			},
 		});
-		const member = this.membersRepository.create({
-			email,
-			password: hashedPassword,
-			nickname,
-			isVerified: false,
-			isFrozen: false,
-			memberRoles: [adminRole, defaultRole],
-			memberGroups: [dbEveryoneGroup],
-			ownedGroups: [dbEveryoneGroup],
-		});
-		await this.membersRepository.save(member);
 		await this.sendVerificationEmail(email);
 		return member;
 	}
@@ -104,22 +103,26 @@ export class MemberAuthService {
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
-		const dbDefaultRole = await this.rolesRepository.findOne({
-			where: { name: "default" },
+		const member = this.prismaService.member.create({
+			data: {
+				email,
+				password: hashedPassword,
+				nickname,
+				isVerified: false,
+				isFrozen: false,
+				memberRoles: {
+					connect: [{ name: "default" }],
+				},
+				memberGroups: {
+					connect: [{ name: "everyone" }],
+				},
+			},
+			include: {
+				memberRoles: true,
+				memberGroups: true,
+				ownedGroups: true,
+			},
 		});
-		const dbEveryoneGroup = await this.groupsRepository.findOne({
-			where: { name: "everyone" },
-		});
-		const member = this.membersRepository.create({
-			email,
-			password: hashedPassword,
-			nickname,
-			isVerified: false,
-			isFrozen: false,
-			memberRoles: [dbDefaultRole],
-			memberGroups: [dbEveryoneGroup],
-		});
-		await this.membersRepository.save(member);
 		await this.sendVerificationEmail(email);
 		return member;
 	}
@@ -128,7 +131,7 @@ export class MemberAuthService {
 		memberAuthCredentialsDto: MemberAuthCredentialsDto
 	): Promise<{ accessToken: string }> {
 		const { email, password } = memberAuthCredentialsDto;
-		const member = await this.membersRepository.findOne({
+		const member = await this.prismaService.member.findUnique({
 			where: {
 				email: email,
 			},
@@ -190,13 +193,11 @@ export class MemberAuthService {
 		if (!googleUser.email) {
 			throw new NotFoundException("Google user not found");
 		} else {
-			const memberQb =
-				this.membersRepository.createQueryBuilder("member");
-			memberQb.limit(3);
-			const members = await memberQb.getMany();
-			if (members.length > 0) {
+			const memberCount = await this.prismaService.member.count();
+			if (memberCount > 0) {
 				/* Server already seeded */
-				const serverSettings = await this.settingsRepository.find();
+				const serverSettings =
+					await this.prismaService.memberServerSetting.findMany();
 				const isGoogleSignInAllowed =
 					serverSettings[0].allowGoogleSignIn;
 				if (!isGoogleSignInAllowed) {
@@ -205,30 +206,28 @@ export class MemberAuthService {
 					);
 				}
 				const email = googleUser.email.toLowerCase();
-				const isMemberExists = await this.membersRepository.findOne({
-					where: { email: email },
-				});
+				const isMemberExists =
+					await this.prismaService.member.findUnique({
+						where: { email: email },
+					});
 				if (!isMemberExists) {
 					const password = generatePassword();
 					const salt = await bcrypt.genSalt();
 					const hashedPassword = await bcrypt.hash(password, salt);
-					const dbEveryoneGroup = await this.groupsRepository.findOne(
-						{
-							where: { name: "everyone" },
-						}
-					);
-					const dbDefaultRole = await this.rolesRepository.findOne({
-						where: { name: "default" },
+					const member = this.prismaService.member.create({
+						data: {
+							email,
+							password: hashedPassword,
+							nickname: googleUser.name,
+							isVerified: true,
+							memberRoles: {
+								connect: [{ name: "default" }],
+							},
+							memberGroups: {
+								connect: [{ name: "everyone" }],
+							},
+						},
 					});
-					const member = this.membersRepository.create({
-						email: email,
-						password: hashedPassword,
-						nickname: googleUser.name,
-						memberRoles: [dbDefaultRole],
-						memberGroups: [dbEveryoneGroup],
-						isVerified: true,
-					});
-					await this.membersRepository.save(member);
 					const payload: JwtPayload = { email: email };
 					const accessToken: string = this.jwtService.sign(payload);
 					this.sendInitialPasswordEmail(email, password);
@@ -250,43 +249,48 @@ export class MemberAuthService {
 				}
 			} else {
 				/* Server not seeded */
-				const serverSettings = this.settingsRepository.create({
-					allowPublicSignUp: false,
-					allowGoogleSignIn: false,
-				});
-				await this.settingsRepository.save(serverSettings);
-				const adminRole = this.rolesRepository.create({
-					name: "admin",
-				});
-				adminRole.permissions =
-					Object.values(Permissions); /* Full permissions */
-				await this.rolesRepository.save(adminRole);
-				const defaultRole = this.rolesRepository.create({
-					name: "default",
-				});
-				defaultRole.permissions = [Permissions.GET_MEMBER_ME];
-				await this.rolesRepository.save(defaultRole);
-				const everyoneGroup = this.groupsRepository.create({
-					name: "everyone",
-				});
-				await this.groupsRepository.save(everyoneGroup);
+				const serverSettings =
+					await this.prismaService.memberServerSetting.create({
+						data: {
+							allowPublicSignUp: false,
+							allowGoogleSignIn: false,
+						},
+					});
 				const email = googleUser.email.toLowerCase();
 				const password = generatePassword();
 				const salt = await bcrypt.genSalt();
 				const hashedPassword = await bcrypt.hash(password, salt);
-				const dbEveryoneGroup = await this.groupsRepository.findOne({
-					where: { name: "everyone" },
+				const member = await this.prismaService.member.create({
+					data: {
+						email,
+						password: hashedPassword,
+						nickname: googleUser.name,
+						isVerified: true,
+						memberRoles: {
+							create: [
+								{
+									name: "admin",
+									permissions:
+										Object.values(
+											Permission
+										) /* Full permissions */,
+								},
+								{
+									name: "default",
+									permissions: [Permission.GET_MEMBER_ME],
+								},
+							],
+						},
+						ownedGroups: {
+							create: {
+								name: "everyone",
+								members: {
+									connect: [{ email }],
+								},
+							},
+						},
+					},
 				});
-				const member = this.membersRepository.create({
-					email,
-					password: hashedPassword,
-					nickname: googleUser.name,
-					memberRoles: [adminRole, defaultRole],
-					memberGroups: [dbEveryoneGroup],
-					ownedGroups: [dbEveryoneGroup],
-					isVerified: true,
-				});
-				await this.membersRepository.save(member);
 				const payload: JwtPayload = { email: email };
 				const accessToken: string = this.jwtService.sign(payload);
 				this.sendInitialPasswordEmail(email, password);
@@ -340,10 +344,15 @@ export class MemberAuthService {
 
 	async verifyEmail(verifyEmailDto: MemberVerifyEmailDto) {
 		const { verificationToken } = verifyEmailDto;
-		const payload: JwtPayload = this.jwtService.verify(verificationToken, {
-			secret: process.env.SMTP_JWT_SECRET,
-		});
-		const member = await this.membersRepository.findOne({
+		let payload: JwtPayload;
+		try {
+			payload = this.jwtService.verify(verificationToken, {
+				secret: process.env.SMTP_JWT_SECRET,
+			});
+		} catch (error) {
+			throw new UnauthorizedException(error.message);
+		}
+		const member = await this.prismaService.member.findUnique({
 			where: {
 				email: payload.email,
 			},
@@ -351,8 +360,14 @@ export class MemberAuthService {
 		if (!member) {
 			throw new BadRequestException("Member not found");
 		}
-		member.isVerified = true;
-		await this.membersRepository.save(member);
+		await this.prismaService.member.update({
+			where: {
+				email: payload.email,
+			},
+			data: {
+				isVerified: true,
+			},
+		});
 		return { isVerified: true };
 	}
 
@@ -366,7 +381,7 @@ export class MemberAuthService {
 				"New email is the same as the old one"
 			);
 		}
-		const isEmailExists = await this.membersRepository.findOne({
+		const isEmailExists = await this.prismaService.member.findUnique({
 			where: { email: newEmail },
 		});
 		if (isEmailExists) {
@@ -422,7 +437,7 @@ export class MemberAuthService {
 			secret: process.env.SMTP_JWT_SECRET,
 		});
 		const { email, newEmail } = payload;
-		const member = await this.membersRepository.findOne({
+		const member = await this.prismaService.member.findUnique({
 			where: {
 				email: email,
 			},
@@ -430,8 +445,14 @@ export class MemberAuthService {
 		if (!member) {
 			throw new BadRequestException("Member not found");
 		}
-		member.email = newEmail;
-		await this.membersRepository.save(member);
+		await this.prismaService.member.update({
+			where: {
+				email: email,
+			},
+			data: {
+				email: newEmail,
+			},
+		});
 		return { isVerified: true };
 	}
 
@@ -464,7 +485,7 @@ export class MemberAuthService {
 
 	async forgetPassword(forgetPasswordDto: MemberForgetPasswordDto) {
 		const { email } = forgetPasswordDto;
-		const member = await this.membersRepository.findOne({
+		const member = await this.prismaService.member.findUnique({
 			where: { email: email },
 		});
 		if (!member) {
@@ -516,23 +537,23 @@ export class MemberAuthService {
 	): Promise<{ isReset: boolean }> {
 		const { password, resetPasswordToken } = resetPasswordDto;
 		let payload: JwtPayload;
-		let member: Member;
 		try {
 			payload = this.jwtService.verify(resetPasswordToken, {
 				secret: process.env.SMTP_JWT_SECRET,
-			});
-			member = await this.membersRepository.findOne({
-				where: {
-					email: payload.email,
-				},
 			});
 		} catch (error) {
 			throw new BadRequestException("Invalid token");
 		}
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
-		member.password = hashedPassword;
-		await this.membersRepository.save(member);
+		const member = await this.prismaService.member.update({
+			where: {
+				email: payload.email,
+			},
+			data: {
+				password: hashedPassword,
+			},
+		});
 		return { isReset: true };
 	}
 

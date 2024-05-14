@@ -26,6 +26,7 @@ export function setupSwagger(app: INestApplication<any>) {
 		.setTitle("member-groups")
 		.setDescription("# The member-groups API description")
 		.setVersion("1.0.0")
+		.addBearerAuth()
 		.build();
 	const memberGroupsDocument = SwaggerModule.createDocument(
 		app,
@@ -40,6 +41,7 @@ export function setupSwagger(app: INestApplication<any>) {
 		.setTitle("member-roles")
 		.setDescription("# The member-roles API description")
 		.setVersion("1.0.0")
+		.addBearerAuth()
 		.build();
 	const memberRolesDocument = SwaggerModule.createDocument(
 		app,
@@ -72,6 +74,7 @@ export function setupSwagger(app: INestApplication<any>) {
 		.setTitle("members")
 		.setDescription("# The members API description")
 		.setVersion("1.0.0")
+		.addBearerAuth()
 		.build();
 	const membersDocument = SwaggerModule.createDocument(app, membersOption, {
 		include: [MembersModule],
