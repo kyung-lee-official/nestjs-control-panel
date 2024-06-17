@@ -113,7 +113,7 @@ export class MemberRolesService {
 			},
 		});
 		if (!role) {
-			throw new NotFoundException("Member Role not found");
+			throw new NotFoundException("member-role not found");
 		}
 		return role;
 	}
@@ -130,7 +130,7 @@ export class MemberRolesService {
 			where: { id: id },
 		});
 		if (!role) {
-			throw new NotFoundException("Member Role not found");
+			throw new NotFoundException("member-role not found");
 		}
 		try {
 			ForbiddenError.from(ability).throwUnlessCan(
@@ -157,7 +157,7 @@ export class MemberRolesService {
 			}
 			if (name === "") {
 				throw new BadRequestException(
-					"Member Role name can not be empty"
+					"member-role name can not be empty"
 				);
 			}
 		}
@@ -184,7 +184,7 @@ export class MemberRolesService {
 		});
 		if (!role) {
 			throw new BadRequestException(
-				`Member Role with ID ${id} not found`
+				`member-role with ID ${id} not found`
 			);
 		}
 		try {

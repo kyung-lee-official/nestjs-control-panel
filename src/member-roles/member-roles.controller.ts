@@ -45,11 +45,11 @@ export class MemberRolesController {
 		return this.memberRolesService.create();
 	}
 
-	@ApiOperation({ summary: "Find member roles by ids" })
+	@ApiOperation({ summary: "Find member-roles by ids" })
 	@ApiBody({
 		type: FindMemberRoleDto,
 		examples: {
-			"Find member roles by ids": {
+			"Find member-roles by ids": {
 				value: {
 					roleIds: [],
 				},

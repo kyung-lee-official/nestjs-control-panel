@@ -26,7 +26,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation } from "@nestjs/swagger";
 export class GroupsController {
 	constructor(private readonly groupsService: MemberGroupsService) {}
 
-	@ApiOperation({ summary: "Create a member group" })
+	@ApiOperation({ summary: "Create a member-group" })
 	@ApiBearerAuth()
 	@UseGuards(PermissionsGuard)
 	@RequiredPermissions(Permissions.CREATE_MEMBER_GROUP)
@@ -36,7 +36,7 @@ export class GroupsController {
 		return this.groupsService.create();
 	}
 
-	@ApiOperation({ summary: "Get all member groups" })
+	@ApiOperation({ summary: "Get all member-groups" })
 	@ApiBearerAuth()
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(PermissionsGuard)
@@ -56,7 +56,7 @@ export class GroupsController {
 		return this.groupsService.findOne(+id);
 	}
 
-	@ApiOperation({ summary: "Update name and members of a member group" })
+	@ApiOperation({ summary: "Update name and members of a member-group" })
 	@ApiBearerAuth()
 	@ApiBody({ type: UpdateMemberGroupDto })
 	@UseInterceptors(ExcludePasswordInterceptor)

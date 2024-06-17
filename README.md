@@ -182,9 +182,9 @@ Response example:
 
 [Members](http://localhost:3001/api/members)
 
-[Member Groups](http://localhost:3001/api/member-groups)
+[member-groups](http://localhost:3001/api/member-groups)
 
-[Member Roles](http://localhost:3001/api/member-roles)
+[member-roles](http://localhost:3001/api/member-roles)
 
 [Member Server Settings](http://localhost:3001/api/member-server-settings)
 

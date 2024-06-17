@@ -6,7 +6,7 @@ Authorization: {{$dotenv AUTHORIZATION}}
 
 name=everyone
 
-### Find member groups
+### Find member-groups
 GET {{$dotenv LOCAL_HOST}}/member-groups
 Authorization: {{$dotenv AUTHORIZATION}}
 

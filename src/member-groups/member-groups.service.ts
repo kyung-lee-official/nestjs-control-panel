@@ -114,7 +114,7 @@ export class MemberGroupsService {
 			},
 		});
 		if (!memberGroup) {
-			throw new NotFoundException("Member Group not found");
+			throw new NotFoundException("member-group not found");
 		}
 		return memberGroup;
 	}
@@ -135,7 +135,7 @@ export class MemberGroupsService {
 			},
 		});
 		if (!dbMemberGroup) {
-			throw new NotFoundException("Member Group not found");
+			throw new NotFoundException("member-group not found");
 		}
 		const { name, memberIds } = updateMemberGroupDto;
 		if (name) {
@@ -202,7 +202,7 @@ export class MemberGroupsService {
 				/* Requester is not admin */
 				if (!memberIds.includes(dbMemberGroup.owner.id)) {
 					throw new BadRequestException(
-						"Member group owner is missing from the memberIds array"
+						"member-group owner is missing from the memberIds array"
 					);
 				} else {
 					/* New members include the original owner, simply update the members */
@@ -239,7 +239,7 @@ export class MemberGroupsService {
 			},
 		});
 		if (!dbMemberGroup) {
-			throw new NotFoundException("Member Group not found");
+			throw new NotFoundException("member-group not found");
 		}
 		const { ownerId } = transferMemberGroupOwnershipDto;
 		try {
@@ -253,7 +253,7 @@ export class MemberGroupsService {
 			});
 			if (!groupMemberIds.includes(ownerId)) {
 				throw new BadRequestException(
-					"Member group owner must be a member of the group"
+					"member-group owner must be a member of the group"
 				);
 			} else {
 				/* Can transfer ownership */
@@ -286,7 +286,7 @@ export class MemberGroupsService {
 			where: { id: id },
 		});
 		if (!dbMemberGroup) {
-			throw new NotFoundException("Member group not found");
+			throw new NotFoundException("member-group not found");
 		}
 		try {
 			ForbiddenError.from(ability).throwUnlessCan(

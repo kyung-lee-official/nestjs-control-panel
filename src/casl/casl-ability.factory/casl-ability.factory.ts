@@ -120,7 +120,7 @@ export class CaslAbilityFactory {
 			}).because("Can't delete admin");
 		}
 
-		/* Member role permissions */
+		/* member-role permissions */
 		if (dbRequesterPermissions.includes(Permissions.CREATE_MEMBER_ROLE)) {
 			can(Actions.CREATE, "MemberRole");
 			cannot(Actions.CREATE, "MemberRole", { name: "admin" }).because(
@@ -140,7 +140,7 @@ export class CaslAbilityFactory {
 			);
 		}
 
-		/* Member group permissions */
+		/* member-group permissions */
 		if (dbRequesterPermissions.includes(Permissions.CREATE_MEMBER_GROUP)) {
 			can(Actions.CREATE, "MemberGroup");
 			cannot(Actions.CREATE, "MemberGroup", { name: "everyone" }).because(

@@ -62,13 +62,13 @@ enum Permission {
     GET_MEMBER_ME
     DELETE_MEMBER
 
-    // Member role permissions
+    // member-role permissions
     CREATE_MEMBER_ROLE
     UPDATE_MEMBER_ROLE
     GET_MEMBER_ROLES
     DELETE_MEMBER_ROLE
 
-    // Member group permissions
+    // member-group permissions
     CREATE_MEMBER_GROUP
     UPDATE_MEMBER_GROUP
     TRANSFER_MEMBER_GROUP_OWNER

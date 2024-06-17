@@ -355,7 +355,7 @@ export class MembersService {
 			}
 		} else {
 			throw new ForbiddenException(
-				"Forbidden, can't update member roles"
+				"Forbidden, can't update member-roles"
 			);
 		}
 	}
@@ -408,7 +408,7 @@ export class MembersService {
 			return newRequestee;
 		} else {
 			throw new ForbiddenException(
-				"Forbidden, can't update member groups"
+				"Forbidden, can't update member-groups"
 			);
 		}
 	}
