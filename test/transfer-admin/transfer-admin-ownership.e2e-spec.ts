@@ -3,6 +3,7 @@ import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 import { AppModule } from "../../src/app.module";
 import { inspect } from "../test-utils";
+import TestAgent from "supertest/lib/agent";
 
 if (process.env.ENV === "DEV") {
 	console.log("✅ Running in DEV mode");
@@ -20,7 +21,7 @@ if (process.env.ENV === "DEV") {
 }
 
 let app: INestApplication;
-let req: request.SuperTest<request.Test>;
+let req: TestAgent<request.Test>;
 let adminAccessToken: string;
 let testMember1AccessToken: string;
 let testMember1: any;
