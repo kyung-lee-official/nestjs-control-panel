@@ -76,7 +76,7 @@ describe("Seed flow, check if the admin is verified", () => {
 		expect(adminRes.body.memberGroups[0].name).toBe("everyone");
 	});
 
-	it("GET /members/me admin should owned 'everyone' member-groups", async () => {
+	it("GET /members/me admin should own 'everyone' member-group", async () => {
 		expect(adminRes.body.ownedGroups[0].name).toBe("everyone");
 	});
 
