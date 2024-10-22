@@ -1,10 +1,10 @@
 import { INestApplication } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { MembersModule } from "./members/members.module";
-import { MemberRolesModule } from "./member-roles/member-roles.module";
-import { AuthenticationModule } from "./members/authentication/authentication.module";
-import { ServerModule } from "./members/server/server.module";
-import { EmailModule } from "./members/email/email.module";
+import { MembersModule } from "./internal/members/members.module";
+import { MemberRolesModule } from "./internal/member-roles/member-roles.module";
+import { AuthenticationModule } from "./internal/authentication/authentication.module";
+import { ServerModule } from "./internal/server/server.module";
+import { EmailModule } from "./internal/email/email.module";
 
 export function setupSwagger(app: INestApplication<any>) {
 	const memberRolesOption = new DocumentBuilder()
@@ -41,8 +41,8 @@ export function setupSwagger(app: INestApplication<any>) {
 	// );
 
 	const membersOption = new DocumentBuilder()
-		.setTitle("members")
-		.setDescription("# The members API description")
+		.setTitle("Internal")
+		.setDescription("# The API description for the internal module")
 		.setVersion("1.0.0")
 		.addBearerAuth()
 		.build();
@@ -54,5 +54,5 @@ export function setupSwagger(app: INestApplication<any>) {
 			MembersModule,
 		],
 	});
-	SwaggerModule.setup("api/members", app, membersDocument);
+	SwaggerModule.setup("api/internal", app, membersDocument);
 }

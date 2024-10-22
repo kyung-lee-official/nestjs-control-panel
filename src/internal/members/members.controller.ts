@@ -16,9 +16,6 @@ import {
 } from "@nestjs/common";
 import { MembersService } from "./members.service";
 import { UpdateMemberDto } from "./dto/update-member.dto";
-import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
-import { Permissions } from "../permissions/permissions.enum";
-import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { UpdateMemberEmailDto } from "./dto/update-member-email.dto";
 import { UpdateMemberRolesDto } from "./dto/update-member-roles.dto";
 import { UpdateMemberPasswordDto } from "./dto/update-member-password.dto";
@@ -32,9 +29,9 @@ import { NotFrozenGuard } from "./guards/not-frozen.guard";
 import { FindMembersDto } from "./dto/find-members.dto";
 import { Member } from "@prisma/client";
 import { ApiBearerAuth, ApiBody, ApiOperation } from "@nestjs/swagger";
-import { MemberWithoutPassword } from "../utils/types";
-import { ExcludePasswordInterceptor } from "../interceptors/exclude-password.interceptor";
-import { JwtGuard } from "./authentication/guards/jwt.guard";
+import { MemberWithoutPassword } from "../../utils/types";
+import { ExcludePasswordInterceptor } from "../../interceptors/exclude-password.interceptor";
+import { JwtGuard } from "../authentication/guards/jwt.guard";
 
 @UseGuards(JwtGuard)
 @Controller("members")
@@ -56,8 +53,8 @@ export class MembersController {
 	})
 	@ApiBearerAuth()
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.CREATE_MEMBER)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(Permissions.CREATE_MEMBER)
 	@UseGuards(IsVerifiedGuard)
 	@Post("/create")
 	create(@Body() createMemberDto: CreateMemberDto): Promise<Member> {
@@ -65,8 +62,8 @@ export class MembersController {
 	}
 
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.GET_MEMBERS)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(Permissions.GET_MEMBERS)
 	@UseGuards(IsVerifiedGuard)
 	@HttpCode(200)
 	@Post("/find")
@@ -75,8 +72,8 @@ export class MembersController {
 	}
 
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.GET_MEMBERS)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(Permissions.GET_MEMBERS)
 	@UseGuards(IsVerifiedGuard)
 	@Get("ids")
 	findMembersByIds(
@@ -88,16 +85,16 @@ export class MembersController {
 	@ApiOperation({ summary: "Find me by token" })
 	@ApiBearerAuth()
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.GET_MEMBER_ME)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(Permissions.GET_MEMBER_ME)
 	@Get("/me")
 	findMe(): Promise<MemberWithoutPassword> {
 		return this.membersService.findMe();
 	}
 
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.UPDATE_MEMBER)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(Permissions.UPDATE_MEMBER)
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/member-verification")
 	memberVerification(@Param("id") id: string): Promise<Member> {
@@ -105,11 +102,11 @@ export class MembersController {
 	}
 
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(
-		Permissions.UPDATE_MEMBER,
-		Permissions.UPDATE_MEMBER_ME
-	)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(
+	// 	Permissions.UPDATE_MEMBER,
+	// 	Permissions.UPDATE_MEMBER_ME
+	// )
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/profile")
 	update(
@@ -120,24 +117,24 @@ export class MembersController {
 	}
 
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(
-		Permissions.UPDATE_MEMBER,
-		Permissions.UPDATE_MEMBER_ME
-	)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(
+	// 	Permissions.UPDATE_MEMBER,
+	// 	Permissions.UPDATE_MEMBER_ME
+	// )
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/email")
 	updateMemberEmail(
 		@Param("id") id: string,
 		@Body() updateMemberEmailDto: UpdateMemberEmailDto
-	): Promise<Member> {
+	) {
 		return this.membersService.updateMemberEmail(id, updateMemberEmailDto);
 	}
 
 	@ApiOperation({ summary: "Update a member's roles" })
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.UPDATE_MEMBER)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(Permissions.UPDATE_MEMBER)
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/roles")
 	updateMemberRoles(
@@ -148,14 +145,14 @@ export class MembersController {
 	}
 
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.UPDATE_MEMBER)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(Permissions.UPDATE_MEMBER)
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/groups")
 	updateMemberGroups(
 		@Param("id") id: string,
 		@Body() updateMemberGroupsDto: UpdateMemberGroupsDto
-	): Promise<Member> {
+	) {
 		return this.membersService.updateMemberGroups(
 			id,
 			updateMemberGroupsDto
@@ -163,17 +160,17 @@ export class MembersController {
 	}
 
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(
-		Permissions.UPDATE_MEMBER,
-		Permissions.UPDATE_MEMBER_ME
-	)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(
+	// 	Permissions.UPDATE_MEMBER,
+	// 	Permissions.UPDATE_MEMBER_ME
+	// )
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/password")
 	updateMemberPassword(
 		@Param("id") id: string,
 		@Body() updateMemberPasswordDto: UpdateMemberPasswordDto
-	): Promise<Member> {
+	) {
 		return this.membersService.updateMemberPassword(
 			id,
 			updateMemberPasswordDto
@@ -196,8 +193,8 @@ export class MembersController {
 	}
 
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.UPDATE_MEMBER)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(Permissions.UPDATE_MEMBER)
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/freeze")
 	freeze(
@@ -210,8 +207,8 @@ export class MembersController {
 	@ApiOperation({ summary: "Transfer member admin" })
 	@ApiBearerAuth()
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.TRANSFER_MEMBER_ADMIN)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(Permissions.TRANSFER_MEMBER_ADMIN)
 	@UseGuards(NotFrozenGuard)
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/transfer-member-admin")
@@ -220,8 +217,8 @@ export class MembersController {
 		return this.membersService.transferMemberAdmin(id);
 	}
 
-	@UseGuards(PermissionsGuard)
-	@RequiredPermissions(Permissions.DELETE_MEMBER)
+	// @UseGuards(PermissionsGuard)
+	// @RequiredPermissions(Permissions.DELETE_MEMBER)
 	@UseGuards(IsVerifiedGuard)
 	@Delete("/:id")
 	remove(@Param("id") id: string): Promise<Member> {

@@ -7,12 +7,9 @@ import {
 } from "@nestjs/common";
 import { UpdateMemberRoleDto } from "./dto/update-member-role.dto";
 import { REQUEST } from "@nestjs/core";
-import {
-	Actions,
-	CaslAbilityFactory,
-} from "../casl/casl-ability.factory/casl-ability.factory";
+
 import { ForbiddenError, subject } from "@casl/ability";
-import { PrismaService } from "../prisma/prisma.service";
+import { PrismaService } from "../../prisma/prisma.service";
 import { MemberRole } from "@prisma/client";
 import { FindMemberRoleDto } from "./dto/find-member-role.dto";
 
@@ -22,7 +19,7 @@ export class MemberRolesService {
 		@Inject(REQUEST)
 		private request: any,
 		private readonly prismaService: PrismaService,
-		private caslAbilityFactory: CaslAbilityFactory
+		// private caslAbilityFactory: CaslAbilityFactory
 	) {}
 
 	// async updateAdminPermissions(): Promise<MemberRole> {

@@ -1,12 +1,10 @@
 import { Module } from "@nestjs/common";
 import { MemberRolesService } from "./member-roles.service";
 import { MemberRolesController } from "./member-roles.controller";
-import { PermissionsModule } from "../permissions/permissions.module";
-import { CaslModule } from "../casl/casl.module";
-import { PrismaModule } from "../prisma/prisma.module";
+import { PrismaModule } from "../../prisma/prisma.module";
 
 @Module({
-	imports: [PrismaModule, CaslModule, PermissionsModule],
+	imports: [PrismaModule],
 	controllers: [MemberRolesController],
 	providers: [MemberRolesService],
 	exports: [],

@@ -12,20 +12,20 @@ import { UpdateMemberEmailDto } from "./dto/update-member-email.dto";
 import { UpdateMemberRolesDto } from "./dto/update-member-roles.dto";
 import { UpdateMemberPasswordDto } from "./dto/update-member-password.dto";
 import { FindMembersByIdsDto } from "./dto/find-members-by-ids.dto";
-import {
-	Actions,
-	CaslAbilityFactory,
-} from "../casl/casl-ability.factory/casl-ability.factory";
+// import {
+// 	Actions,
+// 	CaslAbilityFactory,
+// } from "../../casl/casl-ability.factory/casl-ability.factory";
 import { ForbiddenError, subject } from "@casl/ability";
 import { UpdateMemberGroupsDto } from "./dto/update-member-groups.dto";
 import { writeFile } from "fs/promises";
 import { existsSync, mkdirSync } from "fs";
 import { FreezeMemberDto } from "./dto/freeze-member.dto";
-import { PrismaService } from "../prisma/prisma.service";
+import { PrismaService } from "../../prisma/prisma.service";
 import { Member } from "@prisma/client";
 import { FindMembersDto } from "./dto/find-members.dto";
-import { MemberWithoutPassword } from "../utils/types";
-import { EmailService } from "./email/email.service";
+import { MemberWithoutPassword } from "../../utils/types";
+import { EmailService } from "../email/email.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class MembersService {
@@ -33,7 +33,7 @@ export class MembersService {
 		@Inject(REQUEST)
 		private readonly request: any,
 		private readonly emailService: EmailService,
-		private readonly caslAbilityFactory: CaslAbilityFactory,
+		// private readonly caslAbilityFactory: CaslAbilityFactory,
 		private readonly prismaService: PrismaService
 	) {}
 
@@ -110,13 +110,13 @@ export class MembersService {
 				memberRoles: true,
 			},
 		});
-		const ability =
-			await this.caslAbilityFactory.defineAbilityFor(requester);
-		for (const member of members) {
-			if (!ability.can(Actions.READ, subject("Member", member))) {
-				throw new ForbiddenException();
-			}
-		}
+		// const ability =
+		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
+		// for (const member of members) {
+		// 	if (!ability.can(Actions.READ, subject("Member", member))) {
+		// 		throw new ForbiddenException();
+		// 	}
+		// }
 		return members;
 	}
 
@@ -127,8 +127,8 @@ export class MembersService {
 
 	async memberVerification(id: string): Promise<Member> {
 		const { requester } = this.request;
-		const ability =
-			await this.caslAbilityFactory.defineAbilityFor(requester);
+		// const ability =
+		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
 		const member = await this.prismaService.member.findUnique({
 			where: {
 				id: id,
@@ -140,20 +140,21 @@ export class MembersService {
 		if (!member) {
 			throw new NotFoundException("Member not found");
 		}
-		if (ability.can(Actions.UPDATE, subject("Member", member))) {
-			const member = await this.prismaService.member.update({
-				where: { id: id },
-				data: {
-					isVerified: true,
-				},
-				include: {
-					memberRoles: true,
-				},
-			});
-			return member;
-		} else {
-			throw new ForbiddenException();
-		}
+		// if (ability.can(Actions.UPDATE, subject("Member", member))) {
+		// 	const member = await this.prismaService.member.update({
+		// 		where: { id: id },
+		// 		data: {
+		// 			isVerified: true,
+		// 		},
+		// 		include: {
+		// 			memberRoles: true,
+		// 		},
+		// 	});
+		// 	return member;
+		// } else {
+		// 	throw new ForbiddenException();
+		// }
+		return member;
 	}
 
 	async update(
@@ -161,8 +162,8 @@ export class MembersService {
 		updateMemberDto: Partial<UpdateMemberDto>
 	): Promise<Member> {
 		const { requester } = this.request;
-		const ability =
-			await this.caslAbilityFactory.defineAbilityFor(requester);
+		// const ability =
+		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
 		const member = await this.prismaService.member.findUnique({
 			where: {
 				id: id,
@@ -174,27 +175,28 @@ export class MembersService {
 		if (!member) {
 			throw new NotFoundException("Member not found");
 		}
-		if (ability.can(Actions.UPDATE, subject("Member", member))) {
-			const member = await this.prismaService.member.update({
-				where: { id: id },
-				data: updateMemberDto,
-				include: {
-					memberRoles: true,
-				},
-			});
-			return member;
-		} else {
-			throw new ForbiddenException();
-		}
+		return member;
+		// if (ability.can(Actions.UPDATE, subject("Member", member))) {
+		// 	const member = await this.prismaService.member.update({
+		// 		where: { id: id },
+		// 		data: updateMemberDto,
+		// 		include: {
+		// 			memberRoles: true,
+		// 		},
+		// 	});
+		// 	return member;
+		// } else {
+		// 	throw new ForbiddenException();
+		// }
 	}
 
 	async updateMemberEmail(
 		id: string,
 		updateMemberEmailDto: UpdateMemberEmailDto
-	): Promise<Member> {
+	) {
 		const { requester } = this.request;
-		const ability =
-			await this.caslAbilityFactory.defineAbilityFor(requester);
+		// const ability =
+		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
 		const member = await this.prismaService.member.findUnique({
 			where: {
 				id: id,
@@ -206,19 +208,19 @@ export class MembersService {
 		if (!member) {
 			throw new NotFoundException("Member not found");
 		}
-		if (ability.can(Actions.UPDATE, subject("Member", member))) {
-			const { email } = updateMemberEmailDto;
-			const member = await this.prismaService.member.update({
-				where: { id: id },
-				data: { email: email.toLowerCase() },
-				include: {
-					memberRoles: true,
-				},
-			});
-			return member;
-		} else {
-			throw new ForbiddenException();
-		}
+		// if (ability.can(Actions.UPDATE, subject("Member", member))) {
+		// 	const { email } = updateMemberEmailDto;
+		// 	const member = await this.prismaService.member.update({
+		// 		where: { id: id },
+		// 		data: { email: email.toLowerCase() },
+		// 		include: {
+		// 			memberRoles: true,
+		// 		},
+		// 	});
+		// 	return member;
+		// } else {
+		// 	throw new ForbiddenException();
+		// }
 	}
 
 	/**
@@ -236,8 +238,8 @@ export class MembersService {
 		updateMemberRolesDto: UpdateMemberRolesDto
 	) {
 		const { requester } = this.request;
-		const ability =
-			await this.caslAbilityFactory.defineAbilityFor(requester);
+		// const ability =
+		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
 		const { newRoleIds } = updateMemberRolesDto;
 		const adminRole = await this.prismaService.memberRole.findUnique({
 			where: { id: "admin", name: "admin" },
@@ -330,10 +332,10 @@ export class MembersService {
 	async updateMemberGroups(
 		id: string,
 		updateMemberGroupsDto: UpdateMemberGroupsDto
-	): Promise<Member> {
+	) {
 		const { requester } = this.request;
-		const ability =
-			await this.caslAbilityFactory.defineAbilityFor(requester);
+		// const ability =
+		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
 		const { newGroupIds } = updateMemberGroupsDto;
 		// const everyoneGroup = await this.prismaService.memberGroup.findUnique({
 		// 	where: { name: "everyone" },
@@ -355,60 +357,60 @@ export class MembersService {
 			throw new NotFoundException("Member not found");
 		}
 
-		if (ability.can(Actions.UPDATE, subject("Member", dbRequestee))) {
-			const newRequestee = await this.prismaService.member.update({
-				where: { id: id },
-				data: {},
-				include: {
-					memberRoles: true,
-				},
-			});
-			return newRequestee;
-		} else {
-			throw new ForbiddenException(
-				"Forbidden, can't update member-groups"
-			);
-		}
+		// if (ability.can(Actions.UPDATE, subject("Member", dbRequestee))) {
+		// 	const newRequestee = await this.prismaService.member.update({
+		// 		where: { id: id },
+		// 		data: {},
+		// 		include: {
+		// 			memberRoles: true,
+		// 		},
+		// 	});
+		// 	return newRequestee;
+		// } else {
+		// 	throw new ForbiddenException(
+		// 		"Forbidden, can't update member-groups"
+		// 	);
+		// }
 	}
 
 	async updateMemberPassword(
 		id: string,
 		updateMemberPasswordDto: UpdateMemberPasswordDto
-	): Promise<Member> {
+	) {
 		const { requester } = this.request;
-		const ability =
-			await this.caslAbilityFactory.defineAbilityFor(requester);
+		// const ability =
+		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
 		const requestee = await this.prismaService.member.findUnique({
 			where: { id: id },
 		});
 		if (!requestee) {
 			throw new NotFoundException("Member not found");
 		}
-		if (ability.can(Actions.UPDATE, subject("Member", requestee))) {
-			const { oldPassword, newPassword } = updateMemberPasswordDto;
-			const isOldPasswordCorrect: boolean = await bcrypt.compare(
-				oldPassword,
-				requestee.password
-			);
-			if (isOldPasswordCorrect) {
-				if (oldPassword === newPassword) {
-					throw new BadRequestException(
-						"The new password cannot be the same as the old password"
-					);
-				}
-				const salt = await bcrypt.genSalt();
-				const hashedPassword = await bcrypt.hash(newPassword, salt);
-				const newRequestee = await this.prismaService.member.update({
-					where: { id: id },
-					data: { password: hashedPassword },
-				});
-				return newRequestee;
-			} else {
-				throw new UnauthorizedException();
-			}
-		} else {
-			throw new ForbiddenException();
-		}
+		// if (ability.can(Actions.UPDATE, subject("Member", requestee))) {
+		// 	const { oldPassword, newPassword } = updateMemberPasswordDto;
+		// 	const isOldPasswordCorrect: boolean = await bcrypt.compare(
+		// 		oldPassword,
+		// 		requestee.password
+		// 	);
+		// 	if (isOldPasswordCorrect) {
+		// 		if (oldPassword === newPassword) {
+		// 			throw new BadRequestException(
+		// 				"The new password cannot be the same as the old password"
+		// 			);
+		// 		}
+		// 		const salt = await bcrypt.genSalt();
+		// 		const hashedPassword = await bcrypt.hash(newPassword, salt);
+		// 		const newRequestee = await this.prismaService.member.update({
+		// 			where: { id: id },
+		// 			data: { password: hashedPassword },
+		// 		});
+		// 		return newRequestee;
+		// 	} else {
+		// 		throw new UnauthorizedException();
+		// 	}
+		// } else {
+		// 	throw new ForbiddenException();
+		// }
 	}
 
 	async updateAvatar(req: any, file: Express.Multer.File): Promise<any> {
@@ -444,13 +446,10 @@ export class MembersService {
 		res.download(filePath);
 	}
 
-	async freeze(
-		id: string,
-		freezeMemberDto: FreezeMemberDto
-	): Promise<Member> {
+	async freeze(id: string, freezeMemberDto: FreezeMemberDto) {
 		const { requester } = this.request;
-		const ability =
-			await this.caslAbilityFactory.defineAbilityFor(requester);
+		// const ability =
+		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
 		const { isFrozen } = freezeMemberDto;
 		const adminRole = await this.prismaService.memberRole.findUnique({
 			where: { id: "admin" },
@@ -471,17 +470,17 @@ export class MembersService {
 		if (!requestee) {
 			throw new NotFoundException("Member not found");
 		}
-		try {
-			ForbiddenError.from(ability).throwUnlessCan(
-				Actions.UPDATE,
-				subject("Member", requestee)
-			);
-		} catch (error) {
-			if (error instanceof ForbiddenError) {
-				throw new ForbiddenException(error.message);
-			}
-			throw error;
-		}
+		// try {
+		// 	ForbiddenError.from(ability).throwUnlessCan(
+		// 		Actions.UPDATE,
+		// 		subject("Member", requestee)
+		// 	);
+		// } catch (error) {
+		// 	if (error instanceof ForbiddenError) {
+		// 		throw new ForbiddenException(error.message);
+		// 	}
+		// 	throw error;
+		// }
 		const frozenRequestee = await this.prismaService.member.update({
 			where: { id: id },
 			data: { isFrozen: isFrozen },
@@ -493,8 +492,8 @@ export class MembersService {
 		console.log(" ========== id ========== ", id);
 
 		const { requester } = this.request;
-		const ability =
-			await this.caslAbilityFactory.defineAbilityFor(requester);
+		// const ability =
+		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
 		const adminRole = await this.prismaService.memberRole.findUnique({
 			where: { id: "admin" },
 			include: {
@@ -549,8 +548,8 @@ export class MembersService {
 
 	async remove(id: string): Promise<Member> {
 		const { requester } = this.request;
-		const ability =
-			await this.caslAbilityFactory.defineAbilityFor(requester);
+		// const ability =
+		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
 		const requestee = await this.prismaService.member.findUnique({
 			where: { id: id },
 			include: {
@@ -561,17 +560,17 @@ export class MembersService {
 		if (!requestee) {
 			throw new NotFoundException("Member not found");
 		}
-		try {
-			ForbiddenError.from(ability).throwUnlessCan(
-				Actions.DELETE,
-				subject("Member", requestee)
-			);
-		} catch (error) {
-			if (error instanceof ForbiddenError) {
-				throw new ForbiddenException(error.message);
-			}
-			throw error;
-		}
+		// try {
+		// 	ForbiddenError.from(ability).throwUnlessCan(
+		// 		Actions.DELETE,
+		// 		subject("Member", requestee)
+		// 	);
+		// } catch (error) {
+		// 	if (error instanceof ForbiddenError) {
+		// 		throw new ForbiddenException(error.message);
+		// 	}
+		// 	throw error;
+		// }
 		const deletedRequestee = await this.prismaService.member.delete({
 			where: { id: id },
 		});

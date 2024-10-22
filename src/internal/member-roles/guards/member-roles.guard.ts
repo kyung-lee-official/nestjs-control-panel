@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { REQUIRED_MEMBER_ROLES_KEY } from "../decorators/required-member-roles.decorator";
-import { PrismaService } from "../../prisma/prisma.service";
+import { PrismaService } from "../../../prisma/prisma.service";
 
 @Injectable()
 export class MemberRolesGuard implements CanActivate {

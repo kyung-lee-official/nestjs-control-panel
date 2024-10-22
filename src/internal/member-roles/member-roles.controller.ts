@@ -13,16 +13,14 @@ import {
 } from "@nestjs/common";
 import { MemberRolesService } from "./member-roles.service";
 import { UpdateMemberRoleDto } from "./dto/update-member-role.dto";
-import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
-import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredMemberRoles } from "./decorators/required-member-roles.decorator";
 import { MemberRolesGuard } from "./guards/member-roles.guard";
 import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
 import { MemberRole } from "@prisma/client";
 import { FindMemberRoleDto } from "./dto/find-member-role.dto";
 import { ApiBearerAuth, ApiBody, ApiOperation } from "@nestjs/swagger";
-import { ExcludePasswordInterceptor } from "../interceptors/exclude-password.interceptor";
-import { JwtGuard } from "src/members/authentication/guards/jwt.guard";
+import { ExcludePasswordInterceptor } from "../../interceptors/exclude-password.interceptor";
+import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 
 @UseGuards(JwtGuard)
 @Controller("member-roles")

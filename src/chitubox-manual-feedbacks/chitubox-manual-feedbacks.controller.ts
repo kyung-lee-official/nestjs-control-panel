@@ -9,13 +9,11 @@ import {
 } from "@nestjs/common";
 import { ChituboxManualFeedbacksService } from "./chitubox-manual-feedbacks.service";
 import { CreateChituboxManualFeedbackDto } from "./dto/create-chitubox-manual-feedback.dto";
-import { PermissionsGuard } from "../permissions/guards/permissions.guard";
-import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
-import { Permissions } from "../permissions/permissions.enum";
+
 import { Iso8601DateRangeDto } from "./dto/iso8601-date-range.dto";
-import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
+import { IsVerifiedGuard } from "../internal/members/guards/is-verified.guard";
 import { ChituboxManualFeedback } from "@prisma/client";
-import { JwtGuard } from "src/members/authentication/guards/jwt.guard";
+import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 
 @Controller("chitubox-manual-feedbacks")
 export class ChituboxManualFeedbacksController {
@@ -35,10 +33,10 @@ export class ChituboxManualFeedbacksController {
 		);
 	}
 
-	@UseGuards(PermissionsGuard)
+	// @UseGuards(PermissionsGuard)
 	@UseGuards(IsVerifiedGuard)
 	@UseGuards(JwtGuard)
-	@RequiredPermissions(Permissions.FIND_CHITUBOX_MANUAL_FEEDBACKS)
+	// @RequiredPermissions(Permissions.FIND_CHITUBOX_MANUAL_FEEDBACKS)
 	@Get()
 	find(
 		@Query()
