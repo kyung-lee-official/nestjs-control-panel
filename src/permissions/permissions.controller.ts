@@ -1,11 +1,11 @@
 import { Controller, Get, UseGuards } from "@nestjs/common";
 import { PermissionsService } from "./permissions.service";
-import { JwtAuthGuard } from "../member-auth/guards/jwt-auth.guard";
+import { JwtGuard } from "src/members/authentication/guards/jwt.guard";
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtGuard)
 @Controller("permissions")
 export class PermissionsController {
-	constructor(private readonly permissionsService: PermissionsService) { }
+	constructor(private readonly permissionsService: PermissionsService) {}
 
 	@Get()
 	find() {

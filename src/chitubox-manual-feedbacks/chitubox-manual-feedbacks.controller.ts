@@ -12,10 +12,10 @@ import { CreateChituboxManualFeedbackDto } from "./dto/create-chitubox-manual-fe
 import { PermissionsGuard } from "../permissions/guards/permissions.guard";
 import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
 import { Permissions } from "../permissions/permissions.enum";
-import { JwtAuthGuard } from "../member-auth/guards/jwt-auth.guard";
 import { Iso8601DateRangeDto } from "./dto/iso8601-date-range.dto";
 import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
 import { ChituboxManualFeedback } from "@prisma/client";
+import { JwtGuard } from "src/members/authentication/guards/jwt.guard";
 
 @Controller("chitubox-manual-feedbacks")
 export class ChituboxManualFeedbacksController {
@@ -37,7 +37,7 @@ export class ChituboxManualFeedbacksController {
 
 	@UseGuards(PermissionsGuard)
 	@UseGuards(IsVerifiedGuard)
-	@UseGuards(JwtAuthGuard)
+	@UseGuards(JwtGuard)
 	@RequiredPermissions(Permissions.FIND_CHITUBOX_MANUAL_FEEDBACKS)
 	@Get()
 	find(

@@ -43,8 +43,6 @@ export class PermissionsGuard implements CanActivate {
 					},
 					include: {
 						memberRoles: true,
-						ownedGroups: true,
-						memberGroups: true,
 					},
 				});
 				if (!member) {

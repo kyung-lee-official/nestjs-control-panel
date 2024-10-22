@@ -6,8 +6,6 @@ import {
 	Param,
 	Delete,
 	UseGuards,
-	Query,
-	ParseArrayPipe,
 	UseInterceptors,
 	Post,
 	Put,
@@ -18,7 +16,6 @@ import {
 } from "@nestjs/common";
 import { MembersService } from "./members.service";
 import { UpdateMemberDto } from "./dto/update-member.dto";
-import { JwtAuthGuard } from "../member-auth/guards/jwt-auth.guard";
 import { RequiredPermissions } from "../permissions/decorators/required-permissions.decorator";
 import { Permissions } from "../permissions/permissions.enum";
 import { PermissionsGuard } from "../permissions/guards/permissions.guard";
@@ -34,11 +31,12 @@ import { FreezeMemberDto } from "./dto/freeze-member.dto";
 import { NotFrozenGuard } from "./guards/not-frozen.guard";
 import { FindMembersDto } from "./dto/find-members.dto";
 import { Member } from "@prisma/client";
-import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiOperation } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation } from "@nestjs/swagger";
 import { MemberWithoutPassword } from "../utils/types";
 import { ExcludePasswordInterceptor } from "../interceptors/exclude-password.interceptor";
+import { JwtGuard } from "./authentication/guards/jwt.guard";
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtGuard)
 @Controller("members")
 export class MembersController {
 	constructor(private readonly membersService: MembersService) {}
@@ -145,7 +143,7 @@ export class MembersController {
 	updateMemberRoles(
 		@Param("id") id: string,
 		@Body() updateMemberRolesDto: UpdateMemberRolesDto
-	): Promise<Member> {
+	) {
 		return this.membersService.updateMemberRoles(id, updateMemberRolesDto);
 	}
 

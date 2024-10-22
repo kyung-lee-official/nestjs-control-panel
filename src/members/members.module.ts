@@ -3,11 +3,20 @@ import { MembersService } from "./members.service";
 import { MembersController } from "./members.controller";
 import { PermissionsModule } from "../permissions/permissions.module";
 import { CaslModule } from "../casl/casl.module";
-import { MemberAuthModule } from "../member-auth/member-auth.module";
 import { PrismaModule } from "../prisma/prisma.module";
+import { AuthenticationModule } from "./authentication/authentication.module";
+import { ServerModule } from "./server/server.module";
+import { EmailModule } from "./email/email.module";
 
 @Module({
-	imports: [PrismaModule, CaslModule, PermissionsModule, MemberAuthModule],
+	imports: [
+		PrismaModule,
+		CaslModule,
+		PermissionsModule,
+		AuthenticationModule,
+		ServerModule,
+		EmailModule,
+	],
 	controllers: [MembersController],
 	providers: [MembersService],
 	exports: [MembersService],

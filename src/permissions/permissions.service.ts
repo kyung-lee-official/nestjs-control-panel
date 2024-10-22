@@ -23,18 +23,19 @@ export class PermissionsService {
 		if (!member) {
 			throw new NotFoundException("Member not exists");
 		}
-		const permissionArrayOfOwnedRoles = member.memberRoles.map((role) => {
-			return role.permissions;
-		});
-		let allPermissionsOfMember = [];
-		if (permissionArrayOfOwnedRoles.length > 0) {
-			allPermissionsOfMember = permissionArrayOfOwnedRoles.reduce(
-				(accumulator, currentValue) => {
-					return accumulator.concat(currentValue);
-				}
-			);
-		}
-		allPermissionsOfMember = uniq(allPermissionsOfMember);
-		return allPermissionsOfMember;
+		// const permissionArrayOfOwnedRoles = member.memberRoles.map((role) => {
+		// 	return role.permissions;
+		// });
+		// let allPermissionsOfMember = [];
+		// if (permissionArrayOfOwnedRoles.length > 0) {
+		// 	allPermissionsOfMember = permissionArrayOfOwnedRoles.reduce(
+		// 		(accumulator, currentValue) => {
+		// 			return accumulator.concat(currentValue);
+		// 		}
+		// 	);
+		// }
+		// allPermissionsOfMember = uniq(allPermissionsOfMember);
+		// return allPermissionsOfMember;
+		return [];
 	}
 }
