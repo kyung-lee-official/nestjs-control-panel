@@ -1,11 +1,17 @@
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import {
+	Injectable,
+	CanActivate,
+	ExecutionContext,
+	BadRequestException,
+	UnauthorizedException,
+} from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable()
-export class UpdateServerSettingsGuard implements CanActivate {
+export class FindMeGuard implements CanActivate {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -13,13 +19,30 @@ export class UpdateServerSettingsGuard implements CanActivate {
 		const requester = req.requester;
 		const principal = {
 			...requester,
+			memberRoles: requester.memberRoles.map((role) => {
+				return {
+					id: role.id,
+					name: role.name,
+					superRoleId: role.superRoleId,
+				};
+			}),
 			createdAt: requester.createdAt.toISOString(),
 			updatedAt: requester.updatedAt.toISOString(),
 		};
-		const resource =
-			await this.prismaService.memberServerSetting.findFirst();
 
-		const action = "update";
+		const member = await this.prismaService.member.findUnique({
+			where: {
+				email: req.jwtPayload.email,
+			},
+		});
+		const resource = {
+			...member,
+			createdAt: member.createdAt.toISOString(),
+			updatedAt: member.updatedAt.toISOString(),
+		};
+
+		const action = "read";
+
 		const cerbosObject = {
 			principal: {
 				id: requester.id,
@@ -27,13 +50,14 @@ export class UpdateServerSettingsGuard implements CanActivate {
 				attributes: principal,
 			},
 			resource: {
-				kind: "internal:server-settings",
+				kind: "internal:members",
 				id: `${resource.id}`,
+				attributes: resource,
 			},
 			actions: [action],
 		};
-
 		const decision = await cerbos.checkResource(cerbosObject);
+
 		const result = !!decision.isAllowed(action);
 
 		return result;

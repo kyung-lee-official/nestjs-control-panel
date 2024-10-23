@@ -27,7 +27,7 @@ export class GetServerSettingsGuard implements CanActivate {
 				attributes: principal,
 			},
 			resource: {
-				kind: "member:server-settings",
+				kind: "internal:server-settings",
 				id: `${resource.id}`,
 			},
 			actions: [action],

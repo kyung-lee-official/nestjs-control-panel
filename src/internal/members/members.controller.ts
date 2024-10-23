@@ -32,6 +32,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation } from "@nestjs/swagger";
 import { MemberWithoutPassword } from "../../utils/types";
 import { ExcludePasswordInterceptor } from "../../interceptors/exclude-password.interceptor";
 import { JwtGuard } from "../authentication/guards/jwt.guard";
+import { FindMeGuard } from "./guards/find-me.guard";
 
 @UseGuards(JwtGuard)
 @Controller("members")
@@ -82,11 +83,10 @@ export class MembersController {
 		return this.membersService.findMembersByIds(findMembersByIdsDto);
 	}
 
-	@ApiOperation({ summary: "Find me by token" })
 	@ApiBearerAuth()
+	@ApiOperation({ summary: "Find me by token" })
 	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(Permissions.GET_MEMBER_ME)
+	@UseGuards(FindMeGuard)
 	@Get("/me")
 	findMe(): Promise<MemberWithoutPassword> {
 		return this.membersService.findMe();

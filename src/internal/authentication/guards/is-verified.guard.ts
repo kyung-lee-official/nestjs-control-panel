@@ -7,10 +7,6 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 
-/**
- * Guard to check if the requester is verified
- * This guard must be used after JwtGuard
- */
 @Injectable()
 export class IsVerifiedGuard implements CanActivate {
 	constructor(private readonly prismaService: PrismaService) {}
