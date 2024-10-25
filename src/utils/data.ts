@@ -1,7 +1,7 @@
-export function exclude<Entity, Key extends keyof Entity>(
-	member: Entity,
-	keys: Key[]
-): Omit<Entity, Key> {
+export function exclude<
+	Entity extends ArrayLike<unknown>,
+	Key extends keyof Entity,
+>(member: Entity, keys: Key[]): Omit<Entity, Key> {
 	const entries = Object.entries(member).filter(([key]) => {
 		return !keys.includes(key as Key);
 	});
@@ -24,4 +24,19 @@ export function excludePassword(object: any) {
 		}
 	}
 	return object;
+}
+
+export function getCerbosPrincipal(requester: any) {
+	return {
+		...requester,
+		memberRoles: requester.memberRoles.map((role) => {
+			return {
+				id: role.id,
+				name: role.name,
+				superRoleId: role.superRoleId,
+			};
+		}),
+		createdAt: requester.createdAt.toISOString(),
+		updatedAt: requester.updatedAt.toISOString(),
+	};
 }

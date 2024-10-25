@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export class UpdateServerSettings {
-	allPublicSignUp: boolean;
-	allowGoogleSignIn: boolean;
+	allPublicSignUp: boolean | undefined;
+	allowGoogleSignIn: boolean | undefined;
 
 	constructor(dto: UpdateServerSettingsDto) {
 		this.allPublicSignUp = dto.allowPublicSignUp;

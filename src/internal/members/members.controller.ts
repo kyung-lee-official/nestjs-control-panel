@@ -15,16 +15,14 @@ import {
 	HttpCode,
 } from "@nestjs/common";
 import { MembersService } from "./members.service";
-import { UpdateMemberDto } from "./dto/update-member.dto";
-import { UpdateMemberEmailDto } from "./dto/update-member-email.dto";
-import { UpdateMemberRolesDto } from "./dto/update-member-roles.dto";
-import { UpdateMemberPasswordDto } from "./dto/update-member-password.dto";
+import {
+	UpdateMemberEmailDto,
+	updateMemberEmailSchema,
+} from "./dto/update-member-email.dto";
 import { FindMembersByIdsDto } from "./dto/find-members-by-ids.dto";
 import { CreateMemberDto } from "./dto/create-member.dto";
-import { UpdateMemberGroupsDto } from "./dto/update-member-groups.dto";
 import { IsVerifiedGuard } from "./guards/is-verified.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { FreezeMemberDto } from "./dto/freeze-member.dto";
 import { NotFrozenGuard } from "./guards/not-frozen.guard";
 import { FindMembersDto } from "./dto/find-members.dto";
 import { Member } from "@prisma/client";
@@ -33,48 +31,54 @@ import { MemberWithoutPassword } from "../../utils/types";
 import { ExcludePasswordInterceptor } from "../../interceptors/exclude-password.interceptor";
 import { JwtGuard } from "../authentication/guards/jwt.guard";
 import { FindMeGuard } from "./guards/find-me.guard";
+import {
+	createMemberBodyOptions,
+	createMemberOperationOptions,
+} from "./swagger/create-member.swagger";
+import { CreateMemberGuard } from "./guards/create-member.guard";
+import { FindMembersGuard } from "./guards/find-members.guard";
+import { UpdateMemberProfileGuard } from "./guards/update-member-profile.guard";
+import { VerificationGuard } from "./guards/verification.guard";
+import { UpdateMemberProfileDto } from "./dto/update-member-profile.dto";
+import { updateMemberProfileBodyOptions } from "./swagger/update-member-profile.swagger";
+import { UpdateMemberEmailGuard } from "./guards/update-member-email.guard";
+import { UpdateMemberEmailPipe } from "./pipes/update-member-email.pipe";
+import { updateMemberEmailBodyOptions } from "./swagger/update-member-email.swagger";
+import {
+	UpdateMemberPasswordDto,
+	updateMemberPasswordSchema,
+} from "./dto/update-member-password.dto";
+import { updateMemberPasswordBodyOptions } from "./swagger/update-member-password.swagger";
+import { UpdateMemberPasswordGuard } from "./guards/update-member-password.guard";
+import { FreezeMemberDto } from "./dto/freeze-member.dto";
 
 @UseGuards(JwtGuard)
 @Controller("members")
 export class MembersController {
 	constructor(private readonly membersService: MembersService) {}
 
-	@ApiOperation({ summary: "Create a member by email" })
-	@ApiBody({
-		type: CreateMemberDto,
-		examples: {
-			"Create a member by email": {
-				value: {
-					email: process.env.E2E_TEST_MEMBER_3_EMAIL,
-					nickname: process.env.E2E_TEST_MEMBER_3_NICKNAME,
-					password: "1234Abcd!",
-				},
-			},
-		},
-	})
 	@ApiBearerAuth()
+	@ApiOperation(createMemberOperationOptions)
+	@ApiBody(createMemberBodyOptions)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(Permissions.CREATE_MEMBER)
-	@UseGuards(IsVerifiedGuard)
+	@UseGuards(IsVerifiedGuard, CreateMemberGuard)
 	@Post("/create")
-	create(@Body() createMemberDto: CreateMemberDto): Promise<Member> {
+	create(@Body() createMemberDto: CreateMemberDto) {
 		return this.membersService.create(createMemberDto);
 	}
 
+	@ApiBearerAuth()
+	@UseGuards(IsVerifiedGuard, FindMembersGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(Permissions.GET_MEMBERS)
-	@UseGuards(IsVerifiedGuard)
 	@HttpCode(200)
 	@Post("/find")
-	find(@Body() findMembersDto: FindMembersDto): Promise<Member[]> {
+	find(@Body() findMembersDto: FindMembersDto) {
 		return this.membersService.find(findMembersDto);
 	}
 
+	@ApiBearerAuth()
+	@UseGuards(IsVerifiedGuard, FindMembersGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(Permissions.GET_MEMBERS)
 	@UseGuards(IsVerifiedGuard)
 	@Get("ids")
 	findMembersByIds(
@@ -85,91 +89,56 @@ export class MembersController {
 
 	@ApiBearerAuth()
 	@ApiOperation({ summary: "Find me by token" })
-	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(FindMeGuard)
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@Get("/me")
 	findMe(): Promise<MemberWithoutPassword> {
 		return this.membersService.findMe();
 	}
 
+	@ApiBearerAuth()
+	@UseGuards(IsVerifiedGuard, VerificationGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(Permissions.UPDATE_MEMBER)
-	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/member-verification")
 	memberVerification(@Param("id") id: string): Promise<Member> {
 		return this.membersService.memberVerification(id);
 	}
 
+	@ApiBearerAuth()
+	@ApiBody(updateMemberProfileBodyOptions)
+	@UseGuards(IsVerifiedGuard, UpdateMemberProfileGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(
-	// 	Permissions.UPDATE_MEMBER,
-	// 	Permissions.UPDATE_MEMBER_ME
-	// )
-	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/profile")
-	update(
+	updateProfile(
 		@Param("id") id: string,
-		@Body() updateMemberDto: UpdateMemberDto
+		@Body() updateMemberProfileDto: UpdateMemberProfileDto
 	): Promise<Member> {
-		return this.membersService.update(id, updateMemberDto);
+		return this.membersService.updateProfile(id, updateMemberProfileDto);
 	}
 
+	@ApiBearerAuth()
+	@ApiBody(updateMemberEmailBodyOptions)
+	@UseGuards(IsVerifiedGuard, UpdateMemberEmailGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(
-	// 	Permissions.UPDATE_MEMBER,
-	// 	Permissions.UPDATE_MEMBER_ME
-	// )
-	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/email")
 	updateMemberEmail(
 		@Param("id") id: string,
-		@Body() updateMemberEmailDto: UpdateMemberEmailDto
+		@Body(new UpdateMemberEmailPipe(updateMemberEmailSchema))
+		updateMemberEmailDto: UpdateMemberEmailDto
 	) {
 		return this.membersService.updateMemberEmail(id, updateMemberEmailDto);
 	}
 
-	@ApiOperation({ summary: "Update a member's roles" })
+	@ApiBearerAuth()
+	@ApiOperation({ summary: "Update member password, old password required" })
+	@ApiBody(updateMemberPasswordBodyOptions)
+	@UseGuards(IsVerifiedGuard, UpdateMemberPasswordGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(Permissions.UPDATE_MEMBER)
-	@UseGuards(IsVerifiedGuard)
-	@Patch("/:id/roles")
-	updateMemberRoles(
-		@Param("id") id: string,
-		@Body() updateMemberRolesDto: UpdateMemberRolesDto
-	) {
-		return this.membersService.updateMemberRoles(id, updateMemberRolesDto);
-	}
-
-	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(Permissions.UPDATE_MEMBER)
-	@UseGuards(IsVerifiedGuard)
-	@Patch("/:id/groups")
-	updateMemberGroups(
-		@Param("id") id: string,
-		@Body() updateMemberGroupsDto: UpdateMemberGroupsDto
-	) {
-		return this.membersService.updateMemberGroups(
-			id,
-			updateMemberGroupsDto
-		);
-	}
-
-	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(
-	// 	Permissions.UPDATE_MEMBER,
-	// 	Permissions.UPDATE_MEMBER_ME
-	// )
-	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/password")
 	updateMemberPassword(
 		@Param("id") id: string,
-		@Body() updateMemberPasswordDto: UpdateMemberPasswordDto
+		@Body(new UpdateMemberEmailPipe(updateMemberPasswordSchema))
+		updateMemberPasswordDto: UpdateMemberPasswordDto
 	) {
 		return this.membersService.updateMemberPassword(
 			id,
@@ -178,7 +147,7 @@ export class MembersController {
 	}
 
 	@UseGuards(IsVerifiedGuard)
-	@Put("updateAvatar")
+	@Put("update-avatar")
 	@UseInterceptors(FileInterceptor("file"))
 	async updateAvatar(
 		@Req() req: any,
@@ -187,7 +156,7 @@ export class MembersController {
 		return this.membersService.updateAvatar(req, file);
 	}
 
-	@Get("downloadAvatar/:id")
+	@Get("download-avatar/:id")
 	downloadAvatar(@Param("id") id: string, @Req() req: any, @Res() res: any) {
 		return this.membersService.downloadAvatar(id, req, res);
 	}
@@ -212,7 +181,7 @@ export class MembersController {
 	@UseGuards(NotFrozenGuard)
 	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/transfer-member-admin")
-	transferMemberAdmin(@Param("id") id: string): Promise<Member> {
+	transferMemberAdmin(@Param("id") id: string) {
 		console.log("transferMemberAdmin id: ", id);
 		return this.membersService.transferMemberAdmin(id);
 	}

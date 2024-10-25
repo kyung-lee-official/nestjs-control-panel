@@ -1,6 +1,7 @@
-import { IsBoolean } from "class-validator";
+import { z } from "zod";
 
-export class FreezeMemberDto {
-	@IsBoolean()
-	isFrozen: boolean;
-}
+export const freezeMemberSchema = z.object({
+	isFrozen: z.boolean(),
+});
+
+export type FreezeMemberDto = z.infer<typeof freezeMemberSchema>;

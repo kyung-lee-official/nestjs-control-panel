@@ -1,33 +1,40 @@
 import {
+	Injectable,
 	CanActivate,
 	ExecutionContext,
-	Injectable,
 	NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
+import { getCerbosPrincipal } from "src/utils/data";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable()
-export class GetServerSettingsGuard implements CanActivate {
+export class VerificationGuard implements CanActivate {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
 		const requester = req.requester;
-		const principal = {
-			...requester,
-			createdAt: requester.createdAt.toISOString(),
-			updatedAt: requester.updatedAt.toISOString(),
-		};
-		const resource =
-			await this.prismaService.memberServerSetting.findFirst();
-		if (!resource) {
-			throw new NotFoundException("Server settings not found");
-		}
+		const principal = getCerbosPrincipal(requester);
 
-		const action = "read";
+		const member = await this.prismaService.member.findUnique({
+			where: {
+				email: req.jwtPayload.email,
+			},
+		});
+		if (!member) {
+			throw new NotFoundException("Member not found");
+		}
+		const resource = {
+			...member,
+			createdAt: member.createdAt.toISOString(),
+			updatedAt: member.updatedAt.toISOString(),
+		};
+
+		const action = "update-verification";
+
 		const cerbosObject = {
 			principal: {
 				id: requester.id,
@@ -35,12 +42,14 @@ export class GetServerSettingsGuard implements CanActivate {
 				attributes: principal,
 			},
 			resource: {
-				kind: "internal:server-settings",
+				kind: "internal:members",
 				id: `${resource.id}`,
+				attributes: resource,
 			},
 			actions: [action],
 		};
 		const decision = await cerbos.checkResource(cerbosObject);
+
 		const result = !!decision.isAllowed(action);
 
 		return result;

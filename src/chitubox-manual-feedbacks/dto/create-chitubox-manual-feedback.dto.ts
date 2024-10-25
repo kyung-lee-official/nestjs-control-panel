@@ -1,16 +1,22 @@
-import { IsEnum, IsString, IsUrl, Matches } from "class-validator";
-import { ChituboxManualFeedbackPayload } from "../chitubox-manual-feedback-payload.enum";
+import { z } from "zod";
 
-export class CreateChituboxManualFeedbackDto {
-	@IsString()
-	pageId: string;
-
-	@IsUrl()
-	@Matches(/manual\.chitubox\.com/, {
-		message: "Illegal URL",
-	})	
-	url: string;
-
-	@IsEnum(ChituboxManualFeedbackPayload)
-	payload: ChituboxManualFeedbackPayload;
+export enum ChituboxManualFeedbackPayload {
+	USEFUL = "USEFUL",
+	USELESS = "USELESS",
 }
+
+export const createChituboxManualFeedbackSchema = z.object({
+	pageId: z.string(),
+	url: z.string().refine(
+		(value) => {
+			const urlRegex = /manual\.chitubox\.com/;
+			return urlRegex.test(value);
+		},
+		{ message: "Illegal URL" }
+	),
+	payload: z.nativeEnum(ChituboxManualFeedbackPayload),
+});
+
+export type CreateChituboxManualFeedbackDto = z.infer<
+	typeof createChituboxManualFeedbackSchema
+>;

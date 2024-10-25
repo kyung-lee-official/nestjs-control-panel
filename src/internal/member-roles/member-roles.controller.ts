@@ -12,7 +12,6 @@ import {
 	HttpCode,
 } from "@nestjs/common";
 import { MemberRolesService } from "./member-roles.service";
-import { UpdateMemberRoleDto } from "./dto/update-member-role.dto";
 import { RequiredMemberRoles } from "./decorators/required-member-roles.decorator";
 import { MemberRolesGuard } from "./guards/member-roles.guard";
 import { IsVerifiedGuard } from "../members/guards/is-verified.guard";

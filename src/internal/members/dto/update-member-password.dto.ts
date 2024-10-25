@@ -1,14 +1,23 @@
-import { IsString, Matches, MaxLength, MinLength } from "class-validator";
+import { z } from "zod";
 
-export class UpdateMemberPasswordDto {
-	@IsString()
-	oldPassword?: string;
-
-	@IsString()
-	@MinLength(8)
-	@MaxLength(32)
-	@Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-		message: "password is too weak"
+export const updateMemberPasswordSchema = z
+	.object({
+		oldPassword: z.string(),
+		newPassword: z
+			.string()
+			.min(8)
+			.max(32)
+			.refine(
+				(value) => {
+					const passwordRegex =
+						/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
+					return passwordRegex.test(value);
+				},
+				{ message: "password is too weak" }
+			),
 	})
-	newPassword?: string;
-}
+	.required();
+
+export type UpdateMemberPasswordDto = z.infer<
+	typeof updateMemberPasswordSchema
+>;

@@ -2,11 +2,11 @@ import {
 	Injectable,
 	CanActivate,
 	ExecutionContext,
-	BadRequestException,
-	UnauthorizedException,
+	NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
+import { getCerbosPrincipal } from "src/utils/data";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -17,24 +17,16 @@ export class FindMeGuard implements CanActivate {
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
 		const requester = req.requester;
-		const principal = {
-			...requester,
-			memberRoles: requester.memberRoles.map((role) => {
-				return {
-					id: role.id,
-					name: role.name,
-					superRoleId: role.superRoleId,
-				};
-			}),
-			createdAt: requester.createdAt.toISOString(),
-			updatedAt: requester.updatedAt.toISOString(),
-		};
+		const principal = getCerbosPrincipal(requester);
 
 		const member = await this.prismaService.member.findUnique({
 			where: {
 				email: req.jwtPayload.email,
 			},
 		});
+		if (!member) {
+			throw new NotFoundException("Member not found");
+		}
 		const resource = {
 			...member,
 			createdAt: member.createdAt.toISOString(),

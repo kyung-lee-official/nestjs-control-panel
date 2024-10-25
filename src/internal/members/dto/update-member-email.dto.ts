@@ -1,6 +1,9 @@
-import { IsEmail } from "class-validator";
+import { z } from "zod";
 
-export class UpdateMemberEmailDto {
-	@IsEmail()
-	email: string;
-}
+export const updateMemberEmailSchema = z
+	.object({
+		email: z.string().email().toLowerCase(),
+	})
+	.required();
+
+export type UpdateMemberEmailDto = z.infer<typeof updateMemberEmailSchema>;

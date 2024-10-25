@@ -8,12 +8,11 @@ import {
 	Query,
 } from "@nestjs/common";
 import { ChituboxManualFeedbacksService } from "./chitubox-manual-feedbacks.service";
-import { CreateChituboxManualFeedbackDto } from "./dto/create-chitubox-manual-feedback.dto";
-
 import { Iso8601DateRangeDto } from "./dto/iso8601-date-range.dto";
 import { IsVerifiedGuard } from "../internal/members/guards/is-verified.guard";
 import { ChituboxManualFeedback } from "@prisma/client";
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
+import { CreateChituboxManualFeedbackDto } from "./dto/create-chitubox-manual-feedback.dto";
 
 @Controller("chitubox-manual-feedbacks")
 export class ChituboxManualFeedbacksController {
@@ -26,7 +25,7 @@ export class ChituboxManualFeedbacksController {
 		@Body()
 		createChituboxManualFeedbackDto: CreateChituboxManualFeedbackDto,
 		@Headers() headers: any
-	): Promise<ChituboxManualFeedback> {
+	) {
 		return this.chituboxManualFeedbacksService.create(
 			createChituboxManualFeedbackDto,
 			headers

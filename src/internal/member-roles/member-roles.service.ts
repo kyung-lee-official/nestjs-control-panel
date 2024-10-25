@@ -5,7 +5,6 @@ import {
 	NotFoundException,
 	Scope,
 } from "@nestjs/common";
-import { UpdateMemberRoleDto } from "./dto/update-member-role.dto";
 import { REQUEST } from "@nestjs/core";
 
 import { ForbiddenError, subject } from "@casl/ability";
@@ -18,7 +17,7 @@ export class MemberRolesService {
 	constructor(
 		@Inject(REQUEST)
 		private request: any,
-		private readonly prismaService: PrismaService,
+		private readonly prismaService: PrismaService
 		// private caslAbilityFactory: CaslAbilityFactory
 	) {}
 

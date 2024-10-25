@@ -2,6 +2,7 @@ import {
 	BadRequestException,
 	Injectable,
 	InternalServerErrorException,
+	NotFoundException,
 } from "@nestjs/common";
 import { SeedServerDto } from "./dto/seed-server.dto";
 import { EmailService } from "../email/email.service";
@@ -103,6 +104,9 @@ export class ServerService {
 		}
 		const settings =
 			await this.prismaService.memberServerSetting.findFirst();
+		if (!settings) {
+			throw new NotFoundException("Server setting not found");
+		}
 		const updatedSettings =
 			await this.prismaService.memberServerSetting.update({
 				where: { id: settings.id },

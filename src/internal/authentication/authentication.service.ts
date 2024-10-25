@@ -58,7 +58,11 @@ export class AuthenticationService {
 				secret: process.env.SMTP_JWT_SECRET,
 			});
 		} catch (error) {
-			throw new UnauthorizedException(error.message);
+			if (error instanceof Error) {
+				throw new UnauthorizedException(error.message);
+			} else {
+				throw new UnauthorizedException("Unknown error");
+			}
 		}
 		const member = await this.prismaService.member.findUnique({
 			where: {
@@ -157,7 +161,11 @@ export class AuthenticationService {
 			});
 		} catch (error) {
 			console.error(error, "Failed to get Google OAuth2 token.");
-			throw new Error(error.message);
+			if (error instanceof Error) {
+				throw new Error(error.message);
+			} else {
+				throw new Error("Unknown error");
+			}
 		}
 
 		/* Decode id_token to get google user info */
@@ -263,12 +271,12 @@ export class AuthenticationService {
 
 	async getTencentCosTempCredential(): Promise<CredentialData> {
 		const config = {
-			secretId: process.env.SECRET_ID,
-			secretKey: process.env.SECRET_KEY,
+			secretId: process.env.SECRET_ID!,
+			secretKey: process.env.SECRET_KEY!,
 			proxy: "",
 			host: "sts.tencentcloudapi.com",
 			durationSeconds: 120,
-			bucket: process.env.BUCKET,
+			bucket: process.env.BUCKET!,
 			region: process.env.REGION,
 			allowPrefix: "*",
 		};

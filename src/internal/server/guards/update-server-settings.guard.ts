@@ -1,6 +1,12 @@
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import {
+	CanActivate,
+	ExecutionContext,
+	Injectable,
+	NotFoundException,
+} from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
+import { getCerbosPrincipal } from "src/utils/data";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -11,13 +17,12 @@ export class UpdateServerSettingsGuard implements CanActivate {
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
 		const requester = req.requester;
-		const principal = {
-			...requester,
-			createdAt: requester.createdAt.toISOString(),
-			updatedAt: requester.updatedAt.toISOString(),
-		};
+		const principal = getCerbosPrincipal(requester);
 		const resource =
 			await this.prismaService.memberServerSetting.findFirst();
+		if (!resource) {
+			throw new NotFoundException("Server settings not found");
+		}
 
 		const action = "update";
 		const cerbosObject = {

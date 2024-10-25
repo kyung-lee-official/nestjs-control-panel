@@ -1,11 +1,8 @@
-import { IsISO8601, IsOptional } from "class-validator";
+import { z } from "zod";
 
-export class Iso8601DateRangeDto {
-	@IsOptional()
-	@IsISO8601()
-	startDate: string;
+export const iso8601DateRangeSchema = z.object({
+	startDate: z.string().date().optional(),
+	endDate: z.string().date().optional(),
+});
 
-	@IsOptional()
-	@IsISO8601()
-	endDate: string;
-}
+export type Iso8601DateRangeDto = z.infer<typeof iso8601DateRangeSchema>;

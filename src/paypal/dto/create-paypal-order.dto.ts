@@ -1,9 +1,8 @@
-import { IsNumber, IsString } from "class-validator";
+import { z } from "zod";
 
-export class CreatePaypalOrderDto {
-	@IsString()
-	intent: "CAPTURE";
+export const createPaypalOrderSchema = z.object({
+	intent: z.literal("CAPTURE"),
+	productId: z.number(),
+});
 
-	@IsNumber()
-	productId: number;
-}
+export type CreatePaypalOrderDto = z.infer<typeof createPaypalOrderSchema>;

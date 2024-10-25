@@ -1,11 +1,10 @@
-import { IsEmail, IsOptional, IsString } from "class-validator";
+import { z } from "zod";
 
-export class FindMembersDto {
-	@IsEmail()
-	@IsOptional()
-	email?: string;
+export const findMembersSchema = z
+	.object({
+		email: z.string().email().toLowerCase(),
+		nickname: z.string(),
+	})
+	.required();
 
-	@IsString()
-	@IsOptional()
-	nickname?: string;
-}
+export type FindMembersDto = z.infer<typeof findMembersSchema>;

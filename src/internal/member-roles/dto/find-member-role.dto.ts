@@ -1,9 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsInt } from "class-validator";
+import { z } from "zod";
 
-export class FindMemberRoleDto {
-	@ApiProperty()
-	@IsInt({ each: true })
-	@IsArray()
-	roleIds: number[];
-}
+const findMemberRoleSchema = z.object({
+	roleIds: z.array(z.number().int()),
+});
+
+export type FindMemberRoleDto = z.infer<typeof findMemberRoleSchema>;
