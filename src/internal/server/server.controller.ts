@@ -25,7 +25,6 @@ import {
 	seedServerOperationOptions,
 } from "./swagger/seed-server.swagger";
 import { ExcludePasswordInterceptor } from "src/interceptors/exclude-password.interceptor";
-import { SeedServerPipe } from "./pipes/seed-server.pipe";
 import {
 	isSeededOkResponseOptions,
 	isSeededOperationOptions,
@@ -35,6 +34,7 @@ import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
 import { UpdateServerSettingsGuard } from "./guards/update-server-settings.guard";
 import { UpdateServerSettingsDto } from "./dto/update-server-settings.dto";
 import { updateServerSettingsBodyOptions } from "./swagger/update-server-settings.swagger";
+import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 
 @ApiTags("Server")
 @Controller("server")
@@ -45,7 +45,7 @@ export class ServerController {
 	@ApiOkResponse(seedServerOkResponseOptions)
 	@ApiBadRequestResponse(seedServerBadRequestResponseOptions)
 	@ApiBody(seedServerBodyOptions)
-	@UsePipes(new SeedServerPipe(seedServerSchema))
+	@UsePipes(new ZodValidationPipe(seedServerSchema))
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Post("seed")
 	async seed(@Body() seedServerDto: SeedServerDto) {

@@ -4,11 +4,8 @@ import {
 	BadRequestException,
 } from "@nestjs/common";
 import { ZodError, ZodSchema } from "zod";
-import { SeedServerDto } from "../dto/seed-server.dto";
 
-export class SeedServerPipe
-	implements PipeTransform<SeedServerDto, SeedServerDto>
-{
+export class ZodValidationPipe implements PipeTransform {
 	constructor(private schema: ZodSchema) {}
 
 	transform(value: unknown, metadata: ArgumentMetadata) {

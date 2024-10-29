@@ -27,12 +27,10 @@ import {
 	signUpOkResponseOptions,
 	signUpOperationOptions,
 } from "./swagger/signup.swagger";
-import { SignUpPipe } from "./pipes/signup.pipe";
 import {
 	signInBodyOptions,
 	signInOperationOptions,
 } from "./swagger/signin.swagger";
-import { SignInPipe } from "./pipes/signin.pipe";
 import { SignInDto, signInSchema } from "./dto/signin.dto";
 import { ExcludePasswordInterceptor } from "src/interceptors/exclude-password.interceptor";
 import { JwtGuard } from "./guards/jwt.guard";
@@ -70,6 +68,7 @@ import {
 	verifyEmailOperationOptions,
 } from "./swagger/verify-email.swagger";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
+import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 
 @ApiTags("Authentication")
 @Controller("authentication")
@@ -82,7 +81,7 @@ export class AuthenticationController {
 	@ApiBody(signUpBodyOptions)
 	@ApiOkResponse(signUpOkResponseOptions)
 	@ApiForbiddenResponse(signUpForbiddenResponseOptions)
-	@UsePipes(new SignUpPipe(signUpSchema))
+	@UsePipes(new ZodValidationPipe(signUpSchema))
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Post("sign-up")
 	async signUp(@Body() signUpDto: SignUpDto) {
@@ -101,7 +100,7 @@ export class AuthenticationController {
 
 	@ApiOperation(signInOperationOptions)
 	@ApiBody(signInBodyOptions)
-	@UsePipes(new SignInPipe(signInSchema))
+	@UsePipes(new ZodValidationPipe(signInSchema))
 	@Post("sign-in")
 	async signIn(@Body() signInDto: SignInDto) {
 		return await this.authenticationService.signIn(signInDto);

@@ -26,7 +26,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { NotFrozenGuard } from "./guards/not-frozen.guard";
 import { FindMembersDto } from "./dto/find-members.dto";
 import { Member } from "@prisma/client";
-import { ApiBearerAuth, ApiBody, ApiOperation } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { MemberWithoutPassword } from "../../utils/types";
 import { ExcludePasswordInterceptor } from "../../interceptors/exclude-password.interceptor";
 import { JwtGuard } from "../authentication/guards/jwt.guard";
@@ -42,7 +42,6 @@ import { VerificationGuard } from "./guards/verification.guard";
 import { UpdateMemberProfileDto } from "./dto/update-member-profile.dto";
 import { updateMemberProfileBodyOptions } from "./swagger/update-member-profile.swagger";
 import { UpdateMemberEmailGuard } from "./guards/update-member-email.guard";
-import { UpdateMemberEmailPipe } from "./pipes/update-member-email.pipe";
 import { updateMemberEmailBodyOptions } from "./swagger/update-member-email.swagger";
 import {
 	UpdateMemberPasswordDto,
@@ -51,7 +50,9 @@ import {
 import { updateMemberPasswordBodyOptions } from "./swagger/update-member-password.swagger";
 import { UpdateMemberPasswordGuard } from "./guards/update-member-password.guard";
 import { FreezeMemberDto } from "./dto/freeze-member.dto";
+import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 
+@ApiTags("Members")
 @UseGuards(JwtGuard)
 @Controller("members")
 export class MembersController {
@@ -123,7 +124,7 @@ export class MembersController {
 	@Patch("/:id/email")
 	updateMemberEmail(
 		@Param("id") id: string,
-		@Body(new UpdateMemberEmailPipe(updateMemberEmailSchema))
+		@Body(new ZodValidationPipe(updateMemberEmailSchema))
 		updateMemberEmailDto: UpdateMemberEmailDto
 	) {
 		return this.membersService.updateMemberEmail(id, updateMemberEmailDto);
@@ -137,7 +138,7 @@ export class MembersController {
 	@Patch("/:id/password")
 	updateMemberPassword(
 		@Param("id") id: string,
-		@Body(new UpdateMemberEmailPipe(updateMemberPasswordSchema))
+		@Body(new ZodValidationPipe(updateMemberPasswordSchema))
 		updateMemberPasswordDto: UpdateMemberPasswordDto
 	) {
 		return this.membersService.updateMemberPassword(
