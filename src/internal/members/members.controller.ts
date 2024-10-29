@@ -38,7 +38,7 @@ import {
 import { CreateMemberGuard } from "./guards/create-member.guard";
 import { FindMembersGuard } from "./guards/find-members.guard";
 import { UpdateMemberProfileGuard } from "./guards/update-member-profile.guard";
-import { VerificationGuard } from "./guards/verification.guard";
+import { MemberVerificationGuard } from "./guards/member-verification.guard";
 import { UpdateMemberProfileDto } from "./dto/update-member-profile.dto";
 import { updateMemberProfileBodyOptions } from "./swagger/update-member-profile.swagger";
 import { UpdateMemberEmailGuard } from "./guards/update-member-email.guard";
@@ -100,7 +100,7 @@ export class MembersController {
 	}
 
 	@ApiBearerAuth()
-	@UseGuards(IsVerifiedGuard, VerificationGuard)
+	@UseGuards(IsVerifiedGuard, MemberVerificationGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Patch("/:id/member-verification")
 	memberVerification(@Param("id") id: string): Promise<Member> {

@@ -11,7 +11,7 @@ import { getCerbosPrincipal } from "src/utils/data";
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable()
-export class VerificationGuard implements CanActivate {
+export class MemberVerificationGuard implements CanActivate {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -33,7 +33,7 @@ export class VerificationGuard implements CanActivate {
 			updatedAt: member.updatedAt.toISOString(),
 		};
 
-		const action = "update-verification";
+		const action = "verify";
 
 		const cerbosObject = {
 			principal: {
