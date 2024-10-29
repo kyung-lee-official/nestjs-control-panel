@@ -13,21 +13,14 @@ export class IsVerifiedGuard implements CanActivate {
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
-		if (req.jwtPayload) {
-			const requester = await this.prismaService.member.findUnique({
-				where: {
-					email: req.jwtPayload.email,
-				},
-			});
-			if (!requester) {
-				throw new UnauthorizedException("Invalid requester");
-			}
+		const requester = req.requester;
+		if (requester) {
 			if (!requester.isVerified) {
 				throw new UnauthorizedException("Requester is not verified");
 			}
 			return true;
 		} else {
-			throw new BadRequestException("Missing jwt payload");
+			throw new BadRequestException("Invalid requester");
 		}
 	}
 }
