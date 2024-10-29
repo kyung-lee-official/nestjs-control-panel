@@ -26,7 +26,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { NotFrozenGuard } from "./guards/not-frozen.guard";
 import { FindMembersDto } from "./dto/find-members.dto";
 import { Member } from "@prisma/client";
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
 import { MemberWithoutPassword } from "../../utils/types";
 import { ExcludePasswordInterceptor } from "../../interceptors/exclude-password.interceptor";
 import { JwtGuard } from "../authentication/guards/jwt.guard";
@@ -57,6 +57,7 @@ import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { findMembersByIdsBodyOptions } from "./swagger/find-members-by-ids.swagger";
 import { FreezeMemberGuard } from "./guards/freeze-member.guard";
 import { freezeMemberBodyOptions } from "./swagger/freeze-member.swagger";
+import { TransferAdminGuard } from "./guards/transfer-admin.guard";
 
 @ApiTags("Members")
 @ApiBearerAuth()
@@ -171,14 +172,10 @@ export class MembersController {
 	}
 
 	@ApiOperation({ summary: "Transfer member admin" })
+	@UseGuards(IsVerifiedGuard, NotFrozenGuard, TransferAdminGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(Permissions.TRANSFER_MEMBER_ADMIN)
-	@UseGuards(NotFrozenGuard)
-	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/transfer-member-admin")
 	transferMemberAdmin(@Param("id") id: string) {
-		console.log("transferMemberAdmin id: ", id);
 		return this.membersService.transferMemberAdmin(id);
 	}
 

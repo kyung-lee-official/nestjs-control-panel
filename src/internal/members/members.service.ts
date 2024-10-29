@@ -217,52 +217,32 @@ export class MembersService {
 	}
 
 	async transferMemberAdmin(id: string) {
-		console.log(" ========== id ========== ", id);
-
-		const { requester } = this.request;
-		// const ability =
-		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
-		const adminRole = await this.prismaService.memberRole.findUnique({
-			where: { id: "admin" },
-			include: {
-				members: true,
-			},
-		});
-
-		// if (requester.id !== admin.id) {
-		// 	throw new ForbiddenException(
-		// 		"You're not the admin, can't transfer ownership"
-		// 	);
-		// }
-
-		const requestee = await this.prismaService.member.findUnique({
-			where: { id: id },
-		});
-		if (!requestee) {
-			throw new NotFoundException("Member not found");
-		}
-		if (requestee.isFrozen) {
-			throw new ForbiddenException(
-				"Can't transfer ownership to a frozen member"
-			);
-		}
-
 		await this.prismaService.memberRole.update({
 			where: { id: "admin" },
 			data: {
 				members: {
-					set: { id: id },
+					set: [{ id: id }],
 				},
 			},
 		});
-		// await this.prismaService.memberGroup.update({
-		// 	where: { name: "everyone" },
-		// 	data: {
-		// 		owner: {
-		// 			connect: { id: id },
-		// 		},
-		// 	},
-		// });
+
+		/* Move the old admin to the default role if the old admin is not in any role */
+		const oldAdmin = await this.prismaService.member.findUnique({
+			where: { id: this.request.requester.id },
+			include: {
+				memberRoles: true,
+			},
+		});
+		if (oldAdmin?.memberRoles.length === 0) {
+			await this.prismaService.memberRole.update({
+				where: { id: "default" },
+				data: {
+					members: {
+						connect: { id: this.request.requester.id },
+					},
+				},
+			});
+		}
 
 		const newAdmin = await this.prismaService.member.findUnique({
 			where: { id: id },
