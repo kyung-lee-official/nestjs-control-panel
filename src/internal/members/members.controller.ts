@@ -26,7 +26,13 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { NotFrozenGuard } from "./guards/not-frozen.guard";
 import { FindMembersDto } from "./dto/find-members.dto";
 import { Member } from "@prisma/client";
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
+import {
+	ApiBearerAuth,
+	ApiBody,
+	ApiOperation,
+	ApiParam,
+	ApiTags,
+} from "@nestjs/swagger";
 import { MemberWithoutPassword } from "../../utils/types";
 import { ExcludePasswordInterceptor } from "../../interceptors/exclude-password.interceptor";
 import { JwtGuard } from "../authentication/guards/jwt.guard";
@@ -58,6 +64,7 @@ import { findMembersByIdsBodyOptions } from "./swagger/find-members-by-ids.swagg
 import { FreezeMemberGuard } from "./guards/freeze-member.guard";
 import { freezeMemberBodyOptions } from "./swagger/freeze-member.swagger";
 import { TransferAdminGuard } from "./guards/transfer-admin.guard";
+import { RemoveMemberGuard } from "./guards/remove-member.guard";
 
 @ApiTags("Members")
 @ApiBearerAuth()
@@ -179,9 +186,8 @@ export class MembersController {
 		return this.membersService.transferMemberAdmin(id);
 	}
 
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(Permissions.DELETE_MEMBER)
-	@UseGuards(IsVerifiedGuard)
+	@UseGuards(IsVerifiedGuard, RemoveMemberGuard)
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@Delete("/:id")
 	remove(@Param("id") id: string): Promise<Member> {
 		return this.membersService.remove(id);

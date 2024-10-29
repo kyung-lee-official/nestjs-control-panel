@@ -254,30 +254,6 @@ export class MembersService {
 	}
 
 	async remove(id: string): Promise<Member> {
-		const { requester } = this.request;
-		// const ability =
-		// 	await this.caslAbilityFactory.defineAbilityFor(requester);
-		const requestee = await this.prismaService.member.findUnique({
-			where: { id: id },
-			include: {
-				/* CASL need to check permissions as per memberRoles and memberGroups */
-				memberRoles: true,
-			},
-		});
-		if (!requestee) {
-			throw new NotFoundException("Member not found");
-		}
-		// try {
-		// 	ForbiddenError.from(ability).throwUnlessCan(
-		// 		Actions.DELETE,
-		// 		subject("Member", requestee)
-		// 	);
-		// } catch (error) {
-		// 	if (error instanceof ForbiddenError) {
-		// 		throw new ForbiddenException(error.message);
-		// 	}
-		// 	throw error;
-		// }
 		const deletedRequestee = await this.prismaService.member.delete({
 			where: { id: id },
 		});
