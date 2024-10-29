@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const updateMemberPasswordSchema = z
+export const updateMyPasswordSchema = z
 	.object({
 		oldPassword: z.string(),
 		newPassword: z
@@ -18,6 +18,6 @@ export const updateMemberPasswordSchema = z
 	})
 	.required();
 
-export type UpdateMemberPasswordDto = z.infer<
-	typeof updateMemberPasswordSchema
+export type UpdateMyPasswordDto = z.infer<
+	typeof updateMyPasswordSchema
 >;

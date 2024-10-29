@@ -8,7 +8,6 @@ import {
 	UnauthorizedException,
 } from "@nestjs/common/exceptions";
 import { UpdateMemberEmailDto } from "./dto/update-member-email.dto";
-import { UpdateMemberPasswordDto } from "./dto/update-member-password.dto";
 import { FindMembersByIdsDto } from "./dto/find-members-by-ids.dto";
 import { writeFile } from "fs/promises";
 import { existsSync, mkdirSync } from "fs";
@@ -19,6 +18,7 @@ import { FindMembersDto } from "./dto/find-members.dto";
 import { MemberWithoutPassword } from "../../utils/types";
 import { EmailService } from "../email/email.service";
 import { UpdateMemberProfileDto } from "./dto/update-member-profile.dto";
+import { UpdateMyPasswordDto } from "./dto/update-my-password.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class MembersService {
@@ -143,31 +143,29 @@ export class MembersService {
 		return member;
 	}
 
-	async updateMemberPassword(
-		id: string,
-		updateMemberPasswordDto: UpdateMemberPasswordDto
-	) {
-		// 	const { oldPassword, newPassword } = updateMemberPasswordDto;
-		// 	const isOldPasswordCorrect: boolean = await bcrypt.compare(
-		// 		oldPassword,
-		// 		requestee.password
-		// 	);
-		// 	if (isOldPasswordCorrect) {
-		// 		if (oldPassword === newPassword) {
-		// 			throw new BadRequestException(
-		// 				"The new password cannot be the same as the old password"
-		// 			);
-		// 		}
-		// 		const salt = await bcrypt.genSalt();
-		// 		const hashedPassword = await bcrypt.hash(newPassword, salt);
-		// 		const newRequestee = await this.prismaService.member.update({
-		// 			where: { id: id },
-		// 			data: { password: hashedPassword },
-		// 		});
-		// 		return newRequestee;
-		// 	} else {
-		// 		throw new UnauthorizedException();
-		// 	}
+	async updateMyPassword(updateMemberPasswordDto: UpdateMyPasswordDto) {
+		const { requester } = this.request;
+		const { oldPassword, newPassword } = updateMemberPasswordDto;
+		const isOldPasswordCorrect: boolean = await bcrypt.compare(
+			oldPassword,
+			requester.password
+		);
+		if (isOldPasswordCorrect) {
+			if (oldPassword === newPassword) {
+				throw new BadRequestException(
+					"The new password cannot be the same as the old password"
+				);
+			}
+			const salt = await bcrypt.genSalt();
+			const hashedPassword = await bcrypt.hash(newPassword, salt);
+			const newRequester = await this.prismaService.member.update({
+				where: { id: requester.id },
+				data: { password: hashedPassword },
+			});
+			return newRequester;
+		} else {
+			throw new UnauthorizedException("Incorrect password");
+		}
 	}
 
 	async updateAvatar(req: any, file: Express.Multer.File): Promise<any> {

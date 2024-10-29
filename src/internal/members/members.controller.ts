@@ -44,10 +44,13 @@ import { updateMemberProfileBodyOptions } from "./swagger/update-member-profile.
 import { UpdateMemberEmailGuard } from "./guards/update-member-email.guard";
 import { updateMemberEmailBodyOptions } from "./swagger/update-member-email.swagger";
 import {
-	UpdateMemberPasswordDto,
-	updateMemberPasswordSchema,
-} from "./dto/update-member-password.dto";
-import { updateMemberPasswordBodyOptions } from "./swagger/update-member-password.swagger";
+	UpdateMyPasswordDto,
+	updateMyPasswordSchema,
+} from "./dto/update-my-password.dto";
+import {
+	updateMyPasswordBodyOptions,
+	updateMyPasswordOperationOptions,
+} from "./swagger/update-my-password.swagger";
 import { UpdateMemberPasswordGuard } from "./guards/update-member-password.guard";
 import { FreezeMemberDto } from "./dto/freeze-member.dto";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
@@ -133,20 +136,16 @@ export class MembersController {
 	}
 
 	@ApiBearerAuth()
-	@ApiOperation({ summary: "Update member password, old password required" })
-	@ApiBody(updateMemberPasswordBodyOptions)
+	@ApiOperation(updateMyPasswordOperationOptions)
+	@ApiBody(updateMyPasswordBodyOptions)
 	@UseGuards(IsVerifiedGuard, UpdateMemberPasswordGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@Patch("/:id/password")
-	updateMemberPassword(
-		@Param("id") id: string,
-		@Body(new ZodValidationPipe(updateMemberPasswordSchema))
-		updateMemberPasswordDto: UpdateMemberPasswordDto
+	@Patch("/my-password")
+	updateMyPassword(
+		@Body(new ZodValidationPipe(updateMyPasswordSchema))
+		updateMyPasswordDto: UpdateMyPasswordDto
 	) {
-		return this.membersService.updateMemberPassword(
-			id,
-			updateMemberPasswordDto
-		);
+		return this.membersService.updateMyPassword(updateMyPasswordDto);
 	}
 
 	@UseGuards(IsVerifiedGuard)
