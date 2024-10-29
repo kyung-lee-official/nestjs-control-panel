@@ -51,6 +51,7 @@ import { updateMemberPasswordBodyOptions } from "./swagger/update-member-passwor
 import { UpdateMemberPasswordGuard } from "./guards/update-member-password.guard";
 import { FreezeMemberDto } from "./dto/freeze-member.dto";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
+import { findMembersByIdsBodyOptions } from "./swagger/find-members-by-ids.swagger";
 
 @ApiTags("Members")
 @UseGuards(JwtGuard)
@@ -78,10 +79,11 @@ export class MembersController {
 	}
 
 	@ApiBearerAuth()
+	@ApiBody(findMembersByIdsBodyOptions)
 	@UseGuards(IsVerifiedGuard, FindMembersGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(IsVerifiedGuard)
-	@Get("ids")
+	@Post("find-members-by-ids/:id")
 	findMembersByIds(
 		@Body() findMembersByIdsDto: FindMembersByIdsDto
 	): Promise<Member[]> {
