@@ -52,17 +52,19 @@ import {
 	updateMyPasswordOperationOptions,
 } from "./swagger/update-my-password.swagger";
 import { UpdateMemberPasswordGuard } from "./guards/update-member-password.guard";
-import { FreezeMemberDto } from "./dto/freeze-member.dto";
+import { FreezeMemberDto, freezeMemberSchema } from "./dto/freeze-member.dto";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { findMembersByIdsBodyOptions } from "./swagger/find-members-by-ids.swagger";
+import { FreezeMemberGuard } from "./guards/freeze-member.guard";
+import { freezeMemberBodyOptions } from "./swagger/freeze-member.swagger";
 
 @ApiTags("Members")
+@ApiBearerAuth()
 @UseGuards(JwtGuard)
 @Controller("members")
 export class MembersController {
 	constructor(private readonly membersService: MembersService) {}
 
-	@ApiBearerAuth()
 	@ApiOperation(createMemberOperationOptions)
 	@ApiBody(createMemberBodyOptions)
 	@UseInterceptors(ExcludePasswordInterceptor)
@@ -72,7 +74,6 @@ export class MembersController {
 		return this.membersService.create(createMemberDto);
 	}
 
-	@ApiBearerAuth()
 	@UseGuards(IsVerifiedGuard, FindMembersGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@HttpCode(200)
@@ -81,7 +82,6 @@ export class MembersController {
 		return this.membersService.find(findMembersDto);
 	}
 
-	@ApiBearerAuth()
 	@ApiBody(findMembersByIdsBodyOptions)
 	@UseGuards(IsVerifiedGuard, FindMembersGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
@@ -93,7 +93,6 @@ export class MembersController {
 		return this.membersService.findMembersByIds(findMembersByIdsDto);
 	}
 
-	@ApiBearerAuth()
 	@ApiOperation({ summary: "Find me by token" })
 	@UseGuards(FindMeGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
@@ -102,7 +101,6 @@ export class MembersController {
 		return this.membersService.findMe();
 	}
 
-	@ApiBearerAuth()
 	@UseGuards(IsVerifiedGuard, MemberVerificationGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Patch("/:id/member-verification")
@@ -110,7 +108,6 @@ export class MembersController {
 		return this.membersService.memberVerification(id);
 	}
 
-	@ApiBearerAuth()
 	@ApiBody(updateMemberProfileBodyOptions)
 	@UseGuards(IsVerifiedGuard, UpdateMemberProfileGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
@@ -122,7 +119,6 @@ export class MembersController {
 		return this.membersService.updateProfile(id, updateMemberProfileDto);
 	}
 
-	@ApiBearerAuth()
 	@ApiBody(updateMemberEmailBodyOptions)
 	@UseGuards(IsVerifiedGuard, UpdateMemberEmailGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
@@ -135,7 +131,6 @@ export class MembersController {
 		return this.membersService.updateMemberEmail(id, updateMemberEmailDto);
 	}
 
-	@ApiBearerAuth()
 	@ApiOperation(updateMyPasswordOperationOptions)
 	@ApiBody(updateMyPasswordBodyOptions)
 	@UseGuards(IsVerifiedGuard, UpdateMemberPasswordGuard)
@@ -163,20 +158,19 @@ export class MembersController {
 		return this.membersService.downloadAvatar(id, req, res);
 	}
 
+	@ApiBody(freezeMemberBodyOptions)
+	@UseGuards(IsVerifiedGuard, FreezeMemberGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// @RequiredPermissions(Permissions.UPDATE_MEMBER)
-	@UseGuards(IsVerifiedGuard)
 	@Patch("/:id/freeze")
 	freeze(
 		@Param("id") id: string,
-		@Body() freezeMemberDto: FreezeMemberDto
+		@Body(new ZodValidationPipe(freezeMemberSchema))
+		freezeMemberDto: FreezeMemberDto
 	): Promise<Member> {
 		return this.membersService.freeze(id, freezeMemberDto);
 	}
 
 	@ApiOperation({ summary: "Transfer member admin" })
-	@ApiBearerAuth()
 	@UseInterceptors(ExcludePasswordInterceptor)
 	// @UseGuards(PermissionsGuard)
 	// @RequiredPermissions(Permissions.TRANSFER_MEMBER_ADMIN)
