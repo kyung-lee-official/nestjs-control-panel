@@ -26,13 +26,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { NotFrozenGuard } from "./guards/not-frozen.guard";
 import { FindMembersDto } from "./dto/find-members.dto";
 import { Member } from "@prisma/client";
-import {
-	ApiBearerAuth,
-	ApiBody,
-	ApiOperation,
-	ApiParam,
-	ApiTags,
-} from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { MemberWithoutPassword } from "../../utils/types";
 import { ExcludePasswordInterceptor } from "../../interceptors/exclude-password.interceptor";
 import { JwtGuard } from "../authentication/guards/jwt.guard";
