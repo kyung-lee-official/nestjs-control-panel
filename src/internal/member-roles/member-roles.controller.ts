@@ -5,94 +5,90 @@ import {
 	Body,
 	Patch,
 	Param,
-	Delete,
 	UseGuards,
 	UseInterceptors,
 	ParseIntPipe,
 	HttpCode,
+	Delete,
 } from "@nestjs/common";
 import { MemberRolesService } from "./member-roles.service";
-import { RequiredMemberRoles } from "./decorators/required-member-roles.decorator";
-import { MemberRolesGuard } from "./guards/member-roles.guard";
+import { CreateMemberRoleGuard } from "./guards/create-member-role.guard";
 import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
-import { MemberRole } from "@prisma/client";
-import { FindMemberRoleDto } from "./dto/find-member-role.dto";
-import { ApiBearerAuth, ApiBody, ApiOperation } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ExcludePasswordInterceptor } from "../../interceptors/exclude-password.interceptor";
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
+import {
+	findMemberRolesByIdsOperationOptions,
+	findMembersRolesByIdsBodyOptions,
+} from "./swagger/find-member-roles.swagger";
+import { FindMemberRolesByIdsGuard } from "./guards/find-member-roles-by-ids.guard";
+import {
+	FindMemberRolesByIdsDto,
+	findMemberRolesByIdsSchema,
+} from "./dto/find-member-roles-by-ids.dto";
+import {
+	UpdateMemberRoleByIdDto,
+	updateMemberRoleByIdSchema,
+} from "./dto/update-member-role-by-id.dto";
+import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
+import { FindMemberRoleByIdGuard } from "./guards/find-member-role-by-id.guard";
+import { UpdateMemberRoleByIdGuard } from "./guards/update-member-role-by-id.guard";
+import { RemoveMemberRoleByIdGuard } from "./guards/remove-member-role-by-id.guard";
 
+@ApiTags("Member Roles")
+@ApiBearerAuth()
 @UseGuards(JwtGuard)
 @Controller("member-roles")
 export class MemberRolesController {
 	constructor(private readonly memberRolesService: MemberRolesService) {}
 
-	// @UseGuards(MemberRolesGuard)
-	// @RequiredMemberRoles("admin")
-	// @UseGuards(IsVerifiedGuard)
-	// @Get("/updateAdminPermissions")
-	// updateAdminPermissions(): Promise<MemberRole> {
-	// 	return this.memberRolesService.updateAdminPermissions();
-	// }
+	@ApiOperation({ summary: "Create member role" })
+	@UseGuards(IsVerifiedGuard, CreateMemberRoleGuard)
+	@Post()
+	create() {
+		return this.memberRolesService.create();
+	}
 
-	// @UseGuards(PermissionsGuard)
-	// // @RequiredPermissions(Permission.CREATE_MEMBER_ROLE)
-	// @UseGuards(IsVerifiedGuard)
-	// @Post()
-	// create() {
-	// 	return this.memberRolesService.create();
-	// }
+	@ApiOperation(findMemberRolesByIdsOperationOptions)
+	@ApiBody(findMembersRolesByIdsBodyOptions)
+	@UseGuards(IsVerifiedGuard, FindMemberRolesByIdsGuard)
+	@UseInterceptors(ExcludePasswordInterceptor)
+	@HttpCode(200)
+	@Post("/find-member-roles-by-ids")
+	findMemberRolesByIds(
+		@Body(new ZodValidationPipe(findMemberRolesByIdsSchema))
+		findMemberRolesByIdsDto: FindMemberRolesByIdsDto
+	) {
+		return this.memberRolesService.findMemberRolesByIds(
+			findMemberRolesByIdsDto
+		);
+	}
 
-	// @ApiOperation({ summary: "Find member-roles by ids" })
-	// @ApiBody({
-	// 	type: FindMemberRoleDto,
-	// 	examples: {
-	// 		"Find member-roles by ids": {
-	// 			value: {
-	// 				roleIds: [],
-	// 			},
-	// 		},
-	// 	},
-	// })
-	// @ApiBearerAuth()
-	// @UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// // @RequiredPermissions(Permission.GET_MEMBER_ROLES)
-	// @UseGuards(IsVerifiedGuard)
-	// @HttpCode(200)
-	// @Post("/find")
-	// find(@Body() findMemberRoleDto: FindMemberRoleDto): Promise<MemberRole[]> {
-	// 	return this.memberRolesService.find(findMemberRoleDto);
-	// }
+	@UseGuards(IsVerifiedGuard, FindMemberRoleByIdGuard)
+	@UseInterceptors(ExcludePasswordInterceptor)
+	@Get(":id")
+	findMemberRoleById(@Param("id") id: string) {
+		return this.memberRolesService.findMemberRoleById(id);
+	}
 
-	// @UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// // @RequiredPermissions(Permission.GET_MEMBER_ROLES)
-	// @UseGuards(IsVerifiedGuard)
-	// @Get(":id")
-	// findOne(@Param("id") id: string) {
-	// 	return this.memberRolesService.findOne(+id);
-	// }
+	@UseGuards(IsVerifiedGuard, UpdateMemberRoleByIdGuard)
+	@UseInterceptors(ExcludePasswordInterceptor)
+	@Patch(":id")
+	updateMemberRoleById(
+		@Param("id") id: string,
+		@Body(new ZodValidationPipe(updateMemberRoleByIdSchema))
+		updateMemberRoleDto: UpdateMemberRoleByIdDto
+	) {
+		return this.memberRolesService.updateMemberRoleById(
+			id,
+			updateMemberRoleDto
+		);
+	}
 
-	// @UseInterceptors(ExcludePasswordInterceptor)
-	// @UseGuards(PermissionsGuard)
-	// // @RequiredPermissions(Permission.UPDATE_MEMBER_ROLE)
-	// @UseGuards(IsVerifiedGuard)
-	// @Patch(":id")
-	// updateMemberRoleById(
-	// 	@Param("id", ParseIntPipe) id: number,
-	// 	@Body() updateMemberRoleDto: UpdateMemberRoleDto
-	// ): Promise<MemberRole> {
-	// 	return this.memberRolesService.updateMemberRoleById(
-	// 		id,
-	// 		updateMemberRoleDto
-	// 	);
-	// }
-
-	// @UseGuards(PermissionsGuard)
-	// // @RequiredPermissions(Permission.DELETE_MEMBER_ROLE)
-	// @UseGuards(IsVerifiedGuard)
-	// @Delete(":id")
-	// remove(@Param("id", ParseIntPipe) id: number) {
-	// 	return this.memberRolesService.remove(id);
-	// }
+	@UseGuards(IsVerifiedGuard, RemoveMemberRoleByIdGuard)
+	@UseInterceptors(ExcludePasswordInterceptor)
+	@Delete(":id")
+	remove(@Param("id") id: string) {
+		return this.memberRolesService.remove(id);
+	}
 }
