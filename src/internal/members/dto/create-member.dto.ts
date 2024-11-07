@@ -3,7 +3,7 @@ import { z } from "zod";
 export const createMemberSchema = z
 	.object({
 		email: z.string().email(),
-		nickname: z.string(),
+		name: z.string(),
 		password: z
 			.string()
 			.min(8)

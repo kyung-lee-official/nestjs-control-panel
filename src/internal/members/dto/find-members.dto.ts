@@ -3,7 +3,7 @@ import { z } from "zod";
 export const findMembersSchema = z
 	.object({
 		email: z.string().email().toLowerCase(),
-		nickname: z.string(),
+		name: z.string(),
 	})
 	.required();
 

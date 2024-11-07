@@ -7,7 +7,7 @@ Content-Type: application/json
 
 {
 	"email": "kyung@cbd-3d.com",
-	"nickname": "Kyung",
+	"name": "Kyung",
 	"password": "1234Abcd!"
 }
 
@@ -17,7 +17,7 @@ Content-Type: application/json
 
 {
 	"email": "kyung.lee@qq.com",
-	"nickname": "Lee",
+	"name": "Lee",
 	"password": "1234Abcd!"
 }
 

@@ -66,9 +66,9 @@ describe("Seed flow, check if the admin is verified", () => {
 		expect(adminRes.body.password).toBe(undefined);
 	});
 
-	it("GET /members/me check nickname", async () => {
-		expect(adminRes.body.nickname).toBe(
-			process.env.E2E_TEST_ADMIN_NICKNAME
+	it("GET /members/me check name", async () => {
+		expect(adminRes.body.name).toBe(
+			process.env.E2E_TEST_ADMIN_NAME
 		);
 	});
 

@@ -35,7 +35,7 @@ export class MembersService {
 	 * @returns member
 	 */
 	async create(createMemberDto: CreateMemberDto) {
-		let { email, password, nickname } = createMemberDto;
+		let { email, password, name } = createMemberDto;
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
@@ -43,7 +43,7 @@ export class MembersService {
 			data: {
 				email,
 				password: hashedPassword,
-				nickname,
+				name,
 				memberRoles: {
 					connect: { id: "default" },
 				},
@@ -63,11 +63,11 @@ export class MembersService {
 	 * @returns member
 	 */
 	async find(findMembersDto: FindMembersDto): Promise<Member[]> {
-		const { email, nickname } = findMembersDto;
+		const { email, name } = findMembersDto;
 		let members = await this.prismaService.member.findMany({
 			where: {
 				email: email ? email : undefined,
-				nickname: nickname ? { contains: nickname } : undefined,
+				name: name ? { contains: name } : undefined,
 			},
 			include: {
 				memberRoles: true,

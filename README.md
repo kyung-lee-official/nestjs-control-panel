@@ -90,10 +90,10 @@ To delete connections from third-party apps:
 ### members
 
 -   [x] Create a new member manually by email, `CREATE_MEMBER` permission required.
--   [x] Conditionally find members by query email (case nonsensitive), nickname, or member-role ids. member-role ids delimited by comma `','`, use **or** logic. `GET_MEMBERS` permission required.
+-   [x] Conditionally find members by query email (case nonsensitive), name, or member-role ids. member-role ids delimited by comma `','`, use **or** logic. `GET_MEMBERS` permission required.
 -   [x] Get members by ids, `GET_MEMBERS` permission required.
 -   [x] Get me, `GET_MEMBER_ME` permission required.
--   [x] Update a member by id, can update `nickname`, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
+-   [x] Update a member by id, can update `name`, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
 -   [x] Update email by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
 -   [x] Update member-roles by member id, `UPDATE_MEMBER_ROLE` permission required.
 -   [x] Update password by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.

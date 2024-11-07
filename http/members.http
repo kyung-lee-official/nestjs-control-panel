@@ -5,14 +5,14 @@ Authorization: {{$dotenv AUTHORIZATION}}
 
 {
 	"email": "qwer@cbd-3d.com",
-	"nickname": "Qwer",
+	"name": "Qwer",
 	"password": "1234Abcd!"
 }
 
 ### Find members
 GET {{$dotenv LOCAL_HOST}}/members
 	# ?email=KyUnG@cbd-3d.com
-	# &nickname=Kyung
+	# &name=Kyung
 	# &roleIds=10
 Authorization: {{$dotenv AUTHORIZATION}}
 
@@ -47,7 +47,7 @@ PATCH {{$dotenv LOCAL_HOST}}/members/profile/8b9136f6-902d-4799-b5c2-5f6caebac8b
 Content-Type: application/x-www-form-urlencoded
 Authorization: {{$dotenv AUTHORIZATION}}
 
-nickname=Kyung
+name=Kyung
 
 ### Update a member email
 PATCH {{$dotenv LOCAL_HOST}}/members/email/8b9136f6-902d-4799-b5c2-5f6caebac8b6

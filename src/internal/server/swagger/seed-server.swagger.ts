@@ -7,12 +7,12 @@ import { SeedServerDto } from "../dto/seed-server.dto";
 
 export class SeedServer {
 	email: string;
-	nickname: string;
+	name: string;
 	password: string;
 
 	constructor(dto: SeedServerDto) {
 		this.email = dto.email;
-		this.nickname = dto.nickname;
+		this.name = dto.name;
 		this.password = dto.password;
 	}
 }
@@ -30,7 +30,7 @@ export const seedServerBodyOptions: ApiBodyOptions = {
 		"Seed server": {
 			value: {
 				email: "admin@example.com",
-				nickname: "admin",
+				name: "admin",
 				password: "1234Abcd!",
 			},
 		},
@@ -46,7 +46,7 @@ export const seedServerOkResponseOptions: ApiResponseOptions = {
 					value: {
 						id: "563e0a5d-dbcc-4ac3-acda-0ec841d78056",
 						email: "kyung.lee@qq.com",
-						nickname: "Kyung",
+						name: "Kyung",
 						isVerified: false,
 						isFrozen: false,
 						createdAt: "2024-10-22T04:59:12.984Z",

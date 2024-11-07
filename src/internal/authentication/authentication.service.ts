@@ -27,7 +27,7 @@ export class AuthenticationService {
 	) {}
 
 	async signUp(signUpDto: SignUpDto) {
-		const { email, nickname, password } = signUpDto;
+		const { email, name, password } = signUpDto;
 
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
@@ -35,7 +35,7 @@ export class AuthenticationService {
 			data: {
 				email,
 				password: hashedPassword,
-				nickname,
+				name,
 				isVerified: false,
 				isFrozen: false,
 				memberRoles: {
@@ -201,7 +201,7 @@ export class AuthenticationService {
 						data: {
 							email,
 							password: hashedPassword,
-							nickname: googleUser.name,
+							name: googleUser.name,
 							isVerified: true,
 							memberRoles: {
 								connect: [{ id: "default", name: "default" }],
@@ -244,7 +244,7 @@ export class AuthenticationService {
 					data: {
 						email,
 						password: hashedPassword,
-						nickname: googleUser.name,
+						name: googleUser.name,
 						isVerified: true,
 						memberRoles: {
 							create: [

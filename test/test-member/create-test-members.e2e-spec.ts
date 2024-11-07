@@ -49,7 +49,7 @@ describe("Check server status", () => {
 			.post("/member-auth/signup")
 			.send({
 				email: process.env.E2E_TEST_MEMBER_1_EMAIL,
-				nickname: process.env.E2E_TEST_MEMBER_1_NICKNAME,
+				name: process.env.E2E_TEST_MEMBER_1_NAME,
 				password: "1234Abcd!",
 			})
 			.expect(403);
@@ -92,7 +92,7 @@ describe("Sign up new members", () => {
 			.post("/member-auth/signup")
 			.send({
 				email: upperCaseEmail,
-				nickname: process.env.E2E_TEST_MEMBER_1_NICKNAME,
+				name: process.env.E2E_TEST_MEMBER_1_NAME,
 				password: "1234Abcd!",
 			})
 			.expect(201);
@@ -106,9 +106,9 @@ describe("Sign up new members", () => {
 		expect(member1Res.body.password).toBe(undefined);
 	});
 
-	it("Check nickname of 'test member 1'", () => {
-		expect(member1Res.body.nickname).toBe(
-			process.env.E2E_TEST_MEMBER_1_NICKNAME
+	it("Check name of 'test member 1'", () => {
+		expect(member1Res.body.name).toBe(
+			process.env.E2E_TEST_MEMBER_1_NAME
 		);
 	});
 
@@ -134,14 +134,14 @@ describe("Sign up new members", () => {
 			.post("/member-auth/signup")
 			.send({
 				email: process.env.E2E_TEST_MEMBER_2_EMAIL,
-				nickname: process.env.E2E_TEST_MEMBER_2_NICKNAME,
+				name: process.env.E2E_TEST_MEMBER_2_NAME,
 				password: "1234Abcd!",
 			})
 			.expect(201);
 		expect(member2Res.body.email).toBe(process.env.E2E_TEST_MEMBER_2_EMAIL);
 		expect(member2Res.body.password).toBe(undefined);
-		expect(member2Res.body.nickname).toBe(
-			process.env.E2E_TEST_MEMBER_2_NICKNAME
+		expect(member2Res.body.name).toBe(
+			process.env.E2E_TEST_MEMBER_2_NAME
 		);
 		expect(member2Res.body.memberGroups[0].name).toBe("everyone");
 		expect(member2Res.body.ownedGroups).toEqual([]);

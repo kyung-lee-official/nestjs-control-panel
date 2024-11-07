@@ -7,12 +7,12 @@ import { SignUpDto } from "../dto/signup.dto";
 
 export class SignUp {
 	email: string;
-	nickname: string;
+	name: string;
 	password: string;
 
 	constructor(dto: SignUpDto) {
 		this.email = dto.email;
-		this.nickname = dto.nickname;
+		this.name = dto.name;
 		this.password = dto.password;
 	}
 }
@@ -28,7 +28,7 @@ export const signUpBodyOptions: ApiBodyOptions = {
 		"Sign Up Member": {
 			value: {
 				email: "member@example.com",
-				nickname: "member",
+				name: "member",
 				password: "1234Abcd!",
 			},
 		},
@@ -44,7 +44,7 @@ export const signUpOkResponseOptions: ApiResponseOptions = {
 					value: {
 						id: "d08926c7-7315-4858-9b38-f0ae9dbff20f",
 						email: "910006803@qq.com",
-						nickname: "910006803",
+						name: "910006803",
 						isVerified: false,
 						isFrozen: false,
 						createdAt: "2024-10-22T05:04:18.077Z",

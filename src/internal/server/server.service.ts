@@ -29,7 +29,7 @@ export class ServerService {
 				allowGoogleSignIn: false,
 			},
 		});
-		let { email, password, nickname } = seedServerDto;
+		let { email, password, name } = seedServerDto;
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
@@ -38,7 +38,7 @@ export class ServerService {
 			data: {
 				email,
 				password: hashedPassword,
-				nickname,
+				name,
 				isVerified: false,
 				memberRoles: {
 					create: [

@@ -46,7 +46,7 @@ describe("Seed flow, before verification (e2e)", () => {
 	it("POST /member-auth/seed simple password should be failed", async () => {
 		seedRes = await req.post("/member-auth/seed").send({
 			email: process.env.E2E_TEST_ADMIN_EMAIL,
-			nickname: process.env.E2E_TEST_ADMIN_NICKNAME,
+			name: process.env.E2E_TEST_ADMIN_NAME,
 			password: "1234",
 		});
 		expect(seedRes.status).toBe(400);
@@ -61,7 +61,7 @@ describe("Seed flow, before verification (e2e)", () => {
 		console.log(`✉️ Using email: ${upperCaseEmail}`);
 		seedRes = await req.post("/member-auth/seed").send({
 			email: upperCaseEmail,
-			nickname: process.env.E2E_TEST_ADMIN_NICKNAME,
+			name: process.env.E2E_TEST_ADMIN_NAME,
 			password: "1234Abcd!",
 		});
 		expect(seedRes.status).toBe(201);
@@ -72,8 +72,8 @@ describe("Seed flow, before verification (e2e)", () => {
 		expect(seedRes.body.password).toBe(undefined);
 	}, 30000);
 
-	it("POST /member-auth/seed check nickname", async () => {
-		expect(seedRes.body.nickname).toBe(process.env.E2E_TEST_ADMIN_NICKNAME);
+	it("POST /member-auth/seed check name", async () => {
+		expect(seedRes.body.name).toBe(process.env.E2E_TEST_ADMIN_NAME);
 	});
 
 	it("POST /member-auth/seed admin should be added to 'everyone' member-group", async () => {
@@ -100,7 +100,7 @@ describe("Seed flow, before verification (e2e)", () => {
 	it("POST /member-auth/seed seed again should be failed", async () => {
 		const res = await req.post("/member-auth/seed").send({
 			email: process.env.E2E_TEST_ADMIN_EMAIL,
-			nickname: process.env.E2E_TEST_ADMIN_NICKNAME,
+			name: process.env.E2E_TEST_ADMIN_NAME,
 			password: "1234Abcd!",
 		});
 		expect(res.status).toBe(400);
@@ -165,7 +165,7 @@ describe("Operations should be forbidden before verification", () => {
 			.set("Authorization", `Bearer ${adminAccessToken}`)
 			.send({
 				email: process.env.E2E_TEST_MEMBER_3_EMAIL,
-				nickname: process.env.E2E_TEST_MEMBER_3_NICKNAME,
+				name: process.env.E2E_TEST_MEMBER_3_NAME,
 				password: "1234Abcd!",
 			});
 		expect(res.status).toBe(403);

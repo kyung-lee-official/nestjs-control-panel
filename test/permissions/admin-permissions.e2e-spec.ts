@@ -163,7 +163,7 @@ describe("member-group test flow for admin", () => {
 });
 
 let testMemberRes: request.Response;
-describe(`Create a member test member '${process.env.E2E_TEST_MEMBER_3_NICKNAME}' flow`, () => {
+describe(`Create a member test member '${process.env.E2E_TEST_MEMBER_3_NAME}' flow`, () => {
 	it("POST /members/create create a member manually by email", async () => {
 		const upperCaseEmail =
 			process.env.E2E_TEST_MEMBER_3_EMAIL.toUpperCase();
@@ -172,7 +172,7 @@ describe(`Create a member test member '${process.env.E2E_TEST_MEMBER_3_NICKNAME}
 			.set("Authorization", `Bearer ${adminAccessToken}`)
 			.send({
 				email: upperCaseEmail,
-				nickname: process.env.E2E_TEST_MEMBER_3_NICKNAME,
+				name: process.env.E2E_TEST_MEMBER_3_NAME,
 				password: "1234Abcd!",
 			});
 		expect(testMemberRes.status).toBe(201);
@@ -194,7 +194,7 @@ describe(`Create a member test member '${process.env.E2E_TEST_MEMBER_3_NICKNAME}
 	});
 });
 
-describe(`member-group test flow for '${process.env.E2E_TEST_MEMBER_3_NICKNAME}'`, () => {
+describe(`member-group test flow for '${process.env.E2E_TEST_MEMBER_3_NAME}'`, () => {
 	it("GET /member-groups get all member-groups", async () => {
 		const res = await req
 			.get("/member-groups")
@@ -222,7 +222,7 @@ describe(`member-group test flow for '${process.env.E2E_TEST_MEMBER_3_NICKNAME}'
 	});
 });
 
-describe(`Delete the test member '${process.env.E2E_TEST_MEMBER_3_NICKNAME}'`, () => {
+describe(`Delete the test member '${process.env.E2E_TEST_MEMBER_3_NAME}'`, () => {
 	it("DELETE /members/:id delete the test member", async () => {
 		const testMemberId = testMemberRes.body.id;
 		const res = await req
