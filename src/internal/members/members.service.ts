@@ -135,7 +135,7 @@ export class MembersService {
 		const { email } = updateMemberEmailDto;
 		const member = await this.prismaService.member.update({
 			where: { id: id },
-			data: { email: email },
+			data: { email: email, isVerified: false },
 			include: {
 				memberRoles: true,
 			},

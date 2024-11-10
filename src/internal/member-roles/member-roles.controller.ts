@@ -7,7 +7,6 @@ import {
 	Param,
 	UseGuards,
 	UseInterceptors,
-	ParseIntPipe,
 	HttpCode,
 	Delete,
 } from "@nestjs/common";
@@ -43,7 +42,7 @@ export class MemberRolesController {
 	constructor(private readonly memberRolesService: MemberRolesService) {}
 
 	@ApiOperation({ summary: "Create member role" })
-	@UseGuards(IsVerifiedGuard, CreateMemberRoleGuard)
+	@UseGuards(CreateMemberRoleGuard)
 	@Post()
 	create() {
 		return this.memberRolesService.create();
@@ -51,7 +50,7 @@ export class MemberRolesController {
 
 	@ApiOperation(findMemberRolesByIdsOperationOptions)
 	@ApiBody(findMembersRolesByIdsBodyOptions)
-	@UseGuards(IsVerifiedGuard, FindMemberRolesByIdsGuard)
+	@UseGuards(FindMemberRolesByIdsGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@HttpCode(200)
 	@Post("/find-member-roles-by-ids")
@@ -64,14 +63,14 @@ export class MemberRolesController {
 		);
 	}
 
-	@UseGuards(IsVerifiedGuard, FindMemberRoleByIdGuard)
+	@UseGuards(FindMemberRoleByIdGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Get(":id")
 	findMemberRoleById(@Param("id") id: string) {
 		return this.memberRolesService.findMemberRoleById(id);
 	}
 
-	@UseGuards(IsVerifiedGuard, UpdateMemberRoleByIdGuard)
+	@UseGuards(UpdateMemberRoleByIdGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Patch(":id")
 	updateMemberRoleById(
@@ -85,7 +84,7 @@ export class MemberRolesController {
 		);
 	}
 
-	@UseGuards(IsVerifiedGuard, RemoveMemberRoleByIdGuard)
+	@UseGuards(RemoveMemberRoleByIdGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Delete(":id")
 	remove(@Param("id") id: string) {

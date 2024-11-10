@@ -30,11 +30,11 @@ import {
 	isSeededOperationOptions,
 } from "./swagger/is-seeded.swagger";
 import { JwtGuard } from "../authentication/guards/jwt.guard";
-import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
 import { UpdateServerSettingsGuard } from "./guards/update-server-settings.guard";
 import { UpdateServerSettingsDto } from "./dto/update-server-settings.dto";
 import { updateServerSettingsBodyOptions } from "./swagger/update-server-settings.swagger";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
+import { IsVerifiedGuard } from "../authentication/guards/is-verified.guard";
 
 @ApiTags("Server")
 @Controller("server")

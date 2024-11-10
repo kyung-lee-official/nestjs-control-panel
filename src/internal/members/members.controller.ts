@@ -21,7 +21,6 @@ import {
 } from "./dto/update-member-email.dto";
 import { FindMembersByIdsDto } from "./dto/find-members-by-ids.dto";
 import { CreateMemberDto } from "./dto/create-member.dto";
-import { IsVerifiedGuard } from "./guards/is-verified.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { NotFrozenGuard } from "./guards/not-frozen.guard";
 import { FindMembersDto } from "./dto/find-members.dto";
@@ -70,13 +69,13 @@ export class MembersController {
 	@ApiOperation(createMemberOperationOptions)
 	@ApiBody(createMemberBodyOptions)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(IsVerifiedGuard, CreateMemberGuard)
+	@UseGuards(CreateMemberGuard)
 	@Post("/create")
 	create(@Body() createMemberDto: CreateMemberDto) {
 		return this.membersService.create(createMemberDto);
 	}
 
-	@UseGuards(IsVerifiedGuard, FindMembersGuard)
+	@UseGuards(FindMembersGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@HttpCode(200)
 	@Post("/find")
@@ -85,9 +84,8 @@ export class MembersController {
 	}
 
 	@ApiBody(findMembersByIdsBodyOptions)
-	@UseGuards(IsVerifiedGuard, FindMembersGuard)
+	@UseGuards(FindMembersGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@UseGuards(IsVerifiedGuard)
 	@Post("find-members-by-ids/:id")
 	findMembersByIds(
 		@Body() findMembersByIdsDto: FindMembersByIdsDto
@@ -103,7 +101,7 @@ export class MembersController {
 		return this.membersService.findMe();
 	}
 
-	@UseGuards(IsVerifiedGuard, MemberVerificationGuard)
+	@UseGuards(MemberVerificationGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Patch("/:id/member-verification")
 	memberVerification(@Param("id") id: string): Promise<Member> {
@@ -111,7 +109,7 @@ export class MembersController {
 	}
 
 	@ApiBody(updateMemberProfileBodyOptions)
-	@UseGuards(IsVerifiedGuard, UpdateMemberProfileGuard)
+	@UseGuards(UpdateMemberProfileGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Patch("/:id/profile")
 	updateProfile(
@@ -122,7 +120,7 @@ export class MembersController {
 	}
 
 	@ApiBody(updateMemberEmailBodyOptions)
-	@UseGuards(IsVerifiedGuard, UpdateMemberEmailGuard)
+	@UseGuards(UpdateMemberEmailGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Patch("/:id/email")
 	updateMemberEmail(
@@ -135,7 +133,7 @@ export class MembersController {
 
 	@ApiOperation(updateMyPasswordOperationOptions)
 	@ApiBody(updateMyPasswordBodyOptions)
-	@UseGuards(IsVerifiedGuard, UpdateMemberPasswordGuard)
+	@UseGuards(UpdateMemberPasswordGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Patch("/my-password")
 	updateMyPassword(
@@ -145,7 +143,7 @@ export class MembersController {
 		return this.membersService.updateMyPassword(updateMyPasswordDto);
 	}
 
-	@UseGuards(IsVerifiedGuard)
+	@UseGuards()
 	@Put("update-avatar")
 	@UseInterceptors(FileInterceptor("file"))
 	async updateAvatar(
@@ -161,7 +159,7 @@ export class MembersController {
 	}
 
 	@ApiBody(freezeMemberBodyOptions)
-	@UseGuards(IsVerifiedGuard, FreezeMemberGuard)
+	@UseGuards(FreezeMemberGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Patch("/:id/freeze")
 	freeze(
@@ -173,14 +171,14 @@ export class MembersController {
 	}
 
 	@ApiOperation({ summary: "Transfer member admin" })
-	@UseGuards(IsVerifiedGuard, NotFrozenGuard, TransferAdminGuard)
+	@UseGuards(NotFrozenGuard, TransferAdminGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Patch("/:id/transfer-member-admin")
 	transferMemberAdmin(@Param("id") id: string) {
 		return this.membersService.transferMemberAdmin(id);
 	}
 
-	@UseGuards(IsVerifiedGuard, RemoveMemberGuard)
+	@UseGuards(RemoveMemberGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Delete("/:id")
 	remove(@Param("id") id: string): Promise<Member> {
