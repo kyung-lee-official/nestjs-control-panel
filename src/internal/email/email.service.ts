@@ -112,7 +112,7 @@ export class EmailService {
 			},
 		});
 
-		const jwt = this.jwtService.sign({ newEmail });
+		const jwt = this.jwtService.sign({ email: newEmail });
 
 		const payload = {
 			newEmail: newEmail,
