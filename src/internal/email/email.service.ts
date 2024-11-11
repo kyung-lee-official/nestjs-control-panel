@@ -9,8 +9,8 @@ import { JwtService } from "@nestjs/jwt";
 import { MailerService } from "@nestjs-modules/mailer";
 import { VerifyEmailDto } from "../authentication/dto/verify-email.dto";
 import { PrismaService } from "src/prisma/prisma.service";
-import { SendUpdateEmailVerificationRequestDto } from "./dto/send-update-email-verification-request.dto";
 import { ForgetPasswordDto } from "./dto/forget-password.dto";
+import { ChangeEmailDto } from "./dto/change-email.dto";
 
 @Injectable()
 export class EmailService {
@@ -85,11 +85,11 @@ export class EmailService {
 		}
 	}
 
-	async sendUpdateEmailVerificationRequest(
+	async changeEmail(
 		requesterEmail: string,
-		updateEmailRequestDto: SendUpdateEmailVerificationRequestDto
-	) {
-		const { newEmail } = updateEmailRequestDto;
+		changeEmailDto: ChangeEmailDto
+	): Promise<{ isSent: boolean; jwt: string }> {
+		const { newEmail } = changeEmailDto;
 		if (requesterEmail === newEmail) {
 			throw new BadRequestException(
 				"New email is the same as the old one"
@@ -102,10 +102,22 @@ export class EmailService {
 			throw new BadRequestException("Email already exists");
 		}
 
+		await this.prismaService.member.update({
+			where: {
+				email: requesterEmail,
+			},
+			data: {
+				email: newEmail,
+				isVerified: false,
+			},
+		});
+
+		const jwt = this.jwtService.sign({ newEmail });
+
 		const payload = {
-			email: requesterEmail,
 			newEmail: newEmail,
 		};
+
 		const token: string = this.jwtService.sign(payload, {
 			secret: process.env.SMTP_JWT_SECRET,
 			expiresIn: "1d",
@@ -142,31 +154,28 @@ export class EmailService {
 			);
 		}
 
-		return { isSent: true };
+		return { isSent: true, jwt: jwt };
 	}
 
-	async verifyNewEmail(verifyEmailDto: VerifyEmailDto) {
+	async verifyNewEmail(
+		verifyEmailDto: VerifyEmailDto
+	): Promise<{ isVerified: boolean }> {
 		const { verificationToken } = verifyEmailDto;
 		const payload = this.jwtService.verify(verificationToken, {
 			secret: process.env.SMTP_JWT_SECRET,
 		});
-		const { email, newEmail } = payload;
-		const member = await this.prismaService.member.findUnique({
+		const { newEmail } = payload;
+		const member = await this.prismaService.member.update({
 			where: {
-				email: email,
+				email: newEmail,
+			},
+			data: {
+				isVerified: true,
 			},
 		});
 		if (!member) {
 			throw new BadRequestException("Member not found");
 		}
-		await this.prismaService.member.update({
-			where: {
-				email: email,
-			},
-			data: {
-				email: newEmail,
-			},
-		});
 		return { isVerified: true };
 	}
 

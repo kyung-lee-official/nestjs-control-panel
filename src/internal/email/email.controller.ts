@@ -10,17 +10,6 @@ import {
 } from "@nestjs/swagger";
 import { JwtGuard } from "../authentication/guards/jwt.guard";
 import { sendVerificationEmailOperationOptions } from "./swagger/send-verification-email.swagger";
-import {
-	sendUpdateEmailVerificationRequestApiBodyOptions,
-	sendUpdateEmailVerificationRequestApiOkResponseOptions,
-	sendUpdateEmailVerificationRequestApiOperationOptions,
-} from "./swagger/send-update-email-verification-request";
-import { SendUpdateEmailVerificationRequestDto } from "./dto/send-update-email-verification-request.dto";
-import {
-	verifyNewEmailApiBodyOptions,
-	verifyNewEmailApiOperationOptions,
-	verifyNewEmailOkResponseOptions,
-} from "./swagger/verify-new-email.swagger";
 import { VerifyNewEmailDto } from "./dto/verify-new-email.dto";
 import {
 	forgetPasswordApiBodyOptions,
@@ -28,6 +17,18 @@ import {
 	forgetPasswordNotFoundApiResponseOptions,
 } from "./swagger/forget-password.swagger";
 import { ForgetPasswordDto } from "./dto/forget-password.dto";
+import { ChangeEmailDto, changeEmailSchema } from "./dto/change-email.dto";
+import {
+	verifyNewEmailApiBodyOptions,
+	verifyNewEmailApiOperationOptions,
+	verifyNewEmailOkResponseOptions,
+} from "./swagger/verify-new-email.swagger";
+import {
+	changeEmailApiBodyOptions,
+	changeEmailApiOkResponseOptions,
+	changeEmailApiOperationOptions,
+} from "./swagger/change-email.swagger";
+import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 
 @ApiTags("Email")
 @Controller("email")
@@ -44,20 +45,18 @@ export class EmailController {
 	}
 
 	@ApiBearerAuth()
-	@ApiOperation(sendUpdateEmailVerificationRequestApiOperationOptions)
-	@ApiBody(sendUpdateEmailVerificationRequestApiBodyOptions)
-	@ApiOkResponse(sendUpdateEmailVerificationRequestApiOkResponseOptions)
+	@ApiOperation(changeEmailApiOperationOptions)
+	@ApiBody(changeEmailApiBodyOptions)
+	@ApiOkResponse(changeEmailApiOkResponseOptions)
 	@UseGuards(JwtGuard)
-	@Patch("/send-update-email-verification-request")
-	sendUpdateEmailVerificationRequest(
+	@Patch("/change-email")
+	changeEmail(
 		@Req() req: any,
-		@Body() updateEmailRequestDto: SendUpdateEmailVerificationRequestDto
-	): Promise<{ isSent: boolean }> {
+		@Body(new ZodValidationPipe(changeEmailSchema))
+		changeEmailDto: ChangeEmailDto
+	) {
 		const { email } = req.jwtPayload;
-		return this.emailService.sendUpdateEmailVerificationRequest(
-			email,
-			updateEmailRequestDto
-		);
+		return this.emailService.changeEmail(email, changeEmailDto);
 	}
 
 	@ApiOperation(verifyNewEmailApiOperationOptions)

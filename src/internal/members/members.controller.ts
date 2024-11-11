@@ -119,18 +119,6 @@ export class MembersController {
 		return this.membersService.updateProfile(id, updateMemberProfileDto);
 	}
 
-	@ApiBody(updateMemberEmailBodyOptions)
-	@UseGuards(UpdateMemberEmailGuard)
-	@UseInterceptors(ExcludePasswordInterceptor)
-	@Patch("/:id/email")
-	updateMemberEmail(
-		@Param("id") id: string,
-		@Body(new ZodValidationPipe(updateMemberEmailSchema))
-		updateMemberEmailDto: UpdateMemberEmailDto
-	) {
-		return this.membersService.updateMemberEmail(id, updateMemberEmailDto);
-	}
-
 	@ApiOperation(updateMyPasswordOperationOptions)
 	@ApiBody(updateMyPasswordBodyOptions)
 	@UseGuards(UpdateMemberPasswordGuard)

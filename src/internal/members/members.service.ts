@@ -128,21 +128,6 @@ export class MembersService {
 		return member;
 	}
 
-	async updateMemberEmail(
-		id: string,
-		updateMemberEmailDto: UpdateMemberEmailDto
-	) {
-		const { email } = updateMemberEmailDto;
-		const member = await this.prismaService.member.update({
-			where: { id: id },
-			data: { email: email, isVerified: false },
-			include: {
-				memberRoles: true,
-			},
-		});
-		return member;
-	}
-
 	async updateMyPassword(updateMemberPasswordDto: UpdateMyPasswordDto) {
 		const { requester } = this.request;
 		const { oldPassword, newPassword } = updateMemberPasswordDto;
