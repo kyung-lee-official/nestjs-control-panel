@@ -141,10 +141,10 @@ export class EmailService {
 				subject:
 					"Please verify your new email address 📧" /* subject line */,
 				text: textTemplate(
-					`${process.env.FRONTEND_HOST}/member-auth/newEmailVerification?token=${token}`
+					`${process.env.FRONTEND_HOST}/auth/new-email-verification?token=${token}`
 				) /* plain text body */,
 				html: htmlTemplate(
-					`${process.env.FRONTEND_HOST}/member-auth/newEmailVerification?token=${token}`
+					`${process.env.FRONTEND_HOST}/auth/new-email-verification?token=${token}`
 				) /* html body */,
 			});
 		} catch (error) {
