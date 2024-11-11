@@ -1,8 +1,8 @@
 ### Check is seeded
-GET {{$dotenv LOCAL_HOST}}/member-auth/isSeeded
+GET {{$dotenv LOCAL_HOST}}/authentication/isSeeded
 
 ### Seed
-POST {{$dotenv LOCAL_HOST}}/member-auth/seed
+POST {{$dotenv LOCAL_HOST}}/authentication/seed
 Content-Type: application/json
 
 {
@@ -12,7 +12,7 @@ Content-Type: application/json
 }
 
 ### Sign up
-POST {{$dotenv LOCAL_HOST}}/member-auth/signup
+POST {{$dotenv LOCAL_HOST}}/authentication/signup
 Content-Type: application/json
 
 {
@@ -22,7 +22,7 @@ Content-Type: application/json
 }
 
 ### Sign in
-POST {{$dotenv LOCAL_HOST}}/member-auth/signin
+POST {{$dotenv LOCAL_HOST}}/authentication/signin
 Content-Type: application/json
 
 {
@@ -31,17 +31,17 @@ Content-Type: application/json
 }
 
 ### Check is signed in
-GET {{$dotenv LOCAL_HOST}}/member-auth/isSignedIn
+GET {{$dotenv LOCAL_HOST}}/authentication/is-signed-in
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Send verification email
-POST {{$dotenv LOCAL_HOST}}/member-auth/sendVerificationEmail
+POST {{$dotenv LOCAL_HOST}}/authentication/sendVerificationEmail
 Content-Type: application/json
 Authorization: {{$dotenv AUTHORIZATION}}
 
 ### Test send initial password email
-POST {{$dotenv LOCAL_HOST}}/member-auth/testSendInitialPasswordEmail
+POST {{$dotenv LOCAL_HOST}}/authentication/testSendInitialPasswordEmail
 Content-Type: application/json
 
 {
@@ -49,7 +49,7 @@ Content-Type: application/json
 }
 
 ### Test verify email
-POST {{$dotenv LOCAL_HOST}}/member-auth/verifyEmail
+POST {{$dotenv LOCAL_HOST}}/authentication/verifyEmail
 Content-Type: application/json
 
 {
@@ -57,7 +57,7 @@ Content-Type: application/json
 }
 
 ### Test verify new email
-PATCH {{$dotenv LOCAL_HOST}}/member-auth/verifyNewEmail
+PATCH {{$dotenv LOCAL_HOST}}/authentication/verifyNewEmail
 Content-Type: application/json
 
 {
