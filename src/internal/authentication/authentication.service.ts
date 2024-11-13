@@ -5,6 +5,8 @@ import {
 	InternalServerErrorException,
 	NotFoundException,
 	UnauthorizedException,
+	Scope,
+	Inject,
 } from "@nestjs/common";
 import { SignUpDto } from "./dto/signup.dto";
 import { SignInDto } from "./dto/signin.dto";
@@ -17,10 +19,14 @@ import { generatePassword } from "src/utils/algorithms";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { CredentialData, getCredential } from "qcloud-cos-sts";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
+import { UpdateMyPasswordDto } from "./dto/update-my-password.dto";
+import { REQUEST } from "@nestjs/core";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class AuthenticationService {
 	constructor(
+		@Inject(REQUEST)
+		private readonly request: any,
 		private readonly prismaService: PrismaService,
 		private readonly jwtService: JwtService,
 		private readonly emailService: EmailService
@@ -111,6 +117,31 @@ export class AuthenticationService {
 		const payload = { email };
 		const jwt: string = this.jwtService.sign(payload);
 		return { jwt };
+	}
+
+	async updateMyPassword(updateMemberPasswordDto: UpdateMyPasswordDto) {
+		const { requester } = this.request;
+		const { oldPassword, newPassword } = updateMemberPasswordDto;
+		const isOldPasswordCorrect: boolean = await bcrypt.compare(
+			oldPassword,
+			requester.password
+		);
+		if (isOldPasswordCorrect) {
+			if (oldPassword === newPassword) {
+				throw new BadRequestException(
+					"The new password cannot be the same as the old password"
+				);
+			}
+			const salt = await bcrypt.genSalt();
+			const hashedPassword = await bcrypt.hash(newPassword, salt);
+			const newRequester = await this.prismaService.member.update({
+				where: { id: requester.id },
+				data: { password: hashedPassword },
+			});
+			return newRequester;
+		} else {
+			throw new UnauthorizedException("Incorrect password");
+		}
 	}
 
 	async resetPassword(

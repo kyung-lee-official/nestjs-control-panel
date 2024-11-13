@@ -15,10 +15,6 @@ import {
 	HttpCode,
 } from "@nestjs/common";
 import { MembersService } from "./members.service";
-import {
-	UpdateMemberEmailDto,
-	updateMemberEmailSchema,
-} from "./dto/update-member-email.dto";
 import { FindMembersByIdsDto } from "./dto/find-members-by-ids.dto";
 import { CreateMemberDto } from "./dto/create-member.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -40,17 +36,6 @@ import { UpdateMemberProfileGuard } from "./guards/update-member-profile.guard";
 import { MemberVerificationGuard } from "./guards/member-verification.guard";
 import { UpdateMemberProfileDto } from "./dto/update-member-profile.dto";
 import { updateMemberProfileBodyOptions } from "./swagger/update-member-profile.swagger";
-import { UpdateMemberEmailGuard } from "./guards/update-member-email.guard";
-import { updateMemberEmailBodyOptions } from "./swagger/update-member-email.swagger";
-import {
-	UpdateMyPasswordDto,
-	updateMyPasswordSchema,
-} from "./dto/update-my-password.dto";
-import {
-	updateMyPasswordBodyOptions,
-	updateMyPasswordOperationOptions,
-} from "./swagger/update-my-password.swagger";
-import { UpdateMemberPasswordGuard } from "./guards/update-member-password.guard";
 import { FreezeMemberDto, freezeMemberSchema } from "./dto/freeze-member.dto";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { findMembersByIdsBodyOptions } from "./swagger/find-members-by-ids.swagger";
@@ -117,18 +102,6 @@ export class MembersController {
 		@Body() updateMemberProfileDto: UpdateMemberProfileDto
 	): Promise<Member> {
 		return this.membersService.updateProfile(id, updateMemberProfileDto);
-	}
-
-	@ApiOperation(updateMyPasswordOperationOptions)
-	@ApiBody(updateMyPasswordBodyOptions)
-	@UseGuards(UpdateMemberPasswordGuard)
-	@UseInterceptors(ExcludePasswordInterceptor)
-	@Patch("/my-password")
-	updateMyPassword(
-		@Body(new ZodValidationPipe(updateMyPasswordSchema))
-		updateMyPasswordDto: UpdateMyPasswordDto
-	) {
-		return this.membersService.updateMyPassword(updateMyPasswordDto);
 	}
 
 	@UseGuards()

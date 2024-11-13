@@ -18,6 +18,4 @@ export const updateMyPasswordSchema = z
 	})
 	.required();
 
-export type UpdateMyPasswordDto = z.infer<
-	typeof updateMyPasswordSchema
->;
+export type UpdateMyPasswordDto = z.infer<typeof updateMyPasswordSchema>;

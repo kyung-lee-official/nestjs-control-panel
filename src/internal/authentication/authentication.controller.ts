@@ -5,6 +5,7 @@ import {
 	UsePipes,
 	UseInterceptors,
 	Get,
+	Patch,
 	Req,
 	UseGuards,
 	Res,
@@ -69,6 +70,15 @@ import {
 } from "./swagger/verify-email.swagger";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
+import {
+	UpdateMyPasswordDto,
+	updateMyPasswordSchema,
+} from "./dto/update-my-password.dto";
+import {
+	updateMyPasswordBodyOptions,
+	updateMyPasswordOperationOptions,
+} from "./swagger/update-my-password.swagger";
+import { UpdateMyPasswordGuard } from "./guards/update-member-password.guard";
 
 @ApiTags("Authentication")
 @Controller("authentication")
@@ -123,6 +133,19 @@ export class AuthenticationController {
 	@Get("refresh-jwt")
 	async refreshJwt(@Req() req: any) {
 		return await this.authenticationService.refreshJwt(req);
+	}
+
+	@ApiOperation(updateMyPasswordOperationOptions)
+	@ApiBody(updateMyPasswordBodyOptions)
+	@UseGuards(UpdateMyPasswordGuard)
+	@UseInterceptors(ExcludePasswordInterceptor)
+	@Patch("/my-password")
+	@UseGuards(JwtGuard)
+	updateMyPassword(
+		@Body(new ZodValidationPipe(updateMyPasswordSchema))
+		updateMyPasswordDto: UpdateMyPasswordDto
+	) {
+		return this.authenticationService.updateMyPassword(updateMyPasswordDto);
 	}
 
 	@ApiOperation(resetPasswordApiOperationOptions)
