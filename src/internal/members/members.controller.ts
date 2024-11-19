@@ -47,7 +47,7 @@ import { RemoveMemberGuard } from "./guards/remove-member.guard";
 @ApiTags("Members")
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
-@Controller("members")
+@Controller("internal/members")
 export class MembersController {
 	constructor(private readonly membersService: MembersService) {}
 
