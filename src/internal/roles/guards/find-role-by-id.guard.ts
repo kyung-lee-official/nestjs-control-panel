@@ -43,7 +43,7 @@ export class FindRoleByIdGuard implements CanActivate {
 		const cerbosObject = {
 			principal: {
 				id: requester.id,
-				roles: requester.roles.map((role) => role.id),
+				roles: requester.memberRole.map((role) => role.id),
 				attributes: principal,
 			},
 			resource: resource,
