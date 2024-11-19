@@ -37,7 +37,7 @@ import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { IsVerifiedGuard } from "../authentication/guards/is-verified.guard";
 
 @ApiTags("Server")
-@Controller("server")
+@Controller("internal/server")
 export class ServerController {
 	constructor(private readonly serverService: ServerService) {}
 
@@ -78,7 +78,7 @@ export class ServerController {
 
 	@ApiBearerAuth()
 	@ApiBody(updateServerSettingsBodyOptions)
-	@UseGuards(JwtGuard, IsVerifiedGuard, UpdateServerSettingsGuard)
+	@UseGuards(JwtGuard, UpdateServerSettingsGuard)
 	@Patch("settings")
 	updateServerSettings(
 		@Body() updateServerSettingsDto: UpdateServerSettingsDto

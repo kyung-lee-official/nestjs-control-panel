@@ -3,11 +3,11 @@ import { REQUEST } from "@nestjs/core";
 
 import { PrismaService } from "../../prisma/prisma.service";
 import { MemberRole } from "@prisma/client";
-import { FindMemberRolesByIdsDto } from "./dto/find-member-roles-by-ids.dto";
-import { UpdateMemberRoleByIdDto } from "./dto/update-member-role-by-id.dto";
+import { FindRolesByIdsDto } from "./dto/find-roles-by-ids.dto";
+import { UpdateRoleByIdDto } from "./dto/update-role-by-id.dto";
 
 @Injectable({ scope: Scope.REQUEST })
-export class MemberRolesService {
+export class RolesService {
 	constructor(
 		@Inject(REQUEST)
 		private request: any,
@@ -49,10 +49,8 @@ export class MemberRolesService {
 		return role;
 	}
 
-	async findMemberRolesByIds(
-		findMemberRolesByIdsDto: FindMemberRolesByIdsDto
-	) {
-		const { roleIds } = findMemberRolesByIdsDto;
+	async findRolesByIds(findRolesByIdsDto: FindRolesByIdsDto) {
+		const { roleIds } = findRolesByIdsDto;
 		const roles = await this.prismaService.memberRole.findMany({
 			where: roleIds.length
 				? {
@@ -68,7 +66,7 @@ export class MemberRolesService {
 		return roles;
 	}
 
-	async findMemberRoleById(id: string) {
+	async findRoleById(id: string) {
 		const role = await this.prismaService.memberRole.findUnique({
 			where: {
 				id: id,
@@ -78,16 +76,16 @@ export class MemberRolesService {
 			},
 		});
 		if (!role) {
-			throw new NotFoundException("member-role not found");
+			throw new NotFoundException("role not found");
 		}
 		return role;
 	}
 
-	async updateMemberRoleById(
+	async updateRoleById(
 		id: string,
-		updateMemberRoleDto: UpdateMemberRoleByIdDto
+		updateRoleDto: UpdateRoleByIdDto
 	): Promise<MemberRole> {
-		const { name, superRoleId, memberIds } = updateMemberRoleDto;
+		const { name, superRoleId, ids } = updateRoleDto;
 		// if (name) {
 		// 	if (name.toLowerCase() === "admin") {
 		// 		throw new BadRequestException(
@@ -101,7 +99,7 @@ export class MemberRolesService {
 		// 	}
 		// 	if (name === "") {
 		// 		throw new BadRequestException(
-		// 			"member-role name can not be empty"
+		// 			"role name can not be empty"
 		// 		);
 		// 	}
 		// }
@@ -113,7 +111,7 @@ export class MemberRolesService {
 					connect: superRoleId ? { id: superRoleId } : undefined,
 				},
 				members: {
-					connect: memberIds.map((id) => ({ id })),
+					connect: ids.map((id) => ({ id })),
 				},
 			},
 		});
@@ -121,9 +119,9 @@ export class MemberRolesService {
 	}
 
 	async remove(id: string) {
-		const deletedMemberRole = await this.prismaService.memberRole.delete({
+		const deletedRole = await this.prismaService.memberRole.delete({
 			where: { id: id },
 		});
-		return deletedMemberRole;
+		return deletedRole;
 	}
 }

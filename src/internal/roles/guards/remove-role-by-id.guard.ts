@@ -11,7 +11,7 @@ import { GRPC as Cerbos } from "@cerbos/grpc";
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable()
-export class UpdateMemberRoleByIdGuard implements CanActivate {
+export class RemoveRoleByIdGuard implements CanActivate {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async canActivate(context: ExecutionContext) {
@@ -19,7 +19,7 @@ export class UpdateMemberRoleByIdGuard implements CanActivate {
 		const requester = req.requester;
 		const principal = getCerbosPrincipal(requester);
 
-		const action = "update";
+		const action = "remove";
 
 		const role = await this.prismaService.memberRole.findUnique({
 			where: {
@@ -31,7 +31,7 @@ export class UpdateMemberRoleByIdGuard implements CanActivate {
 		}
 
 		const resource = {
-			kind: "internal:member-roles",
+			kind: "internal:roles",
 			id: role.id,
 			attributes: {
 				...role,
@@ -43,7 +43,7 @@ export class UpdateMemberRoleByIdGuard implements CanActivate {
 		const cerbosObject = {
 			principal: {
 				id: requester.id,
-				roles: requester.memberRoles.map((role) => role.id),
+				roles: requester.roles.map((role) => role.id),
 				attributes: principal,
 			},
 			resource: resource,

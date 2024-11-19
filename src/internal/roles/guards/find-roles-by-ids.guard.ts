@@ -6,7 +6,7 @@ import { GRPC as Cerbos } from "@cerbos/grpc";
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable()
-export class FindMemberRolesByIdsGuard implements CanActivate {
+export class FindRolesByIdsGuard implements CanActivate {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async canActivate(context: ExecutionContext) {
@@ -25,7 +25,7 @@ export class FindMemberRolesByIdsGuard implements CanActivate {
 		});
 		const resources = roles.map((role) => ({
 			resource: {
-				kind: "internal:member-roles",
+				kind: "internal:roles",
 				id: role.id,
 			},
 			actions: [action],
@@ -34,14 +34,12 @@ export class FindMemberRolesByIdsGuard implements CanActivate {
 		const cerbosObject = {
 			principal: {
 				id: requester.id,
-				roles: requester.memberRoles.map((role) => role.id),
+				roles: requester.roles.map((role) => role.id),
 				attributes: principal,
 			},
 			resources: resources,
 		};
 		const decision = await cerbos.checkResources(cerbosObject);
-
-		console.log(decision);
 
 		return false;
 	}
