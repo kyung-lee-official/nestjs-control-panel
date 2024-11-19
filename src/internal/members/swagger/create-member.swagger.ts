@@ -20,7 +20,14 @@ export const createMemberOperationOptions: ApiOperationOptions = {
 export const createMemberBodyOptions: ApiBodyOptions = {
 	type: CreateMember,
 	examples: {
-		"Create a member by email": {
+		"Create test member 2 by email": {
+			value: {
+				email: process.env.E2E_TEST_MEMBER_2_EMAIL,
+				name: process.env.E2E_TEST_MEMBER_2_NAME,
+				password: "1234Abcd!",
+			},
+		},
+		"Create test member 3 by email": {
 			value: {
 				email: process.env.E2E_TEST_MEMBER_3_EMAIL,
 				name: process.env.E2E_TEST_MEMBER_3_NAME,
