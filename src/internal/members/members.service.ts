@@ -11,7 +11,7 @@ import { writeFile } from "fs/promises";
 import { existsSync, mkdirSync } from "fs";
 import { FreezeMemberDto } from "./dto/freeze-member.dto";
 import { PrismaService } from "../../prisma/prisma.service";
-import { Member } from "@prisma/client";
+import { Member, Prisma } from "@prisma/client";
 import { FindMembersDto } from "./dto/find-members.dto";
 import { MemberWithoutPassword } from "../../utils/types";
 import { EmailService } from "../email/email.service";
@@ -63,8 +63,8 @@ export class MembersService {
 		const { email, name } = findMembersDto;
 		let members = await this.prismaService.member.findMany({
 			where: {
-				email: email ? email : undefined,
-				name: name ? { contains: name } : undefined,
+				email: email ? email : Prisma.skip,
+				name: name ? { contains: name } : Prisma.skip,
 			},
 			include: {
 				memberRoles: true,

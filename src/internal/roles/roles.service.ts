@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 
 import { PrismaService } from "../../prisma/prisma.service";
-import { MemberRole } from "@prisma/client";
+import { MemberRole, Prisma } from "@prisma/client";
 import { FindRolesByIdsDto } from "./dto/find-roles-by-ids.dto";
 import { UpdateRoleByIdDto } from "./dto/update-role-by-id.dto";
 
@@ -58,7 +58,7 @@ export class RolesService {
 							in: roleIds,
 						},
 					}
-				: undefined,
+				: Prisma.skip,
 			include: {
 				members: true,
 			},
@@ -108,7 +108,7 @@ export class RolesService {
 			data: {
 				name: name,
 				superRole: {
-					connect: superRoleId ? { id: superRoleId } : undefined,
+					connect: superRoleId ? { id: superRoleId } : Prisma.skip,
 				},
 				members: {
 					connect: ids.map((id) => ({ id })),

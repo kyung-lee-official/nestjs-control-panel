@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { PrismaService } from "../../../prisma/prisma.service";
 import { getCerbosPrincipal } from "src/utils/data";
 import { GRPC as Cerbos } from "@cerbos/grpc";
+import { Prisma } from "@prisma/client";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -19,11 +20,13 @@ export class FindRolesByIdsGuard implements CanActivate {
 		const roles = await this.prismaService.memberRole.findMany({
 			where: {
 				id: {
-					in: req.body.roleIds,
+					in: req.body.roleIds.length
+						? req.body.roleIds
+						: Prisma.skip,
 				},
 			},
 		});
-		
+
 		const resources = roles.map((role) => ({
 			resource: {
 				kind: "internal:roles",
@@ -42,6 +45,10 @@ export class FindRolesByIdsGuard implements CanActivate {
 		};
 		const decision = await cerbos.checkResources(cerbosObject);
 
-		return false;
+		const result = decision.results.every(
+			(result) => result.actions.read === "EFFECT_ALLOW"
+		);
+
+		return result;
 	}
 }
