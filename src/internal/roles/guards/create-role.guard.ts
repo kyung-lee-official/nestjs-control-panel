@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import {
+	BadRequestException,
+	CanActivate,
+	ExecutionContext,
+	Injectable,
+} from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { PrismaService } from "../../../prisma/prisma.service";
 import { getCerbosPrincipal } from "src/utils/data";
@@ -12,6 +17,14 @@ export class CreateRoleGuard implements CanActivate {
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
+
+		if (req.body.id === "admin") {
+			throw new BadRequestException("Role ID cannot be 'admin'");
+		}
+		if (req.body.id === "default") {
+			throw new BadRequestException("Role ID cannot be 'default'");
+		}
+
 		const requester = req.requester;
 		const principal = getCerbosPrincipal(requester);
 
@@ -20,7 +33,7 @@ export class CreateRoleGuard implements CanActivate {
 		const cerbosObject = {
 			principal: {
 				id: requester.id,
-				roles: requester.memberRole.map((role) => role.id),
+				roles: requester.memberRoles.map((role) => role.id),
 				attributes: principal,
 			},
 			resource: {

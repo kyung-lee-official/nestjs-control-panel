@@ -34,6 +34,11 @@ import {
 	findRolesByIdsBodyOptions,
 	findRolesByIdsOperationOptions,
 } from "./swagger/find-roles.swagger";
+import {
+	createRoleBodyOptions,
+	createRoleOperationOptions,
+} from "./swagger/create-role.swagger";
+import { CreateRoleDto, createRoleSchema } from "./dto/create-role.dto";
 
 @ApiTags("Roles")
 @ApiBearerAuth()
@@ -42,11 +47,15 @@ import {
 export class RolesController {
 	constructor(private readonly rolesService: RolesService) {}
 
-	@ApiOperation({ summary: "Create a role" })
+	@ApiOperation(createRoleOperationOptions)
+	@ApiBody(createRoleBodyOptions)
 	@UseGuards(CreateRoleGuard)
 	@Post()
-	create() {
-		return this.rolesService.create();
+	create(
+		@Body(new ZodValidationPipe(createRoleSchema))
+		createRoleDto: CreateRoleDto
+	) {
+		return this.rolesService.create(createRoleDto);
 	}
 
 	@ApiOperation(findRolesByIdsOperationOptions)

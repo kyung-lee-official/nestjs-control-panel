@@ -5,6 +5,7 @@ import { PrismaService } from "../../prisma/prisma.service";
 import { MemberRole, Prisma } from "@prisma/client";
 import { FindRolesByIdsDto } from "./dto/find-roles-by-ids.dto";
 import { UpdateRoleByIdDto } from "./dto/update-role-by-id.dto";
+import { CreateRoleDto } from "./dto/create-role.dto";
 
 @Injectable({ scope: Scope.REQUEST })
 export class RolesService {
@@ -14,36 +15,36 @@ export class RolesService {
 		private readonly prismaService: PrismaService
 	) {}
 
-	async create(): Promise<MemberRole> {
-		const { requester } = this.request;
-		const prismaService = this.prismaService;
+	async create(createRoleDto: CreateRoleDto): Promise<MemberRole> {
+		// const { requester } = this.request;
+		// const prismaService = this.prismaService;
 
-		async function generateNewRoleName(newRoleNameIndex: number) {
-			let newRoleName = "New Role";
-			if (newRoleNameIndex === 0) {
-				newRoleName = "New Role";
-			} else {
-				newRoleName = "New Role" + newRoleNameIndex;
-			}
-			let newRole = await prismaService.memberRole.findUnique({
-				where: {
-					id: newRoleName,
-					name: newRoleName,
-				},
-			});
-			if (newRole) {
-				newRoleNameIndex++;
-				return await generateNewRoleName(newRoleNameIndex);
-			} else {
-				return newRoleName;
-			}
-		}
-		const newRoleName = await generateNewRoleName(0);
+		// async function generateNewRoleName(newRoleNameIndex: number) {
+		// 	let newRoleName = "New Role";
+		// 	if (newRoleNameIndex === 0) {
+		// 		newRoleName = "New Role";
+		// 	} else {
+		// 		newRoleName = "New Role" + newRoleNameIndex;
+		// 	}
+		// 	let newRole = await prismaService.memberRole.findUnique({
+		// 		where: {
+		// 			id: newRoleName,
+		// 			name: newRoleName,
+		// 		},
+		// 	});
+		// 	if (newRole) {
+		// 		newRoleNameIndex++;
+		// 		return await generateNewRoleName(newRoleNameIndex);
+		// 	} else {
+		// 		return newRoleName;
+		// 	}
+		// }
+		// const newRoleName = await generateNewRoleName(0);
 
 		const role = await this.prismaService.memberRole.create({
 			data: {
-				id: newRoleName,
-				name: newRoleName,
+				id: createRoleDto.id,
+				name: createRoleDto.name,
 			},
 		});
 		return role;
