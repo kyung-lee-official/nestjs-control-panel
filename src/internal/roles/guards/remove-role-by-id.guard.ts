@@ -43,7 +43,7 @@ export class RemoveRoleByIdGuard implements CanActivate {
 		const cerbosObject = {
 			principal: {
 				id: requester.id,
-				roles: requester.memberRole.map((role) => role.id),
+				roles: requester.memberRoles.map((role) => role.id),
 				attributes: principal,
 			},
 			resource: resource,
