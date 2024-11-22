@@ -112,7 +112,11 @@ export class RolesService {
 					connect: superRoleId ? { id: superRoleId } : Prisma.skip,
 				},
 				members: {
-					connect: ids.map((id) => ({ id })),
+					set: ids.length
+						? ids.map((id) => {
+								return { id: id };
+							})
+						: Prisma.skip,
 				},
 			},
 		});
