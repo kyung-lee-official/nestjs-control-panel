@@ -13,7 +13,13 @@ import {
 import { RolesService } from "./roles.service";
 import { CreateRoleGuard } from "./guards/create-role.guard";
 import { IsVerifiedGuard } from "../members/guards/is-verified.guard";
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+	ApiBearerAuth,
+	ApiBody,
+	ApiOperation,
+	ApiParam,
+	ApiTags,
+} from "@nestjs/swagger";
 import { ExcludePasswordInterceptor } from "../../interceptors/exclude-password.interceptor";
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 
@@ -33,12 +39,16 @@ import { RemoveRoleByIdGuard } from "./guards/remove-role-by-id.guard";
 import {
 	findRolesByIdsBodyOptions,
 	findRolesByIdsOperationOptions,
-} from "./swagger/find-roles.swagger";
+} from "./swagger/find-roles-by-ids.swagger";
 import {
 	createRoleBodyOptions,
 	createRoleOperationOptions,
 } from "./swagger/create-role.swagger";
 import { CreateRoleDto, createRoleSchema } from "./dto/create-role.dto";
+import {
+	findRoleByIdBodyOptions,
+	findRoleByIdOperationOptions,
+} from "./swagger/find-role-by-id.swagger";
 
 @ApiTags("Roles")
 @ApiBearerAuth()
@@ -71,6 +81,8 @@ export class RolesController {
 		return this.rolesService.findRolesByIds(findRolesByIdsDto);
 	}
 
+	@ApiOperation(findRoleByIdOperationOptions)
+	@ApiParam(findRoleByIdBodyOptions)
 	@UseGuards(FindRoleByIdGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Get(":id")

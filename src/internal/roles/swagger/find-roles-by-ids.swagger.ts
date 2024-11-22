@@ -18,7 +18,7 @@ export const findRolesByIdsBodyOptions: ApiBodyOptions = {
 	examples: {
 		"Find roles by ids": {
 			value: {
-				roleIds: [],
+				roleIds: ["admin", "default"],
 			},
 		},
 	},
