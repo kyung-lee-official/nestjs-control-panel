@@ -29,6 +29,12 @@ export const signInBodyOptions: ApiBodyOptions = {
 				password: "1234Abcd!",
 			},
 		},
+		"Sign in as Test Member 1": {
+			value: {
+				email: process.env.E2E_TEST_MEMBER_2_EMAIL,
+				password: "1234Abcd!",
+			},
+		},
 	},
 };
 

@@ -15,6 +15,9 @@ export class JwtGuard implements CanActivate {
 		private readonly prismaService: PrismaService
 	) {}
 
+	/**
+	 * @note do not modify req.requester which was added in middleware
+	 */
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
 		if (req.headers.authorization) {
@@ -23,19 +26,7 @@ export class JwtGuard implements CanActivate {
 					await this.jwtService.verify(
 						req.headers.authorization.replace("Bearer ", "")
 					);
-				const requester = await this.prismaService.member.findUnique({
-					where: {
-						email: payload.email,
-					},
-					include: {
-						memberRoles: true,
-					},
-				});
-				if (!requester) {
-					throw new UnauthorizedException("Invalid requester");
-				}
 				req.jwtPayload = payload;
-				req.requester = requester;
 				return true;
 			} catch (error) {
 				throw new UnauthorizedException("Invalid token");

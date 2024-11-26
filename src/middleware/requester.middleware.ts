@@ -15,10 +15,11 @@ export class RequesterMiddleware implements NestMiddleware {
 	) {}
 
 	async use(req: Request, res: Response, next: NextFunction) {
-		if ((req.headers as any).authorization) {
+		const headers = req.headers as any;
+		if (headers.authorization) {
 			try {
 				const payload = this.jwtService.decode(
-					(req.headers as any).authorization.replace("Bearer ", "")
+					headers.authorization.replace("Bearer ", "")
 				);
 				const email = payload["email"];
 				if (!email) {
@@ -28,9 +29,12 @@ export class RequesterMiddleware implements NestMiddleware {
 					where: {
 						email: email,
 					},
+					include: {
+						memberRoles: true,
+					},
 				});
 				if (!requester) {
-					throw new UnauthorizedException("Member does not exist");
+					throw new UnauthorizedException("Invalid requester");
 				}
 				/* Attach requester to req so that subsequent Nest flow can access it */
 				(req as any).requester = requester;

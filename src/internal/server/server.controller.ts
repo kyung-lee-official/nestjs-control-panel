@@ -41,6 +41,14 @@ import { IsVerifiedGuard } from "../authentication/guards/is-verified.guard";
 export class ServerController {
 	constructor(private readonly serverService: ServerService) {}
 
+	@ApiBearerAuth()
+	@ApiOperation({ summary: "Get server permissions" })
+	@UseGuards(JwtGuard)
+	@Get("permissions")
+	permissions() {
+		return this.serverService.permissions();
+	}
+
 	@ApiOperation(seedServerOperationOptions)
 	@ApiOkResponse(seedServerOkResponseOptions)
 	@ApiBadRequestResponse(seedServerBadRequestResponseOptions)

@@ -1,8 +1,10 @@
 import {
 	BadRequestException,
+	Inject,
 	Injectable,
 	InternalServerErrorException,
 	NotFoundException,
+	Scope,
 } from "@nestjs/common";
 import { SeedServerDto } from "./dto/seed-server.dto";
 import { EmailService } from "../email/email.service";
@@ -10,13 +12,40 @@ import { PrismaService } from "src/prisma/prisma.service";
 import bcrypt from "bcrypt";
 import { MemberServerSetting } from "@prisma/client";
 import { UpdateServerSettingsDto } from "./dto/update-server-settings.dto";
+import { GRPC as Cerbos } from "@cerbos/grpc";
+import { getCerbosPrincipal } from "src/utils/data";
+import { REQUEST } from "@nestjs/core";
+import { CheckResourceRequest } from "@cerbos/core";
 
-@Injectable()
+const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
+
+@Injectable({ scope: Scope.REQUEST })
 export class ServerService {
 	constructor(
+		@Inject(REQUEST)
+		private readonly request: any,
 		private readonly prismaService: PrismaService,
 		private readonly emailService: EmailService
 	) {}
+
+	async permissions() {
+		const { requester } = this.request;
+
+		const principal = getCerbosPrincipal(requester);
+		const actions = ["*"];
+		const resource = {
+			kind: "internal:server-settings",
+			id: "*",
+		};
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			resource: resource,
+			actions: actions,
+		};
+		const decision = await cerbos.checkResource(checkResourceRequest);
+
+		return { ...decision };
+	}
 
 	async seed(seedServerDto: SeedServerDto) {
 		const memberCount = await this.prismaService.member.count();
