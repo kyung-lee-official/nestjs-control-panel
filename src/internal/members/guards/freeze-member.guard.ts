@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
+import { CheckResourceRequest } from "@cerbos/core";
 import { getCerbosPrincipal } from "src/utils/data";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
@@ -19,7 +20,7 @@ export class FreezeMemberGuard implements CanActivate {
 		const requester = req.requester;
 		const principal = getCerbosPrincipal(requester);
 
-		const action = "freeze";
+		const actions = ["freeze"];
 
 		const member = await this.prismaService.member.findUnique({
 			where: {
@@ -33,28 +34,24 @@ export class FreezeMemberGuard implements CanActivate {
 			throw new NotFoundException("Member not found");
 		}
 		const resource = {
-			...member,
-			memberRoles: member.memberRoles.map((role) => role.id),
-			createdAt: member.createdAt.toISOString(),
-			updatedAt: member.updatedAt.toISOString(),
+			kind: "internal:members",
+			id: "*",
+			attr: {
+				...member,
+				memberRoles: member.memberRoles.map((role) => role.id),
+				createdAt: member.createdAt.toISOString(),
+				updatedAt: member.updatedAt.toISOString(),
+			},
 		};
 
-		const cerbosObject = {
-			principal: {
-				id: requester.id,
-				roles: requester.memberRoles.map((role) => role.id),
-				attributes: principal,
-			},
-			resource: {
-				kind: "internal:members",
-				id: "*",
-				attributes: resource,
-			},
-			actions: [action],
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			resource: resource,
+			actions: actions,
 		};
-		const decision = await cerbos.checkResource(cerbosObject);
+		const decision = await cerbos.checkResource(checkResourceRequest);
 
-		const result = !!decision.isAllowed(action);
+		const result = !!decision.isAllowed("freeze");
 
 		return result;
 	}

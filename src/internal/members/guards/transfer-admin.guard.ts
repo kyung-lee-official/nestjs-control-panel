@@ -7,6 +7,7 @@ import {
 import { PrismaService } from "src/prisma/prisma.service";
 import { getCerbosPrincipal } from "src/utils/data";
 import { GRPC as Cerbos } from "@cerbos/grpc";
+import { CheckResourceRequest } from "@cerbos/core";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -19,6 +20,8 @@ export class TransferAdminGuard implements CanActivate {
 		const requester = req.requester;
 		const principal = getCerbosPrincipal(requester);
 
+		const actions = ["transfer-admin"];
+
 		const member = await this.prismaService.member.findUnique({
 			where: {
 				id: req.params.id,
@@ -29,29 +32,23 @@ export class TransferAdminGuard implements CanActivate {
 		}
 
 		const resource = {
-			...member,
-			createdAt: member.createdAt.toISOString(),
-			updatedAt: member.updatedAt.toISOString(),
+			kind: "internal:members",
+			id: `${member.id}`,
+			attr: {
+				...member,
+				createdAt: member.createdAt.toISOString(),
+				updatedAt: member.updatedAt.toISOString(),
+			},
 		};
 
-		const action = "transfer-admin";
-
-		const cerbosObject = {
-			principal: {
-				id: requester.id,
-				roles: requester.memberRoles.map((role) => role.id),
-				attributes: principal,
-			},
-			resource: {
-				kind: "internal:members",
-				id: `${resource.id}`,
-				attributes: resource,
-			},
-			actions: [action],
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			resource: resource,
+			actions: actions,
 		};
-		const decision = await cerbos.checkResource(cerbosObject);
+		const decision = await cerbos.checkResource(checkResourceRequest);
 
-		const result = !!decision.isAllowed(action);
+		const result = !!decision.isAllowed("transfer-admin");
 
 		return result;
 	}

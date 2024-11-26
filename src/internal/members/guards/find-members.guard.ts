@@ -2,6 +2,7 @@ import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
 import { getCerbosPrincipal } from "src/utils/data";
+import { CheckResourceRequest } from "@cerbos/core";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -14,23 +15,21 @@ export class FindMembersGuard implements CanActivate {
 		const requester = req.requester;
 		const principal = getCerbosPrincipal(requester);
 
-		const action = "read";
+		const actions = ["read"];
 
-		const cerbosObject = {
-			principal: {
-				id: requester.id,
-				roles: requester.memberRoles.map((role) => role.id),
-				attributes: principal,
-			},
-			resource: {
-				kind: "internal:members",
-				id: "*",
-			},
-			actions: [action],
+		const resource = {
+			kind: "internal:members",
+			id: "*",
 		};
-		const decision = await cerbos.checkResource(cerbosObject);
 
-		const result = !!decision.isAllowed(action);
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			resource: resource,
+			actions: actions,
+		};
+		const decision = await cerbos.checkResource(checkResourceRequest);
+
+		const result = !!decision.isAllowed("read");
 
 		return result;
 	}

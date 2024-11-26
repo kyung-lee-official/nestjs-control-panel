@@ -7,6 +7,7 @@ import {
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
 import { getCerbosPrincipal } from "src/utils/data";
+import { CheckResourceRequest } from "@cerbos/core";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -27,30 +28,27 @@ export class MemberVerificationGuard implements CanActivate {
 		if (!member) {
 			throw new NotFoundException("Member not found");
 		}
+
+		const actions = ["verify"];
+
 		const resource = {
-			...member,
-			createdAt: member.createdAt.toISOString(),
-			updatedAt: member.updatedAt.toISOString(),
+			kind: "internal:members",
+			id: `${member.id}`,
+			attr: {
+				...member,
+				createdAt: member.createdAt.toISOString(),
+				updatedAt: member.updatedAt.toISOString(),
+			},
 		};
 
-		const action = "verify";
-
-		const cerbosObject = {
-			principal: {
-				id: requester.id,
-				roles: requester.memberRoles.map((role) => role.id),
-				attributes: principal,
-			},
-			resource: {
-				kind: "internal:members",
-				id: `${resource.id}`,
-				attributes: resource,
-			},
-			actions: [action],
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			resource: resource,
+			actions: actions,
 		};
-		const decision = await cerbos.checkResource(cerbosObject);
+		const decision = await cerbos.checkResource(checkResourceRequest);
 
-		const result = !!decision.isAllowed(action);
+		const result = !!decision.isAllowed("verify");
 
 		return result;
 	}

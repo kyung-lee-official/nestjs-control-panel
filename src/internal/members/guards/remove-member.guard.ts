@@ -7,6 +7,7 @@ import {
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
 import { getCerbosPrincipal } from "src/utils/data";
+import { CheckResourceRequest } from "@cerbos/core";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -19,7 +20,7 @@ export class RemoveMemberGuard implements CanActivate {
 		const requester = req.requester;
 		const principal = getCerbosPrincipal(requester);
 
-		const action = "remove";
+		const actions = ["remove"];
 
 		const member = await this.prismaService.member.findUnique({
 			where: {
@@ -33,28 +34,27 @@ export class RemoveMemberGuard implements CanActivate {
 			throw new NotFoundException("Member not found");
 		}
 		const resource = {
-			...member,
-			memberRoles: member.memberRoles.map((role) => role.id),
-			createdAt: member.createdAt.toISOString(),
-			updatedAt: member.updatedAt.toISOString(),
-		};
-
-		const cerbosObject = {
-			principal: {
-				id: requester.id,
-				roles: requester.memberRoles.map((role) => role.id),
-				attributes: principal,
+			kind: "internal:members",
+			id: "*",
+			attr: {
+				...member,
+				memberRoles: member.memberRoles.map((role) => role.id),
+				createdAt: member.createdAt.toISOString(),
+				updatedAt: member.updatedAt.toISOString(),
 			},
+		};
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
 			resource: {
 				kind: "internal:members",
 				id: "*",
-				attributes: resource,
+				attr: resource,
 			},
-			actions: [action],
+			actions: actions,
 		};
-		const decision = await cerbos.checkResource(cerbosObject);
+		const decision = await cerbos.checkResource(checkResourceRequest);
 
-		const result = !!decision.isAllowed(action);
+		const result = !!decision.isAllowed("remove");
 
 		return result;
 	}

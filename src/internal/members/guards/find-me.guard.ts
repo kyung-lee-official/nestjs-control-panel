@@ -7,6 +7,7 @@ import {
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
 import { getCerbosPrincipal } from "src/utils/data";
+import { CheckResourceRequest } from "@cerbos/core";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -19,6 +20,8 @@ export class FindMeGuard implements CanActivate {
 		const requester = req.requester;
 		const principal = getCerbosPrincipal(requester);
 
+		const actions = ["read"];
+
 		const member = await this.prismaService.member.findUnique({
 			where: {
 				email: req.jwtPayload.email,
@@ -30,27 +33,21 @@ export class FindMeGuard implements CanActivate {
 		const resource = {
 			kind: "internal:members",
 			id: member.id,
-			attributes: {
+			attr: {
 				...member,
 				createdAt: member.createdAt.toISOString(),
 				updatedAt: member.updatedAt.toISOString(),
 			},
 		};
 
-		const action = "read";
-
-		const cerbosObject = {
-			principal: {
-				id: requester.id,
-				roles: requester.memberRoles.map((role) => role.id),
-				attributes: principal,
-			},
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
 			resource: resource,
-			actions: [action],
+			actions: actions,
 		};
-		const decision = await cerbos.checkResource(cerbosObject);
+		const decision = await cerbos.checkResource(checkResourceRequest);
 
-		const result = !!decision.isAllowed(action);
+		const result = !!decision.isAllowed("read");
 
 		return result;
 	}

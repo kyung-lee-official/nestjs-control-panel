@@ -3,6 +3,7 @@ import { PrismaService } from "../../../prisma/prisma.service";
 import { getCerbosPrincipal } from "src/utils/data";
 import { GRPC as Cerbos } from "@cerbos/grpc";
 import { Prisma } from "@prisma/client";
+import { CheckResourcesRequest } from "@cerbos/core";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -15,7 +16,7 @@ export class FindRolesByIdsGuard implements CanActivate {
 		const requester = req.requester;
 		const principal = getCerbosPrincipal(requester);
 
-		const action = "read";
+		const actions = ["read"];
 
 		const roles = await this.prismaService.memberRole.findMany({
 			where: {
@@ -26,24 +27,19 @@ export class FindRolesByIdsGuard implements CanActivate {
 				},
 			},
 		});
-
 		const resources = roles.map((role) => ({
 			resource: {
 				kind: "internal:roles",
 				id: role.id,
 			},
-			actions: [action],
+			actions: actions,
 		}));
 
-		const cerbosObject = {
-			principal: {
-				id: requester.id,
-				roles: requester.memberRoles.map((role) => role.id),
-				attributes: principal,
-			},
+		const checkResourcesRequest: CheckResourcesRequest = {
+			principal: principal,
 			resources: resources,
 		};
-		const decision = await cerbos.checkResources(cerbosObject);
+		const decision = await cerbos.checkResources(checkResourcesRequest);
 
 		const result = decision.results.every(
 			(result) => result.actions.read === "EFFECT_ALLOW"

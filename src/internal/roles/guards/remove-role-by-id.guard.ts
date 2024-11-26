@@ -7,6 +7,7 @@ import {
 import { PrismaService } from "../../../prisma/prisma.service";
 import { getCerbosPrincipal } from "src/utils/data";
 import { GRPC as Cerbos } from "@cerbos/grpc";
+import { CheckResourceRequest } from "@cerbos/core";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -19,7 +20,7 @@ export class RemoveRoleByIdGuard implements CanActivate {
 		const requester = req.requester;
 		const principal = getCerbosPrincipal(requester);
 
-		const action = "remove";
+		const actions = ["remove"];
 
 		const role = await this.prismaService.memberRole.findUnique({
 			where: {
@@ -33,25 +34,21 @@ export class RemoveRoleByIdGuard implements CanActivate {
 		const resource = {
 			kind: "internal:roles",
 			id: role.id,
-			attributes: {
+			attr: {
 				...role,
 				createdAt: role.createdAt.toISOString(),
 				updatedAt: role.updatedAt.toISOString(),
 			},
 		};
 
-		const cerbosObject = {
-			principal: {
-				id: requester.id,
-				roles: requester.memberRoles.map((role) => role.id),
-				attributes: principal,
-			},
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
 			resource: resource,
-			actions: [action],
+			actions: actions,
 		};
-		const decision = await cerbos.checkResource(cerbosObject);
+		const decision = await cerbos.checkResource(checkResourceRequest);
 
-		const result = !!decision.isAllowed(action);
+		const result = !!decision.isAllowed("remove");
 
 		return result;
 	}

@@ -6,6 +6,8 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
+import { CheckResourceRequest } from "@cerbos/core";
+import { getCerbosPrincipal } from "src/utils/data";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -16,32 +18,28 @@ export class GetServerSettingsGuard implements CanActivate {
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
 		const requester = req.requester;
-		const principal = {
-			...requester,
-			createdAt: requester.createdAt.toISOString(),
-			updatedAt: requester.updatedAt.toISOString(),
-		};
-		const resource =
+		const principal = getCerbosPrincipal(requester);
+
+		const actions = ["read"];
+
+		const serverSettings =
 			await this.prismaService.memberServerSetting.findFirst();
-		if (!resource) {
+		if (!serverSettings) {
 			throw new NotFoundException("Server settings not found");
 		}
 
-		const action = "read";
-		const cerbosObject = {
-			principal: {
-				id: requester.id,
-				roles: requester.memberRoles.map((role) => role.id),
-				attributes: principal,
-			},
-			resource: {
-				kind: "internal:server-settings",
-				id: `${resource.id}`,
-			},
-			actions: [action],
+		const resource = {
+			kind: "internal:server-settings",
+			id: "*",
 		};
-		const decision = await cerbos.checkResource(cerbosObject);
-		const result = !!decision.isAllowed(action);
+
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			resource: resource,
+			actions: actions,
+		};
+		const decision = await cerbos.checkResource(checkResourceRequest);
+		const result = !!decision.isAllowed("read");
 
 		return result;
 	}
