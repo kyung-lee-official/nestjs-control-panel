@@ -6,6 +6,11 @@ import { MemberRole, Prisma } from "@prisma/client";
 import { FindRolesByIdsDto } from "./dto/find-roles-by-ids.dto";
 import { UpdateRoleByIdDto } from "./dto/update-role-by-id.dto";
 import { CreateRoleDto } from "./dto/create-role.dto";
+import { GRPC as Cerbos } from "@cerbos/grpc";
+import { getCerbosPrincipal } from "src/utils/data";
+import { CheckResourceRequest } from "@cerbos/core";
+
+const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable({ scope: Scope.REQUEST })
 export class RolesService {
@@ -14,6 +19,25 @@ export class RolesService {
 		private request: any,
 		private readonly prismaService: PrismaService
 	) {}
+
+	async permissions() {
+		const { requester } = this.request;
+
+		const principal = getCerbosPrincipal(requester);
+		const actions = ["*"];
+		const resource = {
+			kind: "internal:roles",
+			id: "*",
+		};
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			resource: resource,
+			actions: actions,
+		};
+		const decision = await cerbos.checkResource(checkResourceRequest);
+
+		return { ...decision };
+	}
 
 	async create(createRoleDto: CreateRoleDto): Promise<MemberRole> {
 		// const { requester } = this.request;

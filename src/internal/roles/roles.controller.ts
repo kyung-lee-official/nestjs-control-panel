@@ -57,6 +57,14 @@ import {
 export class RolesController {
 	constructor(private readonly rolesService: RolesService) {}
 
+	@ApiBearerAuth()
+	@ApiOperation({ summary: "Get roles permissions" })
+	@UseGuards(JwtGuard)
+	@Get("permissions")
+	permissions() {
+		return this.rolesService.permissions();
+	}
+
 	@ApiOperation(createRoleOperationOptions)
 	@ApiBody(createRoleBodyOptions)
 	@UseGuards(CreateRoleGuard)
