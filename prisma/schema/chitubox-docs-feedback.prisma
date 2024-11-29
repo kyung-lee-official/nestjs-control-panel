@@ -1,0 +1,10 @@
+model ChituboxManualFeedback {
+    id        BigInt   @id @default(autoincrement())
+    pageId    String
+    url       String
+    payload   String
+    ip        String
+    country   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

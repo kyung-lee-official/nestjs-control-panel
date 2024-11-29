@@ -1,0 +1,41 @@
+model Performance {
+    id                 BigInt               @id @default(autoincrement())
+    owner              Member               @relation(fields: [ownerId], references: [id])
+    ownerId            String
+    PerformanceSection PerformanceSection[]
+    createdAt          DateTime             @default(now())
+    updatedAt          DateTime             @updatedAt
+}
+
+model PerformanceSection {
+    id            BigInt      @id @default(autoincrement())
+    performance   Performance @relation(fields: [performanceId], references: [id])
+    performanceId BigInt
+    name          String
+    Event         Event[]
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
+}
+
+model EventTemplate {
+    id          BigInt   @id @default(autoincrement())
+    name        String
+    score       Int
+    description String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+}
+
+model Event {
+    id            BigInt             @id @default(autoincrement())
+    section       PerformanceSection @relation(fields: [sectionId], references: [id])
+    sectionId     BigInt
+    name          String
+    description   String
+    templateId    BigInt
+    templateScore Int
+    score         Int
+    attachments   String[]
+    createdAt     DateTime           @default(now())
+    updatedAt     DateTime           @updatedAt
+}
