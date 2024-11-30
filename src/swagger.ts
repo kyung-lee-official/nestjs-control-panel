@@ -5,6 +5,8 @@ import { RolesModule as InternalRolesModule } from "./internal/roles/roles.modul
 import { AuthenticationModule } from "./internal/authentication/authentication.module";
 import { ServerModule } from "./internal/server/server.module";
 import { EmailModule } from "./internal/email/email.module";
+import { PerformancesModule } from "./internal/applications/performances/performances.module";
+import { EventTemplatesModule } from "./internal/applications/performances/event-templates/event-templates.module";
 
 export function setupSwagger(app: INestApplication<any>) {
 	const membersOption = new DocumentBuilder()
@@ -23,4 +25,19 @@ export function setupSwagger(app: INestApplication<any>) {
 		],
 	});
 	SwaggerModule.setup("api/internal", app, membersDocument);
+
+	const applicationsOption = new DocumentBuilder()
+		.setTitle("Applications")
+		.setDescription("# The API description for the internal module")
+		.setVersion("1.0.0")
+		.addBearerAuth()
+		.build();
+	const applicationsDocument = SwaggerModule.createDocument(
+		app,
+		applicationsOption,
+		{
+			include: [PerformancesModule, EventTemplatesModule],
+		}
+	);
+	SwaggerModule.setup("api/applications", app, applicationsDocument);
 }
