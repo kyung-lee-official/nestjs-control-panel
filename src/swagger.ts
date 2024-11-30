@@ -5,8 +5,8 @@ import { RolesModule as InternalRolesModule } from "./internal/roles/roles.modul
 import { AuthenticationModule } from "./internal/authentication/authentication.module";
 import { ServerModule } from "./internal/server/server.module";
 import { EmailModule } from "./internal/email/email.module";
-import { PerformancesModule } from "./internal/applications/performances/performances.module";
 import { EventTemplatesModule } from "./internal/applications/performances/event-templates/event-templates.module";
+import { StatsModule } from "./internal/applications/performances/stats/stats.module";
 
 export function setupSwagger(app: INestApplication<any>) {
 	const membersOption = new DocumentBuilder()
@@ -36,7 +36,7 @@ export function setupSwagger(app: INestApplication<any>) {
 		app,
 		applicationsOption,
 		{
-			include: [PerformancesModule, EventTemplatesModule],
+			include: [StatsModule, EventTemplatesModule],
 		}
 	);
 	SwaggerModule.setup("api/applications", app, applicationsDocument);

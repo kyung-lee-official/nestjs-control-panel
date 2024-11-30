@@ -9,29 +9,30 @@ datasource db {
 }
 
 model Member {
-    id          String        @id @default(uuid())
-    email       String        @unique
+    id          String            @id @default(uuid())
+    email       String            @unique
     name        String
     password    String
     isVerified  Boolean?
-    isFrozen    Boolean?      @default(false)
+    isFrozen    Boolean?          @default(false)
     memberRoles MemberRole[]
-    createdAt   DateTime      @default(now())
-    updatedAt   DateTime      @updatedAt
-    // applications
-    // performance
-    performance Performance[]
+    createdAt   DateTime          @default(now())
+    updatedAt   DateTime          @updatedAt
+    // applications/performance/stats
+    perfStats   PerformanceStat[]
 }
 
 model MemberRole {
-    id          String       @id
-    name        String
-    superRoleId String?
-    superRole   MemberRole?  @relation("Hierarchy", fields: [superRoleId], references: [id])
-    subRoles    MemberRole[] @relation("Hierarchy")
-    members     Member[]
-    createdAt   DateTime     @default(now())
-    updatedAt   DateTime     @updatedAt
+    id            String          @id
+    name          String
+    superRoleId   String?
+    superRole     MemberRole?     @relation("Hierarchy", fields: [superRoleId], references: [id])
+    subRoles      MemberRole[]    @relation("Hierarchy")
+    members       Member[]
+    createdAt     DateTime        @default(now())
+    updatedAt     DateTime        @updatedAt
+    // applications/performance/event-templates
+    eventTemplate EventTemplate[]
 }
 
 model MemberServerSetting {

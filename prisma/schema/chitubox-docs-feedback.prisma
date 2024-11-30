@@ -1,5 +1,5 @@
 model ChituboxManualFeedback {
-    id        BigInt   @id @default(autoincrement())
+    id        Int      @id @default(autoincrement())
     pageId    String
     url       String
     payload   String

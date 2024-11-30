@@ -10,16 +10,24 @@ import {
 import { EventTemplatesService } from "./event-templates.service";
 import { CreateEventTemplateDto } from "./dto/create-event-template.dto";
 import { UpdateEventTemplateDto } from "./dto/update-event-template.dto";
+import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+	createEventTemplateApiBodyOptions,
+	createEventTemplateApiOperationOptions,
+} from "./swagger/create-event-template.swagger";
 
-@Controller("event-templates")
+@ApiTags("Performance Event Template")
+@Controller("performance/event-templates")
 export class EventTemplatesController {
 	constructor(
 		private readonly eventTemplatesService: EventTemplatesService
 	) {}
 
+	@ApiOperation(createEventTemplateApiOperationOptions)
+	@ApiBody(createEventTemplateApiBodyOptions)
 	@Post()
-	create(@Body() createEventTemplateDto: CreateEventTemplateDto) {
-		return this.eventTemplatesService.create(createEventTemplateDto);
+	async create(@Body() createEventTemplateDto: CreateEventTemplateDto) {
+		return await this.eventTemplatesService.create(createEventTemplateDto);
 	}
 
 	@Get()

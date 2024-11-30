@@ -1,15 +1,20 @@
 import { Injectable } from "@nestjs/common";
 import { CreateEventTemplateDto } from "./dto/create-event-template.dto";
 import { UpdateEventTemplateDto } from "./dto/update-event-template.dto";
+import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
 export class EventTemplatesService {
-	create(createEventTemplateDto: CreateEventTemplateDto) {
-		return "This action adds a new eventTemplate";
+	constructor(private readonly prismaService: PrismaService) {}
+
+	async create(createEventTemplateDto: CreateEventTemplateDto) {
+		return await this.prismaService.eventTemplate.create({
+			data: createEventTemplateDto,
+		});
 	}
 
-	findAll() {
-		return `This action returns all eventTemplates`;
+	async findAll() {
+		return await this.prismaService.eventTemplate.findMany();
 	}
 
 	findOne(id: number) {

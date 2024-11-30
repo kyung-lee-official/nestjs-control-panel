@@ -1,6 +1,11 @@
-import { PartialType } from "@nestjs/swagger";
-import { CreateEventTemplateDto } from "./create-event-template.dto";
+import { z } from "zod";
 
-export class UpdateEventTemplateDto extends PartialType(
-	CreateEventTemplateDto
-) {}
+export const updateEventTemplateDtoSchema = z.object({
+	score: z.number().int().min(0).max(100),
+	description: z.string(),
+	memberRoleId: z.string(),
+});
+
+export type UpdateEventTemplateDto = z.infer<
+	typeof updateEventTemplateDtoSchema
+>;
