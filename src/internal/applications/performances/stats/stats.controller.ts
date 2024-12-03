@@ -6,25 +6,36 @@ import {
 	Patch,
 	Param,
 	Delete,
+	ParseIntPipe,
+	UseGuards,
 } from "@nestjs/common";
 import { StatsService } from "./stats.service";
 import { CreateStatDto } from "./dto/create-stat.dto";
 import { UpdateStatDto } from "./dto/update-stat.dto";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+	createStatApiBodyOptions,
+	createStatApiOperationOptions,
+} from "./swagger/create-stat.swagger";
+import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 
 @ApiTags("Performance Stats")
+@ApiBearerAuth()
+@UseGuards(JwtGuard)
 @Controller("performance/stats")
 export class StatsController {
 	constructor(private readonly statsService: StatsService) {}
 
+	@ApiOperation(createStatApiOperationOptions)
+	@ApiBody(createStatApiBodyOptions)
 	@Post()
 	create(@Body() createStatDto: CreateStatDto) {
 		return this.statsService.create(createStatDto);
 	}
 
 	@Get()
-	findAll() {
-		return this.statsService.findAll();
+	async findAll() {
+		return await this.statsService.findAll();
 	}
 
 	@Get(":id")
@@ -37,8 +48,9 @@ export class StatsController {
 		return this.statsService.update(+id, updateStatDto);
 	}
 
+	@ApiOperation({ summary: "Delete a performance stat" })
 	@Delete(":id")
-	remove(@Param("id") id: string) {
-		return this.statsService.remove(+id);
+	async remove(@Param("id", ParseIntPipe) id: number) {
+		return await this.statsService.remove(id);
 	}
 }

@@ -1,15 +1,43 @@
 import { Injectable } from "@nestjs/common";
 import { CreateStatDto } from "./dto/create-stat.dto";
 import { UpdateStatDto } from "./dto/update-stat.dto";
+import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
 export class StatsService {
-	create(createStatDto: CreateStatDto) {
-		return "This action adds a new stat";
+	constructor(private readonly prismaService: PrismaService) {}
+
+	async create(createStatDto: CreateStatDto) {
+		return await this.prismaService.performanceStat.create({
+			data: {
+				...createStatDto,
+				statSections: {
+					create: {
+						summary: "New Section",
+						description: "",
+					},
+				},
+			},
+			include: {
+				statSections: {
+					include: {
+						events: true,
+					},
+				},
+			},
+		});
 	}
 
-	findAll() {
-		return `This action returns all stats`;
+	async findAll() {
+		return await this.prismaService.performanceStat.findMany({
+			include: {
+				statSections: {
+					include: {
+						events: true,
+					},
+				},
+			},
+		});
 	}
 
 	findOne(id: number) {
@@ -20,7 +48,11 @@ export class StatsService {
 		return `This action updates a #${id} stat`;
 	}
 
-	remove(id: number) {
-		return `This action removes a #${id} stat`;
+	async remove(id: number) {
+		return await this.prismaService.performanceStat.delete({
+			where: {
+				id: id,
+			},
+		});
 	}
 }

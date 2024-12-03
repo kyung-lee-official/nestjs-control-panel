@@ -31,8 +31,8 @@ export class EventTemplatesController {
 	}
 
 	@Get()
-	findAll() {
-		return this.eventTemplatesService.findAll();
+	async findAll() {
+		return await this.eventTemplatesService.findAll();
 	}
 
 	@Get(":id")
