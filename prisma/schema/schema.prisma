@@ -20,6 +20,7 @@ model Member {
     updatedAt   DateTime          @updatedAt
     // applications/performance/stats
     perfStats   PerformanceStat[]
+    eventRemark EventRemark[]
 }
 
 model MemberRole {

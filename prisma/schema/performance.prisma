@@ -8,13 +8,14 @@ model PerformanceStat {
 }
 
 model StatSection {
-    id        Int             @id @default(autoincrement())
-    stat      PerformanceStat @relation(fields: [statId], references: [id])
-    statId    Int
-    name      String
-    Event     Event[]
-    createdAt DateTime        @default(now())
-    updatedAt DateTime        @updatedAt
+    id          Int             @id @default(autoincrement())
+    stat        PerformanceStat @relation(fields: [statId], references: [id])
+    statId      Int
+    summary     String
+    description String
+    events      Event[]
+    createdAt   DateTime        @default(now())
+    updatedAt   DateTime        @updatedAt
 }
 
 model EventTemplate {
@@ -27,15 +28,31 @@ model EventTemplate {
     updatedAt    DateTime   @updatedAt
 }
 
+// event is independent of event template, and should keep a snapshot of the template at the time of creation, instead of a reference
+// custom events are allowed, as long as its templateId is null
 model Event {
-    id            Int         @id @default(autoincrement())
-    templateId    Int
-    templateScore Int
-    section       StatSection @relation(fields: [sectionId], references: [id])
-    sectionId     Int
-    score         Int
-    description   String
-    attachments   String[]
-    createdAt     DateTime    @default(now())
-    updatedAt     DateTime    @updatedAt
+    id                  Int           @id @default(autoincrement())
+    templateId          Int?
+    templateScore       Int
+    templateDescription String
+    section             StatSection   @relation(fields: [sectionId], references: [id])
+    sectionId           Int
+    score               Int
+    amount              Int
+    description         String
+    attachments         String[]
+    remarks             EventRemark[]
+    createdAt           DateTime      @default(now())
+    updatedAt           DateTime      @updatedAt
+}
+
+model EventRemark {
+    id        Int      @id @default(autoincrement())
+    event     Event    @relation(fields: [eventId], references: [id])
+    eventId   Int
+    member    Member   @relation(fields: [memberId], references: [id])
+    memberId  String
+    content   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
