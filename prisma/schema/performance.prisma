@@ -2,6 +2,7 @@ model PerformanceStat {
     id           Int           @id @default(autoincrement())
     owner        Member        @relation(fields: [ownerId], references: [id])
     ownerId      String
+    month        DateTime
     statSections StatSection[]
     createdAt    DateTime      @default(now())
     updatedAt    DateTime      @updatedAt
@@ -11,8 +12,9 @@ model StatSection {
     id          Int             @id @default(autoincrement())
     stat        PerformanceStat @relation(fields: [statId], references: [id])
     statId      Int
-    summary     String
-    description String
+    weight      Int
+    title       String
+    description String?
     events      Event[]
     createdAt   DateTime        @default(now())
     updatedAt   DateTime        @updatedAt
@@ -31,22 +33,22 @@ model EventTemplate {
 // event is independent of event template, and should keep a snapshot of the template at the time of creation, instead of a reference
 // custom events are allowed, as long as its templateId is null
 model Event {
-    id                  Int           @id @default(autoincrement())
+    id                  Int            @id @default(autoincrement())
     templateId          Int?
     templateScore       Int
     templateDescription String
-    section             StatSection   @relation(fields: [sectionId], references: [id])
+    section             StatSection    @relation(fields: [sectionId], references: [id])
     sectionId           Int
     score               Int
     amount              Int
     description         String
     attachments         String[]
-    remarks             EventRemark[]
-    createdAt           DateTime      @default(now())
-    updatedAt           DateTime      @updatedAt
+    comments            EventComment[]
+    createdAt           DateTime       @default(now())
+    updatedAt           DateTime       @updatedAt
 }
 
-model EventRemark {
+model EventComment {
     id        Int      @id @default(autoincrement())
     event     Event    @relation(fields: [eventId], references: [id])
     eventId   Int

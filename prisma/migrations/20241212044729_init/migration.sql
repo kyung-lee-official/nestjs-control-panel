@@ -16,6 +16,7 @@ CREATE TABLE "ChituboxManualFeedback" (
 CREATE TABLE "PerformanceStat" (
     "id" SERIAL NOT NULL,
     "ownerId" TEXT NOT NULL,
+    "month" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -26,8 +27,9 @@ CREATE TABLE "PerformanceStat" (
 CREATE TABLE "StatSection" (
     "id" SERIAL NOT NULL,
     "statId" INTEGER NOT NULL,
-    "summary" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "weight" INTEGER NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -64,7 +66,7 @@ CREATE TABLE "Event" (
 );
 
 -- CreateTable
-CREATE TABLE "EventRemark" (
+CREATE TABLE "EventComment" (
     "id" SERIAL NOT NULL,
     "eventId" INTEGER NOT NULL,
     "memberId" TEXT NOT NULL,
@@ -72,7 +74,7 @@ CREATE TABLE "EventRemark" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "EventRemark_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "EventComment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -136,10 +138,10 @@ ALTER TABLE "EventTemplate" ADD CONSTRAINT "EventTemplate_memberRoleId_fkey" FOR
 ALTER TABLE "Event" ADD CONSTRAINT "Event_sectionId_fkey" FOREIGN KEY ("sectionId") REFERENCES "StatSection"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "EventRemark" ADD CONSTRAINT "EventRemark_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "EventComment" ADD CONSTRAINT "EventComment_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "EventRemark" ADD CONSTRAINT "EventRemark_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "EventComment" ADD CONSTRAINT "EventComment_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "MemberRole" ADD CONSTRAINT "MemberRole_superRoleId_fkey" FOREIGN KEY ("superRoleId") REFERENCES "MemberRole"("id") ON DELETE SET NULL ON UPDATE CASCADE;
