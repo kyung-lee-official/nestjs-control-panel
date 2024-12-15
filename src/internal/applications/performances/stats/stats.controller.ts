@@ -7,17 +7,22 @@ import {
 	Param,
 	Delete,
 	ParseIntPipe,
+	UseInterceptors,
 	UseGuards,
+	UsePipes,
 } from "@nestjs/common";
 import { StatsService } from "./stats.service";
-import { CreateStatDto } from "./dto/create-stat.dto";
-import { UpdateStatDto } from "./dto/update-stat.dto";
+import { CreateStatDto, createStatDtoSchema } from "./dto/create-stat.dto";
+import { UpdateStatDto, updateStatDtoSchema } from "./dto/update-stat.dto";
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
 	createStatApiBodyOptions,
 	createStatApiOperationOptions,
 } from "./swagger/create-stat.swagger";
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
+import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
+import { ExcludePasswordInterceptor } from "src/interceptors/exclude-password.interceptor";
+import { updateStatApiBodyOptions } from "./swagger/update-stat.swagger";
 
 @ApiTags("Performance Stats")
 @ApiBearerAuth()
@@ -28,9 +33,10 @@ export class StatsController {
 
 	@ApiOperation(createStatApiOperationOptions)
 	@ApiBody(createStatApiBodyOptions)
+	@UsePipes(new ZodValidationPipe(createStatDtoSchema))
 	@Post()
-	create(@Body() createStatDto: CreateStatDto) {
-		return this.statsService.create(createStatDto);
+	async create(@Body() createStatDto: CreateStatDto) {
+		return await this.statsService.create(createStatDto);
 	}
 
 	@Get()
@@ -38,14 +44,20 @@ export class StatsController {
 		return await this.statsService.findAll();
 	}
 
+	@UseInterceptors(ExcludePasswordInterceptor)
 	@Get(":id")
-	findOne(@Param("id") id: string) {
-		return this.statsService.findOne(+id);
+	async getStatById(@Param("id", ParseIntPipe) id: number) {
+		return this.statsService.getStatById(id);
 	}
 
+	@ApiBody(updateStatApiBodyOptions)
 	@Patch(":id")
-	update(@Param("id") id: string, @Body() updateStatDto: UpdateStatDto) {
-		return this.statsService.update(+id, updateStatDto);
+	async updateStatById(
+		@Param("id", ParseIntPipe) id: number,
+		@Body(new ZodValidationPipe(updateStatDtoSchema))
+		updateStatDto: UpdateStatDto
+	) {
+		return await this.statsService.updateStatById(id, updateStatDto);
 	}
 
 	@ApiOperation({ summary: "Delete a performance stat" })

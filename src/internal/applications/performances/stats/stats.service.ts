@@ -1,21 +1,39 @@
-import { Injectable } from "@nestjs/common";
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from "@nestjs/common";
 import { CreateStatDto } from "./dto/create-stat.dto";
 import { UpdateStatDto } from "./dto/update-stat.dto";
 import { PrismaService } from "src/prisma/prisma.service";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class StatsService {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async create(createStatDto: CreateStatDto) {
+		const { ownerId, month, statSections } = createStatDto;
+
+		/* check weight sum */
+		const weightSum = statSections.reduce(
+			(acc, curr) => acc + curr.weight,
+			0
+		);
+		if (weightSum !== 100) {
+			throw new BadRequestException("Weight sum must be 100");
+		}
+
 		return await this.prismaService.performanceStat.create({
 			data: {
-				...createStatDto,
-				statSections: {
-					create: {
-						summary: "New Section",
-						description: "",
+				owner: {
+					connect: {
+						id: ownerId,
 					},
+				},
+				month: month,
+				statSections: {
+					create: statSections,
 				},
 			},
 			include: {
@@ -40,15 +58,153 @@ export class StatsService {
 		});
 	}
 
-	findOne(id: number) {
-		return `This action returns a #${id} stat`;
+	async getStatById(id: number) {
+		return await this.prismaService.performanceStat.findUnique({
+			where: {
+				id: id,
+			},
+			include: {
+				owner: true,
+				statSections: {
+					include: {
+						events: true,
+					},
+				},
+			},
+		});
 	}
 
-	update(id: number, updateStatDto: UpdateStatDto) {
-		return `This action updates a #${id} stat`;
+	async updateStatById(id: number, updateStatDto: UpdateStatDto) {
+		const { ownerId, month, statSections: requestSections } = updateStatDto;
+
+		/* check weight sum */
+		const weightSum = requestSections.reduce(
+			(acc, curr) => acc + curr.weight,
+			0
+		);
+		if (weightSum !== 100) {
+			throw new BadRequestException("Weight sum must be 100");
+		}
+
+		const dbStat = await this.prismaService.performanceStat.findUnique({
+			where: {
+				id: id,
+			},
+			include: {
+				statSections: true,
+			},
+		});
+		if (!dbStat) {
+			throw new NotFoundException("Stat not found");
+		}
+
+		/* request sections have 'id' property */
+		const requestSectionIds = requestSections
+			.filter((s) => {
+				return s.id ? true : false;
+			})
+			.map((s) => s.id);
+
+		const dbSectionIds = dbStat.statSections.map((section) => section.id);
+		const sectionsToDeleteIds = dbSectionIds.filter(
+			(id) => !requestSectionIds.includes(id)
+		);
+		const dbSectionsToUpdateIds = dbSectionIds.filter((id) =>
+			requestSectionIds.includes(id)
+		);
+		/* if section doesn't have 'id' property, it's a new section */
+		const sectionsToCreate = requestSections.filter((s) => !s.id);
+
+		/* delete related events */
+		for (const sectionId of sectionsToDeleteIds) {
+			await this.prismaService.event.deleteMany({
+				where: {
+					sectionId: sectionId,
+				},
+			});
+		}
+		/* delete sections */
+		await this.prismaService.statSection.deleteMany({
+			where: {
+				id: {
+					in: sectionsToDeleteIds,
+				},
+			},
+		});
+
+		/* update existing sections */
+		for (const id of dbSectionsToUpdateIds) {
+			/* request sections for update */
+			const requestSectionForUpdate = requestSections.find(
+				(s) => s.id === id
+			);
+			await this.prismaService.statSection.update({
+				where: {
+					id: id,
+				},
+				data: {
+					weight: requestSectionForUpdate!.weight,
+					title: requestSectionForUpdate!.title,
+					description:
+						requestSectionForUpdate?.description ?? Prisma.skip,
+				},
+			});
+		}
+
+		/* create new sections */
+		await this.prismaService.statSection.createMany({
+			data: sectionsToCreate.map((s) => {
+				return {
+					weight: s.weight,
+					title: s.title,
+					description: s.description,
+					statId: id,
+				};
+			}),
+		});
+
+		const newStat = await this.prismaService.performanceStat.findUnique({
+			where: {
+				id: id,
+			},
+			include: {
+				owner: true,
+				statSections: {
+					include: {
+						events: true,
+					},
+				},
+			},
+		});
+		return newStat;
 	}
 
 	async remove(id: number) {
+		const stat = await this.prismaService.performanceStat.findUnique({
+			where: {
+				id: id,
+			},
+			include: {
+				statSections: true,
+			},
+		});
+		if (!stat) {
+			throw new NotFoundException("Stat not found");
+		}
+		for (const section of stat.statSections) {
+			/* delete events */
+			await this.prismaService.event.deleteMany({
+				where: {
+					sectionId: section.id,
+				},
+			});
+		}
+		/* delete sections */
+		await this.prismaService.statSection.deleteMany({
+			where: {
+				statId: id,
+			},
+		});
 		return await this.prismaService.performanceStat.delete({
 			where: {
 				id: id,
