@@ -40,31 +40,6 @@ export class RolesService {
 	}
 
 	async create(createRoleDto: CreateRoleDto): Promise<MemberRole> {
-		// const { requester } = this.request;
-		// const prismaService = this.prismaService;
-
-		// async function generateNewRoleName(newRoleNameIndex: number) {
-		// 	let newRoleName = "New Role";
-		// 	if (newRoleNameIndex === 0) {
-		// 		newRoleName = "New Role";
-		// 	} else {
-		// 		newRoleName = "New Role" + newRoleNameIndex;
-		// 	}
-		// 	let newRole = await prismaService.memberRole.findUnique({
-		// 		where: {
-		// 			id: newRoleName,
-		// 			name: newRoleName,
-		// 		},
-		// 	});
-		// 	if (newRole) {
-		// 		newRoleNameIndex++;
-		// 		return await generateNewRoleName(newRoleNameIndex);
-		// 	} else {
-		// 		return newRoleName;
-		// 	}
-		// }
-		// const newRoleName = await generateNewRoleName(0);
-
 		const role = await this.prismaService.memberRole.create({
 			data: {
 				id: createRoleDto.id,
@@ -72,6 +47,15 @@ export class RolesService {
 			},
 		});
 		return role;
+	}
+
+	async findAllRoles() {
+		const roles = await this.prismaService.memberRole.findMany({
+			include: {
+				members: true,
+			},
+		});
+		return roles;
 	}
 
 	async findRolesByIds(findRolesByIdsDto: FindRolesByIdsDto) {

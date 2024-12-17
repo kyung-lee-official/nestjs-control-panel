@@ -76,6 +76,12 @@ export class RolesController {
 		return this.rolesService.create(createRoleDto);
 	}
 
+	@UseInterceptors(ExcludePasswordInterceptor)
+	@Get()
+	findAllRoles() {
+		return this.rolesService.findAllRoles();
+	}
+
 	@ApiOperation(findRolesByIdsOperationOptions)
 	@ApiBody(findRolesByIdsBodyOptions)
 	@UseGuards(FindRolesByIdsGuard)
