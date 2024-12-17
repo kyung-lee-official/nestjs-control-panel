@@ -32,14 +32,14 @@ export class EventsController {
 	@UseGuards(CreateEventGuard)
 	@UsePipes(new ZodValidationPipe(createEventDtoSchema))
 	@Post()
-	create(@Body() createEventDto: CreateEventDto) {
-		return this.eventsService.create(createEventDto);
+	async create(@Body() createEventDto: CreateEventDto) {
+		return await this.eventsService.create(createEventDto);
 	}
 
-	@Get()
-	findAll() {
-		return this.eventsService.findAll();
-	}
+	// @Get()
+	// async findAll() {
+	// 	return this.eventsService.findAll();
+	// }
 
 	@Get(":id")
 	findOne(@Param("id") id: string) {

@@ -65,9 +65,9 @@ export class EventsService {
 		return performanceStat;
 	}
 
-	findAll() {
-		return `This action returns all events`;
-	}
+	// async findAll() {
+	// 	return await this.prismaService.event.findMany();
+	// }
 
 	findOne(id: number) {
 		return `This action returns a #${id} event`;
