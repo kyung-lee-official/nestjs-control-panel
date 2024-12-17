@@ -31,7 +31,7 @@ model EventTemplate {
 }
 
 // event is independent of event template, and should keep a snapshot of the template at the time of creation, instead of a reference
-// custom events are allowed, as long as its templateId is null
+// custom events are allowed, in which case the templateId will be null
 model Event {
     id                  Int            @id @default(autoincrement())
     templateId          Int?
