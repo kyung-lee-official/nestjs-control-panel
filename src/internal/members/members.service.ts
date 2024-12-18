@@ -115,9 +115,12 @@ export class MembersService {
 		id: string,
 		updateMemberProfileDto: UpdateMemberProfileDto
 	): Promise<Member> {
+		const { name } = updateMemberProfileDto;
 		const member = await this.prismaService.member.update({
 			where: { id: id },
-			data: updateMemberProfileDto,
+			data: {
+				name: name,
+			},
 			include: {
 				memberRoles: true,
 			},
