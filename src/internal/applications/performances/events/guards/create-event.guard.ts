@@ -37,7 +37,7 @@ export class CreateEventGuard implements CanActivate {
 			if (!template) {
 				throw new NotFoundException("Template not found");
 			}
-			if (principal.roles.includes(template.memberRoleId)) {
+			if (!principal.roles.includes(template.memberRoleId)) {
 				/* template role not matched */
 				throw new ForbiddenException(
 					"principal roles do not include template role"
