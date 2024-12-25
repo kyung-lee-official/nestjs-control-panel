@@ -8,6 +8,7 @@ import {
 	Delete,
 	UseGuards,
 	UsePipes,
+	ParseIntPipe,
 } from "@nestjs/common";
 import { EventsService } from "./events.service";
 import { CreateEventDto, createEventDtoSchema } from "./dto/create-event.dto";
@@ -19,6 +20,7 @@ import {
 import { CreateEventGuard } from "./guards/create-event.guard";
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
+import { UpdateEventDto } from "./dto/update-event.dto";
 
 @ApiTags("Events")
 @ApiBearerAuth()
@@ -36,23 +38,26 @@ export class EventsController {
 		return await this.eventsService.create(createEventDto);
 	}
 
-	// @Get()
-	// async findAll() {
-	// 	return this.eventsService.findAll();
-	// }
-
-	@Get(":id")
-	findOne(@Param("id") id: string) {
-		return this.eventsService.findOne(+id);
+	@Get()
+	async findAll() {
+		return this.eventsService.findAll();
 	}
 
-	// @Patch(":id")
-	// update(@Param("id") id: string, @Body() updateEventDto: UpdateEventDto) {
-	// 	return this.eventsService.update(+id, updateEventDto);
-	// }
+	@Get(":id")
+	async findEventById(@Param("id", ParseIntPipe) id: number) {
+		return await this.eventsService.findEventById(id);
+	}
+
+	@Patch("update-event-by-id/:id")
+	async updateEventById(
+		@Param("id", ParseIntPipe) id: number,
+		@Body() updateEventDto: UpdateEventDto
+	) {
+		return await this.eventsService.updateEventById(id, updateEventDto);
+	}
 
 	@Delete(":id")
-	remove(@Param("id") id: string) {
-		return this.eventsService.remove(+id);
+	async remove(@Param("id", ParseIntPipe) id: number) {
+		return await this.eventsService.remove(id);
 	}
 }

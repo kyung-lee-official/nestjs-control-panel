@@ -1,7 +1,9 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { REQUEST } from "@nestjs/core";
 import { PrismaService } from "src/prisma/prisma.service";
+import { Prisma } from "@prisma/client";
+import { UpdateEventDto } from "./dto/update-event.dto";
 
 @Injectable()
 export class EventsService {
@@ -12,14 +14,8 @@ export class EventsService {
 	) {}
 
 	async create(createEventDto: CreateEventDto) {
-		const {
-			templateId,
-			sectionId,
-			score,
-			amount,
-			description,
-			attachments,
-		} = createEventDto;
+		const { templateId, sectionId, score, amount, description } =
+			createEventDto;
 		let template;
 		if (templateId) {
 			/* use template */
@@ -29,55 +25,73 @@ export class EventsService {
 				},
 			});
 		}
-		const section = await this.prismaService.statSection.update({
+		const section = await this.prismaService.statSection.findUnique({
 			where: {
 				id: sectionId,
 			},
+		});
+		if (!section) {
+			throw new Error("Section not found");
+		}
+		const event = await this.prismaService.event.create({
 			data: {
-				events: {
-					create: {
-						templateId: template ? template.id : undefined,
-						templateScore: template ? template.score : 0,
-						templateDescription: template
-							? template.description
-							: "",
-						score,
-						amount: amount,
-						description: description,
-						attachments: attachments,
+				templateId: templateId ? templateId : Prisma.skip,
+				templateScore: templateId ? template.score : Prisma.skip,
+				templateDescription: templateId
+					? template.description
+					: Prisma.skip,
+				amount: amount || 1,
+				description,
+				score,
+				section: {
+					connect: {
+						id: sectionId,
 					},
 				},
 			},
 		});
-		const performanceStat =
-			await this.prismaService.performanceStat.findUnique({
-				where: {
-					id: section.statId,
-				},
-				include: {
-					statSections: {
-						include: {
-							events: true,
-						},
-					},
-				},
-			});
-		return performanceStat;
+		return event;
 	}
 
-	// async findAll() {
-	// 	return await this.prismaService.event.findMany();
-	// }
-
-	findOne(id: number) {
-		return `This action returns a #${id} event`;
+	async findAll() {
+		return await this.prismaService.event.findMany();
 	}
 
-	//   update(id: number, updateEventDto: UpdateEventDto) {
-	//     return `This action updates a #${id} event`;
-	//   }
+	async findEventById(id: number) {
+		const event = await this.prismaService.event.findUnique({
+			where: {
+				id,
+			},
+			include: {
+				section: true,
+				comments: true,
+			},
+		});
+		if (!event) {
+			throw new NotFoundException("Event not found");
+		}
+		return event;
+	}
 
-	remove(id: number) {
-		return `This action removes a #${id} event`;
+	async updateEventById(id: number, updateEventDto: UpdateEventDto) {
+		return await this.prismaService.event.update({
+			where: {
+				id,
+			},
+			data: updateEventDto,
+		});
+	}
+
+	async remove(id: number) {
+		await this.prismaService.eventComment.deleteMany({
+			where: {
+				eventId: id,
+			},
+		});
+		return await this.prismaService.event.delete({
+			where: {
+				id,
+			},
+		});
 	}
 }

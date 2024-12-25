@@ -6,6 +6,8 @@ import {
 	Patch,
 	Param,
 	Delete,
+	ParseIntPipe,
+	UseGuards,
 } from "@nestjs/common";
 import { EventTemplatesService } from "./event-templates.service";
 import { CreateEventTemplateDto } from "./dto/create-event-template.dto";
@@ -15,6 +17,7 @@ import {
 	createEventTemplateApiBodyOptions,
 	createEventTemplateApiOperationOptions,
 } from "./swagger/create-event-template.swagger";
+import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 
 @ApiTags("Performance Event Template")
 @Controller("performance/event-templates")
@@ -30,14 +33,20 @@ export class EventTemplatesController {
 		return await this.eventTemplatesService.create(createEventTemplateDto);
 	}
 
-	@Get()
-	async findAll() {
-		return await this.eventTemplatesService.findAll();
+	@Get("get-by-role-id/:roleId")
+	async getByRoleId(@Param("roleId") roleId: string) {
+		return await this.eventTemplatesService.getByRoleId(roleId);
 	}
 
-	@Get(":id")
-	findOne(@Param("id") id: string) {
-		return this.eventTemplatesService.findOne(+id);
+	@UseGuards(JwtGuard)
+	@Get("get-by-my-role-templates")
+	async getMyRoleTemplates() {
+		return await this.eventTemplatesService.getMyRoleTemplates();
+	}
+
+	@Get("get-by-id/:id")
+	async getById(@Param("id", ParseIntPipe) id: number) {
+		return await this.eventTemplatesService.getById(id);
 	}
 
 	@Patch(":id")

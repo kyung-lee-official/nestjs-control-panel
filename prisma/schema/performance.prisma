@@ -35,8 +35,8 @@ model EventTemplate {
 model Event {
     id                  Int            @id @default(autoincrement())
     templateId          Int?
-    templateScore       Int
-    templateDescription String
+    templateScore       Int?
+    templateDescription String?
     section             StatSection    @relation(fields: [sectionId], references: [id])
     sectionId           Int
     score               Int

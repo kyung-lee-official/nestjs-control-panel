@@ -1,8 +1,6 @@
 import { z } from "zod";
 
-export const createEventDtoSchema = z.object({
-	templateId: z.number().optional(),
-	sectionId: z.number(),
+export const updateEventDtoSchema = z.object({
 	score: z.number(),
 	/* amount can only be added after the event is created, default is 1 */
 	amount: z.number().optional(),
@@ -11,4 +9,4 @@ export const createEventDtoSchema = z.object({
 	// attachments: z.array(z.string()),
 });
 
-export type CreateEventDto = z.infer<typeof createEventDtoSchema>;
+export type UpdateEventDto = z.infer<typeof updateEventDtoSchema>;

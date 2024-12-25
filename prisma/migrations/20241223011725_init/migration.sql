@@ -52,8 +52,8 @@ CREATE TABLE "EventTemplate" (
 CREATE TABLE "Event" (
     "id" SERIAL NOT NULL,
     "templateId" INTEGER,
-    "templateScore" INTEGER NOT NULL,
-    "templateDescription" TEXT NOT NULL,
+    "templateScore" INTEGER,
+    "templateDescription" TEXT,
     "sectionId" INTEGER NOT NULL,
     "score" INTEGER NOT NULL,
     "amount" INTEGER NOT NULL,
