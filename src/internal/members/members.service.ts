@@ -137,7 +137,7 @@ export class MembersService {
 			if (file.size > 1024 * 1024) {
 				throw new BadRequestException("File size too large");
 			}
-			const directoryPath = `storage/app/avatar/${req.requester.id}`;
+			const directoryPath = `storage/internal/avatar/${req.requester.id}`;
 			if (!existsSync(directoryPath)) {
 				mkdirSync(directoryPath, { recursive: true });
 			}
@@ -153,7 +153,7 @@ export class MembersService {
 		if (!req.requester) {
 			throw new UnauthorizedException();
 		}
-		const directoryPath = `storage/app/avatar/${id}`;
+		const directoryPath = `storage/internal/avatar/${id}`;
 		const filePath = directoryPath + "/avatar.png";
 		if (!existsSync(filePath)) {
 			throw new NotFoundException("Avatar not found");

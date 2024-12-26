@@ -39,4 +39,7 @@ lerna-debug.log*
 .env
 
 # Storage
-storage
+storage/internal/avatar/*
+!storage/internal/avatar/README.md
+storage/internal/apps/performances/event-attachments/*
+!storage/internal/apps/performances/event-attachments/README.md
