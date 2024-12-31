@@ -4,7 +4,7 @@ import { REQUEST } from "@nestjs/core";
 import { PrismaService } from "src/prisma/prisma.service";
 import { Prisma } from "@prisma/client";
 import { UpdateEventDto } from "./dto/update-event.dto";
-import { mkdir, readdir, unlink, writeFile } from "fs/promises";
+import { mkdir, readdir, rmdir, unlink, writeFile } from "fs/promises";
 import { existsSync } from "fs";
 
 @Injectable()
@@ -85,6 +85,10 @@ export class EventsService {
 	}
 
 	async remove(id: number) {
+		/* delete event attachments */
+		await rmdir(
+			`./storage/internal/apps/performances/event-attachments/${id}`
+		);
 		await this.prismaService.eventComment.deleteMany({
 			where: {
 				eventId: id,
@@ -99,7 +103,7 @@ export class EventsService {
 
 	async getAttachmentListByEventId(id: number) {
 		const items = await readdir(
-			"./storage/internal/apps/performances/event-attachments/" + id
+			`./storage/internal/apps/performances/event-attachments/${id}`
 		);
 		const files: { name: string }[] = items.map((item) => {
 			return {

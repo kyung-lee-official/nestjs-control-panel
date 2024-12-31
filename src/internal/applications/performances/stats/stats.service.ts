@@ -7,6 +7,7 @@ import { CreateStatDto } from "./dto/create-stat.dto";
 import { UpdateStatDto } from "./dto/update-stat.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { Prisma } from "@prisma/client";
+import { rmdir } from "fs/promises";
 
 @Injectable()
 export class StatsService {
@@ -91,7 +92,11 @@ export class StatsService {
 				id: id,
 			},
 			include: {
-				statSections: true,
+				statSections: {
+					include: {
+						events: true,
+					},
+				},
 			},
 		});
 		if (!dbStat) {
@@ -105,21 +110,29 @@ export class StatsService {
 			})
 			.map((s) => s.id);
 
-		const dbSectionIds = dbStat.statSections.map((section) => section.id);
-		const sectionsToDeleteIds = dbSectionIds.filter(
-			(id) => !requestSectionIds.includes(id)
+		const dbSections = dbStat.statSections;
+		const dbSectionsToDelete = dbSections.filter(
+			(sec) => !requestSectionIds.includes(sec.id)
 		);
-		const dbSectionsToUpdateIds = dbSectionIds.filter((id) =>
-			requestSectionIds.includes(id)
+		const dbSectionsToUpdate = dbSections.filter((sec) =>
+			requestSectionIds.includes(sec.id)
 		);
 		/* if section doesn't have 'id' property, it's a new section */
 		const sectionsToCreate = requestSections.filter((s) => !s.id);
 
 		/* delete related events */
-		for (const sectionId of sectionsToDeleteIds) {
+		for (const section of dbSectionsToDelete) {
+			/* delete event attachments */
+			const eventIds = section.events.map((e) => e.id);
+			for (const id of eventIds) {
+				await rmdir(
+					`./storage/internal/apps/performances/event-attachments/${id}`
+				);
+			}
+			/* delete events */
 			await this.prismaService.event.deleteMany({
 				where: {
-					sectionId: sectionId,
+					sectionId: section.id,
 				},
 			});
 		}
@@ -127,20 +140,20 @@ export class StatsService {
 		await this.prismaService.statSection.deleteMany({
 			where: {
 				id: {
-					in: sectionsToDeleteIds,
+					in: dbSectionsToDelete.map((s) => s.id),
 				},
 			},
 		});
 
 		/* update existing sections */
-		for (const id of dbSectionsToUpdateIds) {
+		for (const sec of dbSectionsToUpdate) {
 			/* request sections for update */
 			const requestSectionForUpdate = requestSections.find(
-				(s) => s.id === id
+				(s) => s.id === sec.id
 			);
 			await this.prismaService.statSection.update({
 				where: {
-					id: id,
+					id: sec.id,
 				},
 				data: {
 					weight: requestSectionForUpdate!.weight,
@@ -185,13 +198,24 @@ export class StatsService {
 				id: id,
 			},
 			include: {
-				statSections: true,
+				statSections: {
+					include: {
+						events: true,
+					},
+				},
 			},
 		});
 		if (!stat) {
 			throw new NotFoundException("Stat not found");
 		}
 		for (const section of stat.statSections) {
+			/* delete event attachments */
+			const eventIds = section.events.map((e) => e.id);
+			for (const id of eventIds) {
+				await rmdir(
+					`./storage/internal/apps/performances/event-attachments/${id}`
+				);
+			}
 			/* delete events */
 			await this.prismaService.event.deleteMany({
 				where: {
