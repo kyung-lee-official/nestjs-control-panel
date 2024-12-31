@@ -9,10 +9,20 @@ import {
 	UseGuards,
 	UsePipes,
 	ParseIntPipe,
+	Put,
+	UseInterceptors,
+	UploadedFile,
+	Res,
 } from "@nestjs/common";
 import { EventsService } from "./events.service";
 import { CreateEventDto, createEventDtoSchema } from "./dto/create-event.dto";
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+	ApiBearerAuth,
+	ApiBody,
+	ApiConsumes,
+	ApiOperation,
+	ApiTags,
+} from "@nestjs/swagger";
 import {
 	createEventApiBodyOptions,
 	createEventApiOperationOptions,
@@ -21,6 +31,11 @@ import { CreateEventGuard } from "./guards/create-event.guard";
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { UpdateEventDto } from "./dto/update-event.dto";
+import {
+	updateEventAttachmentApiBodyOptions,
+	updateEventAttachmentApiOperationOptions,
+} from "./swagger/upload-event-attachment.swagger";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @ApiTags("Events")
 @ApiBearerAuth()
@@ -59,5 +74,39 @@ export class EventsController {
 	@Delete(":id")
 	async remove(@Param("id", ParseIntPipe) id: number) {
 		return await this.eventsService.remove(id);
+	}
+
+	@Get("get-attachment-list-by-event-id/:id")
+	async getAttachmentListByEventId(@Param("id", ParseIntPipe) id: number) {
+		return this.eventsService.getAttachmentListByEventId(id);
+	}
+
+	@Get("get-attachment/:id/:filename")
+	async getAttachment(
+		@Param("id", ParseIntPipe) id: number,
+		@Param("filename") filename: string,
+		@Res() res: any
+	): Promise<any> {
+		return await this.eventsService.getAttachment(id, filename, res);
+	}
+
+	@ApiOperation(updateEventAttachmentApiOperationOptions)
+	@ApiConsumes("multipart/form-data")
+	@ApiBody(updateEventAttachmentApiBodyOptions)
+	@Put("upload-attachments-by-event-id/:id")
+	@UseInterceptors(FileInterceptor("file"))
+	async uploadEventAttachment(
+		@Param("id", ParseIntPipe) id: number,
+		@UploadedFile() file: Express.Multer.File
+	): Promise<any> {
+		return this.eventsService.uploadEventAttachment(id, file);
+	}
+
+	@Delete("delete-attachment/:id/:filename")
+	async deleteAttachment(
+		@Param("id", ParseIntPipe) id: number,
+		@Param("filename") filename: string
+	) {
+		return await this.eventsService.deleteAttachment(id, filename);
 	}
 }

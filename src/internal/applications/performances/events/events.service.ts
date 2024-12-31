@@ -4,6 +4,8 @@ import { REQUEST } from "@nestjs/core";
 import { PrismaService } from "src/prisma/prisma.service";
 import { Prisma } from "@prisma/client";
 import { UpdateEventDto } from "./dto/update-event.dto";
+import { mkdir, readdir, unlink, writeFile } from "fs/promises";
+import { existsSync } from "fs";
 
 @Injectable()
 export class EventsService {
@@ -93,5 +95,46 @@ export class EventsService {
 				id,
 			},
 		});
+	}
+
+	async getAttachmentListByEventId(id: number) {
+		const items = await readdir(
+			"./storage/internal/apps/performances/event-attachments/" + id
+		);
+		const files: { name: string }[] = items.map((item) => {
+			return {
+				name: item,
+			};
+		});
+		return files;
+	}
+
+	async getAttachment(id: number, filename: string, res: any) {
+		const image = `./storage/internal/apps/performances/event-attachments/${id}/${filename}`;
+		res.download(image);
+	}
+
+	async uploadEventAttachment(
+		id: number,
+		file: Express.Multer.File
+	): Promise<any> {
+		/* Save file to local, create folder if not exists */
+		const folderPath = `./storage/internal/apps/performances/event-attachments/${id}`;
+		const isExists = existsSync(folderPath);
+		if (!isExists) {
+			await mkdir(folderPath, { recursive: true });
+		}
+		await writeFile(
+			`./storage/internal/apps/performances/event-attachments/${id}/${file.originalname}`,
+			file.buffer
+		);
+		return { success: true };
+	}
+
+	async deleteAttachment(id: number, filename: string) {
+		await unlink(
+			`./storage/internal/apps/performances/event-attachments/${id}/${filename}`
+		);
+		return { success: true };
 	}
 }
