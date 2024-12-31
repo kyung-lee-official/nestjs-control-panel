@@ -4,7 +4,7 @@ import { REQUEST } from "@nestjs/core";
 import { PrismaService } from "src/prisma/prisma.service";
 import { Prisma } from "@prisma/client";
 import { UpdateEventDto } from "./dto/update-event.dto";
-import { mkdir, readdir, rmdir, unlink, writeFile } from "fs/promises";
+import { mkdir, readdir, rm, unlink, writeFile } from "fs/promises";
 import { existsSync } from "fs";
 
 @Injectable()
@@ -86,8 +86,12 @@ export class EventsService {
 
 	async remove(id: number) {
 		/* delete event attachments */
-		await rmdir(
-			`./storage/internal/apps/performances/event-attachments/${id}`
+		await rm(
+			`./storage/internal/apps/performances/event-attachments/${id}`,
+			{
+				recursive: true,
+				force: true,
+			}
 		);
 		await this.prismaService.eventComment.deleteMany({
 			where: {
@@ -102,15 +106,23 @@ export class EventsService {
 	}
 
 	async getAttachmentListByEventId(id: number) {
-		const items = await readdir(
-			`./storage/internal/apps/performances/event-attachments/${id}`
-		);
-		const files: { name: string }[] = items.map((item) => {
-			return {
-				name: item,
-			};
-		});
-		return files;
+		try {
+			const items = await readdir(
+				`./storage/internal/apps/performances/event-attachments/${id}`
+			);
+			const files: { name: string }[] = items.map((item) => {
+				return {
+					name: item,
+				};
+			});
+			return files;
+		} catch (error: any) {
+			if (error.code === "ENOENT") {
+				return [];
+			} else {
+				throw error;
+			}
+		}
 	}
 
 	async getAttachment(id: number, filename: string, res: any) {

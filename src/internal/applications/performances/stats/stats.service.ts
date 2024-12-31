@@ -7,7 +7,7 @@ import { CreateStatDto } from "./dto/create-stat.dto";
 import { UpdateStatDto } from "./dto/update-stat.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { Prisma } from "@prisma/client";
-import { rmdir } from "fs/promises";
+import { rm } from "fs/promises";
 
 @Injectable()
 export class StatsService {
@@ -125,8 +125,12 @@ export class StatsService {
 			/* delete event attachments */
 			const eventIds = section.events.map((e) => e.id);
 			for (const id of eventIds) {
-				await rmdir(
-					`./storage/internal/apps/performances/event-attachments/${id}`
+				await rm(
+					`./storage/internal/apps/performances/event-attachments/${id}`,
+					{
+						recursive: true,
+						force: true,
+					}
 				);
 			}
 			/* delete events */
@@ -212,8 +216,12 @@ export class StatsService {
 			/* delete event attachments */
 			const eventIds = section.events.map((e) => e.id);
 			for (const id of eventIds) {
-				await rmdir(
-					`./storage/internal/apps/performances/event-attachments/${id}`
+				await rm(
+					`./storage/internal/apps/performances/event-attachments/${id}`,
+					{
+						recursive: true,
+						force: true,
+					}
 				);
 			}
 			/* delete events */
