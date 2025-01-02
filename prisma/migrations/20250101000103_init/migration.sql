@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "ApprovalType" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+
 -- CreateTable
 CREATE TABLE "ChituboxManualFeedback" (
     "id" SERIAL NOT NULL,
@@ -55,6 +58,7 @@ CREATE TABLE "Event" (
     "templateScore" INTEGER,
     "templateDescription" TEXT,
     "sectionId" INTEGER NOT NULL,
+    "approval" "ApprovalType" NOT NULL DEFAULT 'PENDING',
     "score" INTEGER NOT NULL,
     "amount" INTEGER NOT NULL,
     "description" TEXT NOT NULL,

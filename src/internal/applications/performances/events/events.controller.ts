@@ -36,6 +36,14 @@ import {
 	updateEventAttachmentApiOperationOptions,
 } from "./swagger/upload-event-attachment.swagger";
 import { FileInterceptor } from "@nestjs/platform-express";
+import {
+	UpdateApprovalDto,
+	updateApprovalDtoSchema,
+} from "./dto/update-event-approval";
+import {
+	updateApprovalApiBodyOptions,
+	updateApprovalApiOperationOptions,
+} from "./swagger/update-event-approval.swagger";
 
 @ApiTags("Events")
 @ApiBearerAuth()
@@ -100,6 +108,20 @@ export class EventsController {
 		@UploadedFile() file: Express.Multer.File
 	): Promise<any> {
 		return this.eventsService.uploadEventAttachment(id, file);
+	}
+
+	@ApiOperation(updateApprovalApiOperationOptions)
+	@ApiBody(updateApprovalApiBodyOptions)
+	@Patch("update-approval-by-id/:id")
+	async updateApprovalById(
+		@Param("id", ParseIntPipe) id: number,
+		@Body(new ZodValidationPipe(updateApprovalDtoSchema))
+		updateApprovalDto: UpdateApprovalDto
+	) {
+		return await this.eventsService.updateApprovalById(
+			id,
+			updateApprovalDto
+		);
 	}
 
 	@Delete("delete-attachment/:id/:filename")

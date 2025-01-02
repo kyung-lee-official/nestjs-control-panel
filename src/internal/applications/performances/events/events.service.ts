@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { UpdateEventDto } from "./dto/update-event.dto";
 import { mkdir, readdir, rm, unlink, writeFile } from "fs/promises";
 import { existsSync } from "fs";
+import { UpdateApprovalDto } from "./dto/update-event-approval";
 
 @Injectable()
 export class EventsService {
@@ -145,6 +146,18 @@ export class EventsService {
 			file.buffer
 		);
 		return { success: true };
+	}
+
+	async updateApprovalById(id: number, updateApprovalDto: UpdateApprovalDto) {
+		const { approval } = updateApprovalDto;
+		return await this.prismaService.event.update({
+			where: {
+				id,
+			},
+			data: {
+				approval,
+			},
+		});
 	}
 
 	async deleteAttachment(id: number, filename: string) {
