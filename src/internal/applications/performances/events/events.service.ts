@@ -106,6 +106,21 @@ export class EventsService {
 		});
 	}
 
+	async updateApprovalByEventId(
+		id: number,
+		updateApprovalDto: UpdateApprovalDto
+	) {
+		const { approval } = updateApprovalDto;
+		return await this.prismaService.event.update({
+			where: {
+				id,
+			},
+			data: {
+				approval,
+			},
+		});
+	}
+
 	async getAttachmentListByEventId(id: number) {
 		try {
 			const items = await readdir(
@@ -146,18 +161,6 @@ export class EventsService {
 			file.buffer
 		);
 		return { success: true };
-	}
-
-	async updateApprovalById(id: number, updateApprovalDto: UpdateApprovalDto) {
-		const { approval } = updateApprovalDto;
-		return await this.prismaService.event.update({
-			where: {
-				id,
-			},
-			data: {
-				approval,
-			},
-		});
 	}
 
 	async deleteAttachment(id: number, filename: string) {

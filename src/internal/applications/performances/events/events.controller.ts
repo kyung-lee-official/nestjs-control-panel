@@ -84,6 +84,20 @@ export class EventsController {
 		return await this.eventsService.remove(id);
 	}
 
+	@ApiOperation(updateApprovalApiOperationOptions)
+	@ApiBody(updateApprovalApiBodyOptions)
+	@Patch("update-approval-by-event-id/:id")
+	async updateApprovalByEventId(
+		@Param("id", ParseIntPipe) id: number,
+		@Body(new ZodValidationPipe(updateApprovalDtoSchema))
+		updateApprovalDto: UpdateApprovalDto
+	) {
+		return await this.eventsService.updateApprovalByEventId(
+			id,
+			updateApprovalDto
+		);
+	}
+
 	@Get("get-attachment-list-by-event-id/:id")
 	async getAttachmentListByEventId(@Param("id", ParseIntPipe) id: number) {
 		return this.eventsService.getAttachmentListByEventId(id);
@@ -108,20 +122,6 @@ export class EventsController {
 		@UploadedFile() file: Express.Multer.File
 	): Promise<any> {
 		return this.eventsService.uploadEventAttachment(id, file);
-	}
-
-	@ApiOperation(updateApprovalApiOperationOptions)
-	@ApiBody(updateApprovalApiBodyOptions)
-	@Patch("update-approval-by-id/:id")
-	async updateApprovalById(
-		@Param("id", ParseIntPipe) id: number,
-		@Body(new ZodValidationPipe(updateApprovalDtoSchema))
-		updateApprovalDto: UpdateApprovalDto
-	) {
-		return await this.eventsService.updateApprovalById(
-			id,
-			updateApprovalDto
-		);
 	}
 
 	@Delete("delete-attachment/:id/:filename")
