@@ -1,5 +1,6 @@
 import {
 	BadRequestException,
+	Body,
 	Injectable,
 	NotFoundException,
 } from "@nestjs/common";
@@ -8,6 +9,8 @@ import { UpdateStatDto } from "./dto/update-stat.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { Prisma } from "@prisma/client";
 import { rm } from "fs/promises";
+import { SearchStatDto } from "./dto/search-stat.dto";
+import dayjs from "dayjs";
 
 @Injectable()
 export class StatsService {
@@ -47,7 +50,7 @@ export class StatsService {
 		});
 	}
 
-	async findAll() {
+	async getAll() {
 		return await this.prismaService.performanceStat.findMany({
 			include: {
 				statSections: {
@@ -70,6 +73,21 @@ export class StatsService {
 					include: {
 						events: true,
 					},
+				},
+			},
+		});
+	}
+
+	async searchStats(@Body() searchStatDto: SearchStatDto) {
+		const { ownerId, year } = searchStatDto;
+		const startDate = dayjs(year).startOf("year").toDate();
+		const endDate = dayjs(year).endOf("year").toDate();
+		return await this.prismaService.performanceStat.findMany({
+			where: {
+				ownerId: ownerId,
+				month: {
+					gte: startDate,
+					lte: endDate,
 				},
 			},
 		});

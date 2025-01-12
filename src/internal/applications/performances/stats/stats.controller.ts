@@ -23,6 +23,7 @@ import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { ExcludePasswordInterceptor } from "src/interceptors/exclude-password.interceptor";
 import { updateStatApiBodyOptions } from "./swagger/update-stat.swagger";
+import { SearchStatDto, searchStatDtoSchema } from "./dto/search-stat.dto";
 
 @ApiTags("Performance Stats")
 @ApiBearerAuth()
@@ -40,14 +41,21 @@ export class StatsController {
 	}
 
 	@Get()
-	async findAll() {
-		return await this.statsService.findAll();
+	async getAll() {
+		return await this.statsService.getAll();
 	}
 
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Get(":id")
 	async getStatById(@Param("id", ParseIntPipe) id: number) {
 		return this.statsService.getStatById(id);
+	}
+
+	@Post("search")
+	async searchStats(
+		@Body(new ZodValidationPipe(searchStatDtoSchema)) searchStatDto: SearchStatDto
+	) {
+		return await this.statsService.searchStats(searchStatDto);
 	}
 
 	@ApiBody(updateStatApiBodyOptions)
