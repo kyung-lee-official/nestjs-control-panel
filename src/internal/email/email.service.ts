@@ -44,10 +44,10 @@ export class EmailService {
 				subject:
 					"Please verify your email address 📧" /* subject line */,
 				text: textTemplate(
-					`${process.env.FRONTEND_HOST}/signup/emailVerification?token=${token}`
+					`${process.env.FRONTEND_HOST}/sign-up/email-verification?token=${token}`
 				) /* plain text body */,
 				html: htmlTemplate(
-					`${process.env.FRONTEND_HOST}/signup/emailVerification?token=${token}`
+					`${process.env.FRONTEND_HOST}/sign-up/email-verification?token=${token}`
 				) /* html body */,
 			});
 		} catch (error) {
@@ -115,7 +115,7 @@ export class EmailService {
 		const jwt = this.jwtService.sign({ email: newEmail });
 
 		const payload = {
-			newEmail: newEmail,
+			email: newEmail,
 		};
 
 		const token: string = this.jwtService.sign(payload, {
@@ -157,17 +157,17 @@ export class EmailService {
 		return { isSent: true, jwt: jwt };
 	}
 
-	async verifyNewEmail(
+	async verifyEmail(
 		verifyEmailDto: VerifyEmailDto
 	): Promise<{ isVerified: boolean }> {
 		const { verificationToken } = verifyEmailDto;
 		const payload = this.jwtService.verify(verificationToken, {
 			secret: process.env.SMTP_JWT_SECRET,
 		});
-		const { newEmail } = payload;
+		const { email } = payload;
 		const member = await this.prismaService.member.update({
 			where: {
-				email: newEmail,
+				email: email,
 			},
 			data: {
 				isVerified: true,

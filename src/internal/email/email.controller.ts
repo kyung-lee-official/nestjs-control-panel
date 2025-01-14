@@ -62,11 +62,11 @@ export class EmailController {
 	@ApiOperation(verifyNewEmailApiOperationOptions)
 	@ApiBody(verifyNewEmailApiBodyOptions)
 	@ApiOkResponse(verifyNewEmailOkResponseOptions)
-	@Patch("/verify-new-email")
-	verifyNewEmail(
+	@Patch("/verify-email")
+	verifyEmail(
 		@Body() verifyEmailDto: VerifyNewEmailDto
 	): Promise<{ isVerified: boolean }> {
-		return this.emailService.verifyNewEmail(verifyEmailDto);
+		return this.emailService.verifyEmail(verifyEmailDto);
 	}
 
 	@ApiOperation(forgetPasswordApiOperationOptions)
