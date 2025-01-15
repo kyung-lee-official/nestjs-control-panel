@@ -197,7 +197,7 @@ if your try to search entities created in year 2025, you are actually searching 
 
 That's to say, when searching entities within a time range, you should always specify the start and end time before sending the request. Because the frontend knows the timezone of the user, while the backend doesn't.
 
-You can't say 'hey server, give me entities created in year 2025', because the server doesn't know your timezone.
+You can't say 'hey server, give me entities created in year 2025', because the server doesn't know your timezone. 
 
 # Todo
 
