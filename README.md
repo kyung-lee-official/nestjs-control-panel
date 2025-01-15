@@ -188,6 +188,15 @@ Response example:
 
 [Member Server Settings](http://localhost:3001/api/member-server-settings)
 
+# Time Consistency
+
+Time inconsistency could happen when referring to a time range instead of a specific time. For example, year and month.
+
+Let's say your timezone is UTC+8, and an entity is created at 2025-01-01 01:00:00 (local), the corresponding UTC time in database will be 2024-12-31T17:00:00.000Z,
+if your try to filter entities created in year 2025, you will miss this entity because the UTC time is 2024-12-31T17:00:00.000Z.
+
+To avoid this, we use the format of 'YYYY-MM-DD' when sending requests, in our case, '2025-01-01' will be sent to the server, and the server needs convert it to '2025-01-01T00:00:00.000Z' before saving it to the database.
+
 # Todo
 
 -   [ ] Refactor project to comply the OpenAPI 3.1.0 standard.
