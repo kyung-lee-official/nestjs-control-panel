@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createStatDtoSchema = z.object({
 	ownerId: z.string(),
-	month: z.string().datetime(),
+	month: z.string().date(),
 	statSections: z.array(
 		z.object({
 			weight: z.number().int().min(0).max(100),

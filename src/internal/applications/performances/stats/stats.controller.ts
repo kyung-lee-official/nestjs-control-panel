@@ -51,9 +51,11 @@ export class StatsController {
 		return this.statsService.getStatById(id);
 	}
 
+	@ApiOperation({ summary: "Search performance stats, UTC time" })
 	@Post("search")
 	async searchStats(
-		@Body(new ZodValidationPipe(searchStatDtoSchema)) searchStatDto: SearchStatDto
+		@Body(new ZodValidationPipe(searchStatDtoSchema))
+		searchStatDto: SearchStatDto
 	) {
 		return await this.statsService.searchStats(searchStatDto);
 	}

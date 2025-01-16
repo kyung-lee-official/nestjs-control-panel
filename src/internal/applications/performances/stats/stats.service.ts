@@ -18,6 +18,7 @@ export class StatsService {
 
 	async create(createStatDto: CreateStatDto) {
 		const { ownerId, month, statSections } = createStatDto;
+		const monthISOString = dayjs(month).toISOString();
 
 		/* check weight sum */
 		const weightSum = statSections.reduce(
@@ -28,6 +29,19 @@ export class StatsService {
 			throw new BadRequestException("Weight sum must be 100");
 		}
 
+		/* check if the stat of this month already exists */
+		const existingStat = await this.prismaService.performanceStat.findFirst(
+			{
+				where: {
+					ownerId: ownerId,
+					month: monthISOString,
+				},
+			}
+		);
+		if (existingStat) {
+			throw new BadRequestException("Stat of this month already exists");
+		}
+
 		return await this.prismaService.performanceStat.create({
 			data: {
 				owner: {
@@ -35,7 +49,7 @@ export class StatsService {
 						id: ownerId,
 					},
 				},
-				month: month,
+				month: monthISOString,
 				statSections: {
 					create: statSections,
 				},

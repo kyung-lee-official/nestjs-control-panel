@@ -190,14 +190,7 @@ Response example:
 
 # Time Consistency
 
-Time inconsistency could happen when referring to a time range instead of a specific time. For example, year and month.
-
-Let's say your timezone is UTC+8, and an entity is created at 2025-01-01 01:00:00 (local), the corresponding UTC time in database will be 2024-12-31T17:00:00.000Z,
-if your try to search entities created in year 2025, you are actually searching entities created at 2024-12-31T16:00:00.000Z to 2025-12-31T15:59:59.999Z, which gives you correct results based on your timezone.
-
-That's to say, when searching entities within a time range, you should always specify the start and end time before sending the request. Because the frontend knows the timezone of the user, while the backend doesn't.
-
-You can't say 'hey server, give me entities created in year 2025', because the server doesn't know your timezone. 
+https://github.com/kyung-lee-official/nextjs-sandbox/tree/main/src/app/styles/date
 
 # Todo
 
