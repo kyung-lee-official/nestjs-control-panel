@@ -71,11 +71,15 @@ export class EventTemplatesService {
 		return `This action returns a #${id} eventTemplate`;
 	}
 
-	update(id: number, updateEventTemplateDto: UpdateEventTemplateDto) {
-		return `This action updates a #${id} eventTemplate`;
-	}
+	// update(id: number, updateEventTemplateDto: UpdateEventTemplateDto) {
+	// 	return `This action updates a #${id} eventTemplate`;
+	// }
 
-	remove(id: number) {
-		return `This action removes a #${id} eventTemplate`;
+	async deleteById(id: number) {
+		return await this.prismaService.eventTemplate.delete({
+			where: {
+				id: id,
+			},
+		});
 	}
 }

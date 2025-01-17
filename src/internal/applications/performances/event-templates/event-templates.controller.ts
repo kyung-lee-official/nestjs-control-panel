@@ -49,16 +49,16 @@ export class EventTemplatesController {
 		return await this.eventTemplatesService.getById(id);
 	}
 
-	@Patch(":id")
-	update(
-		@Param("id") id: string,
-		@Body() updateEventTemplateDto: UpdateEventTemplateDto
-	) {
-		return this.eventTemplatesService.update(+id, updateEventTemplateDto);
-	}
+	// @Patch(":id")
+	// update(
+	// 	@Param("id") id: string,
+	// 	@Body() updateEventTemplateDto: UpdateEventTemplateDto
+	// ) {
+	// 	return this.eventTemplatesService.update(+id, updateEventTemplateDto);
+	// }
 
 	@Delete(":id")
-	remove(@Param("id") id: string) {
-		return this.eventTemplatesService.remove(+id);
+	async deleteById(@Param("id", ParseIntPipe) id: number) {
+		return await this.eventTemplatesService.deleteById(id);
 	}
 }
