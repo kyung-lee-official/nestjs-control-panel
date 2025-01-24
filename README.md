@@ -8,17 +8,7 @@ This pattern reduces security risks and improves compliance, it's also easier to
 
 ## Permission Design
 
-### Permission Granularity and Strategy
-
-Permission Design can be complicated. Most cases, simply applying CRUD permissions to a generic resources is not enough. For example, **member** is a generic resource, a member may have a field called **isFrozen** that cannot be updated by the member himself, but can be updated by the admin. This is a **field-specific** permission. It's improper to use a permission like **UPDATE_MEMBER** to control this field, because you don't want to allow a group owner to be able to update the **isFrozen** field of a member of his group (especially in case the group owner is frozen, or he will be able to unfreeze himself), but at the same time, you might expect the group owner to be able to update other fields of the member of his group.
-
-A solution to this issue is to separate permissions into two types: common permissions and sentitive (field-specific) permissions. Common permissions can be implemented by simply applying CRUD permissions to resources, and field-specific permissions need to be treated separately. In this case, we can create a permission called **UPDATE_MEMBER_IS_FROZEN** to control the **isFrozen** field of a member.
-
-Another pitfall you need to be aware of is where relationships are involved. For example, someone who has the permission of **UPDATE_MEMBER** can update the member's belonging groups, but he doesn't have the permission of **UPDATE_MEMBER_GROUP** to add or remove members from the group. From the perspective of the member, he can update his own belonging groups, but from the perspective of the group, he can't update the group's members. This makes the permission system inconsistent. To solve this problem, we better separate the ability of updating the member's belonging groups out of the **UPDATE_MEMBER** permission, and consist with the **UPDATE_MEMBER_GROUP** permission only to control the group's members.
-
-We also need something we can used to limit the scope of a permission, **member-group** therefore comes in handy. For example, **UPDATE_MEMBER_IS_FROZEN** permission can be limited to a member-group, so that a group owner can only update the **isFrozen** field of a member of his group. Logically, the owner should not be able to freeze himself, this can be done by using two strategies: either use a 3rd party permission management library like CASL (conditional permissions), or add condition codes to the service that implements the conditional permission manually, so that the owner can't freeze himself.
-
-There is a rule that should be followed when designing a permission system: members with the same sensitive permissions should not be able to update each other. For example, if two members have the permission of **UPDATE_MEMBER_IS_FROZEN**, they should not be able to update each other's **isFrozen** field.
+https://github.com/kyung-lee-official/permission-design
 
 ## Internal Members
 
@@ -27,7 +17,7 @@ There is a rule that should be followed when designing a permission system: memb
 -   Any newly created (including seeded, signed-up) member must be assigned to the `everyone` member-group, and cannot be removed from the `everyone` member-group.
 -   member-group name must be unique. The server should incrementally name the new member-group if the name already exists.
 -   Each member-group has a owner. By default, the creater will be added to the member-group and the owner will be assigned to the creater.
--   member-group owner can't remove himself from the member-group.
+-   member-group owner can't remove herself from the member-group.
 -   The owner of a member-group can be transferred to another member of the member-group by admin.
 -   Only admin can freeze or unfreeze a member-group owner, then admin will be assigned to the owner of the member-group.
 -   Only admin can delete a member-group owner, then admin will be assigned to the owner of the member-group.
