@@ -49,6 +49,10 @@ import {
 	findRoleByIdBodyOptions,
 	findRoleByIdOperationOptions,
 } from "./swagger/find-role-by-id.swagger";
+import {
+	deleteRoleOperationOptions,
+	deleteRoleParamsOptions,
+} from "./swagger/delete-role-by-id.swagger";
 
 @ApiTags("Roles")
 @ApiBearerAuth()
@@ -115,6 +119,8 @@ export class RolesController {
 		return this.rolesService.updateRoleById(id, updateRoleDto);
 	}
 
+	@ApiOperation(deleteRoleOperationOptions)
+	@ApiParam(deleteRoleParamsOptions)
 	@UseGuards(RemoveRoleByIdGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Delete(":id")

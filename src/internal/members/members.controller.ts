@@ -43,6 +43,10 @@ import { FreezeMemberGuard } from "./guards/freeze-member.guard";
 import { freezeMemberBodyOptions } from "./swagger/freeze-member.swagger";
 import { TransferAdminGuard } from "./guards/transfer-admin.guard";
 import { RemoveMemberGuard } from "./guards/remove-member.guard";
+import {
+	searchMemberBodyOptions,
+	searchMemberOperationOptions,
+} from "./swagger/search-members.swagger";
 
 @ApiTags("Members")
 @ApiBearerAuth()
@@ -60,12 +64,14 @@ export class MembersController {
 		return this.membersService.create(createMemberDto);
 	}
 
+	@ApiOperation(searchMemberOperationOptions)
+	@ApiBody(searchMemberBodyOptions)
 	@UseGuards(FindMembersGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@HttpCode(200)
-	@Post("/find")
-	find(@Body() findMembersDto: FindMembersDto) {
-		return this.membersService.find(findMembersDto);
+	@Post("/search")
+	search(@Body() findMembersDto: FindMembersDto) {
+		return this.membersService.search(findMembersDto);
 	}
 
 	@ApiBody(findMembersByIdsBodyOptions)

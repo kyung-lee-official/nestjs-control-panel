@@ -19,8 +19,8 @@ export class SeedServer {
 
 export const seedServerOperationOptions: ApiOperationOptions = {
 	summary: "Seed the server with a member",
-	description: `# Seed the server
-Only available when the server is not seeded, the seed member will be the admin`,
+	description:
+		"# Seed the server only available when the server is not seeded, the seed member will be the admin, if frontend sends a seed request, check if at least one member exists, if at least one member already exists, return `400` bad request.",
 };
 
 export const seedServerBodyOptions: ApiBodyOptions = {

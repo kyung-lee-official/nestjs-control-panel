@@ -27,7 +27,7 @@ export class MembersService {
 	) {}
 
 	/**
-	 * Create a new member, and assign to the "everyone" group.
+	 * Create a new member.
 	 * @param createMemberDto
 	 * @returns member
 	 */
@@ -54,12 +54,11 @@ export class MembersService {
 	}
 
 	/**
-	 * Find a members conditionally.
-	 * Since CASL only determines "can" or "cannot",
+	 * .
 	 * this function only returns members belonging to owned groups of the requester only.
 	 * @returns member
 	 */
-	async find(findMembersDto: FindMembersDto): Promise<Member[]> {
+	async search(findMembersDto: FindMembersDto): Promise<Member[]> {
 		const { email, name } = findMembersDto;
 		let members = await this.prismaService.member.findMany({
 			where: {
