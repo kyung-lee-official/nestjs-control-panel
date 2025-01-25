@@ -10,9 +10,7 @@ This pattern reduces security risks and improves compliance, it's also easier to
 
 https://github.com/kyung-lee-official/permission-design
 
-## Internal Members
-
-### Common Compliance
+## Common Compliance
 
 -   member-role `admin` and `default` should be created when the server is seeded, and be assigned to the first member. `admin` should be assigned to `default`'s `superRole` field. Both `admin` and `default` member-roles are immutable, except for their associate members. every member must be assigned to the `default` member-role, which only has `["get] me` permission.
 -   Any newly created member must be assigned to the `default` role.
@@ -23,21 +21,15 @@ https://github.com/kyung-lee-official/permission-design
 -   members can't freeze themselves.
 -   email must be saved in lower case.
 
-### member-server-settings
+## API
+
+### Server
 
 http://localhost:3001/api/internal#/Server
 
-<!-- ### member-auth -->
+### Authentication
 
-<!-- -   [x] If a member accesses the sign up page, the sign up page should send a `GET /internal/server/is-seed` request to check if at least one member exists, if at least one member already exists, return `{ "isSeeded": true }`, frontend then redirects to the sign in page.
-        If frontend sends a `GET /auth/seed` request, check if at least one member exists, if at least one member already exists, return `400` bad request.
-        If no member exists, create a new member.
-        Create an `admin` member-role, assign the member-role to the member.
-        Create an `everyone` member-group, and assign the member-group owner to the member.
-        Create a `default` member-role, The `default` member-role has permissions `GET_MEMBER_ME`.
--   [ ] Seed with Google.
--   [x] Sign up a new member.
--   [x] Check if sign-up is available. -->
+http://localhost:3001/api/internal#/Authentication
 
 #### Google OAuth
 
@@ -66,37 +58,15 @@ To delete connections from third-party apps:
 1. On the left navigation panel, click **Security**.
 1. On the **Your connections to third-party apps & services** panel, select the app or service you want to remove.
 
-### members
+### Members
 
 http://localhost:3001/api/internal#/Members
 
-<!-- -   [x] Create a new member manually by email, `CREATE_MEMBER` permission required.
--   [x] Conditionally find members by query email (case nonsensitive), name, or member-role ids. member-role ids delimited by comma `','`, use **or** logic. `GET_MEMBERS` permission required.
--   [x] Get members by ids, `GET_MEMBERS` permission required.
--   [x] Get me, `GET_MEMBER_ME` permission required.
--   [x] Update a member by id, can update `name`, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
--   [x] Update email by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
--   [x] Update member-roles by member id, `UPDATE_MEMBER_ROLE` permission required.
--   [x] Update password by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
--   [ ] Freeze or unfreeze a member by id, `UPDATE_MEMBER` permission required.
--   [x] Delete a member by id, `DELETE_MEMBER` permission required.
--   [ ] Transfer the `admin` member-role to another member, `TRANSFER_MEMBER_ADMIN` permission required. -->
-
-### member-roles
+## member-roles
 
 http://localhost:3001/api/internal#/Roles
 
-<!-- -   [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` member-role required.
--   [x] Create a member-role, `CREATE_MEMBER_ROLE` permission required.
--   [ ] Create a member-role by copying permissions of an existing member-role, `CREATE_MEMBER_ROLE` permission required.
--   [x] Get all member-roles, `GET_MEMBER_ROLES` permission required.
--   [x] Get a member-role by id, `GET_MEMBER_ROLES` permission required.
--   [x] Update a member-role by id, `UPDATE_MEMBER_ROLE` permission required.
--   [x] Delete a member-role by id, delete even if the member-role has members, `DELETE_MEMBER_ROLE` permission required. -->
-
-### permissions
-
-`@UseGuards(PermissionsGuard)` and `@RequiredPermissions(Permissions.ACT_SOMETHING)` help filter out requesters without required permissions.
+## permissions
 
 CASL adds fields and conditions to the existing permission system to realize complex rules.
 
@@ -165,12 +135,3 @@ Response example:
 # Time Consistency
 
 https://github.com/kyung-lee-official/nextjs-sandbox/tree/main/src/app/styles/date
-
-# Todo
-
--   [ ] Refactor project to comply the OpenAPI 3.1.0 standard.
--   [ ] Audit `update` & `transferOwnership` in member-groups.service.ts
--   [ ] Finish up admin-permissions.e2e-spec.ts
--   [ ] Finish up limitations for unverified members
--   [ ] Finish up freeze member logic
--   [ ] Check new email logic and sign up logic, if the new email is already taken, return 400 bad request
