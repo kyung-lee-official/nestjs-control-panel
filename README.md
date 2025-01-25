@@ -14,33 +14,22 @@ https://github.com/kyung-lee-official/permission-design
 
 ### Common Compliance
 
--   Any newly created (including seeded, signed-up) member must be assigned to the `everyone` member-group, and cannot be removed from the `everyone` member-group.
--   member-group name must be unique. The server should incrementally name the new member-group if the name already exists.
--   Each member-group has a owner. By default, the creater will be added to the member-group and the owner will be assigned to the creater.
--   member-group owner can't remove herself from the member-group.
--   The owner of a member-group can be transferred to another member of the member-group by admin.
--   Only admin can freeze or unfreeze a member-group owner, then admin will be assigned to the owner of the member-group.
--   Only admin can delete a member-group owner, then admin will be assigned to the owner of the member-group.
-
--   Any newly created (including seeded, signed-up) member must be assigned to the `default` member-role, but members are allowed to be removed from the `default` member-role.
--   member-role name must be unique. The server should incrementally name new member-roles if the name already exists.
--   The `admin` member-role must be verified before performing any actions.
--   The `admin` member-role has full permissions and `admin` member-role cannot be frozen or deleted. The `admin` member-role's permissions cannot be changed.
--   The `admin` member-role must have and only have one member, and can be transferred to another member, this action can only be performed by the `admin` member-role. `admin` member-role can't be transferred to a frozen member.
--   The `default` member-role has permission `GET_MEMBER_ME` and `default` member-role cannot be deleted.
-
--   All members can't freeze themselves.
-
--   All email must be saved in lower case.
+-   member-role `admin` and `default` should be created when the server is seeded, and be assigned to the first member. `admin` should be assigned to `default`'s `superRole` field. Both `admin` and `default` member-roles are immutable, except for their associate members. every member must be assigned to the `default` member-role, which only has `["get] me` permission.
+-   Any newly created member must be assigned to the `default` role.
+-   Only admin can create, update and delete member-roles
+-   Only admin can freeze or unfreeze a member
+<!-- -   The `admin` member-role must be verified before performing any actions. -->
+-   The `admin` member-role has full permissions and `admin` member-role cannot be frozen or deleted. member-role `admin`'s permissions cannot be changed.
+-   members can't freeze themselves.
+-   email must be saved in lower case.
 
 ### member-server-settings
 
--   [x] Allow or block public sign ups.
--   [ ] Allow or block Google sign ups.
+http://localhost:3001/api/internal#/Server
 
-### member-auth
+<!-- ### member-auth -->
 
--   [x] Seed with email. If a member accesses the sign up page, the sign up page should send a `GET /auth/isSeeded` request to check if at least one member exists, if at least one member already exists, return `{ "isSeeded": true }`, frontend then redirects to the sign in page.
+<!-- -   [x] If a member accesses the sign up page, the sign up page should send a `GET /internal/server/is-seed` request to check if at least one member exists, if at least one member already exists, return `{ "isSeeded": true }`, frontend then redirects to the sign in page.
         If frontend sends a `GET /auth/seed` request, check if at least one member exists, if at least one member already exists, return `400` bad request.
         If no member exists, create a new member.
         Create an `admin` member-role, assign the member-role to the member.
@@ -48,7 +37,7 @@ https://github.com/kyung-lee-official/permission-design
         Create a `default` member-role, The `default` member-role has permissions `GET_MEMBER_ME`.
 -   [ ] Seed with Google.
 -   [x] Sign up a new member.
--   [x] Check if sign-up is available.
+-   [x] Check if sign-up is available. -->
 
 #### Google OAuth
 
@@ -79,7 +68,9 @@ To delete connections from third-party apps:
 
 ### members
 
--   [x] Create a new member manually by email, `CREATE_MEMBER` permission required.
+http://localhost:3001/api/internal#/Members
+
+<!-- -   [x] Create a new member manually by email, `CREATE_MEMBER` permission required.
 -   [x] Conditionally find members by query email (case nonsensitive), name, or member-role ids. member-role ids delimited by comma `','`, use **or** logic. `GET_MEMBERS` permission required.
 -   [x] Get members by ids, `GET_MEMBERS` permission required.
 -   [x] Get me, `GET_MEMBER_ME` permission required.
@@ -89,26 +80,19 @@ To delete connections from third-party apps:
 -   [x] Update password by member id, `UPDATE_MEMBER | UPDATE_MEMBER_ME` permission required.
 -   [ ] Freeze or unfreeze a member by id, `UPDATE_MEMBER` permission required.
 -   [x] Delete a member by id, `DELETE_MEMBER` permission required.
--   [ ] Transfer the `admin` member-role to another member, `TRANSFER_MEMBER_ADMIN` permission required.
+-   [ ] Transfer the `admin` member-role to another member, `TRANSFER_MEMBER_ADMIN` permission required. -->
 
 ### member-roles
 
--   [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` member-role required.
+http://localhost:3001/api/internal#/Roles
+
+<!-- -   [x] Update `admin` permissions to sync with _permissions.enum.ts_, `admin` member-role required.
 -   [x] Create a member-role, `CREATE_MEMBER_ROLE` permission required.
 -   [ ] Create a member-role by copying permissions of an existing member-role, `CREATE_MEMBER_ROLE` permission required.
 -   [x] Get all member-roles, `GET_MEMBER_ROLES` permission required.
 -   [x] Get a member-role by id, `GET_MEMBER_ROLES` permission required.
 -   [x] Update a member-role by id, `UPDATE_MEMBER_ROLE` permission required.
--   [x] Delete a member-role by id, delete even if the member-role has members, `DELETE_MEMBER_ROLE` permission required.
-
-### member-groups
-
--   [ ] Create a member-group, `CREATE_MEMBER_GROUP` permission required.
--   [x] Get all member-groups, `GET_MEMBER_GROUPS` permission required.
--   [x] Get a member-group by id, `GET_MEMBER_GROUPS` permission required.
--   [x] Update a member-group by id, `UPDATE_MEMBER_GROUP` permission required.
--   [ ] Transfer ownership of a member-group, `TRANSFER_MEMBER_GROUP_OWNER` permission required.
--   [x] Delete a member-group by id, delete even if the group has members, `DELETE_MEMBER_GROUP` permission required.
+-   [x] Delete a member-role by id, delete even if the member-role has members, `DELETE_MEMBER_ROLE` permission required. -->
 
 ### permissions
 
