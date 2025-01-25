@@ -120,18 +120,6 @@ Response example:
 ];
 ```
 
-# API
-
-[Member Auth](http://localhost:3001/api/member-auth)
-
-[Members](http://localhost:3001/api/members)
-
-[member-groups](http://localhost:3001/api/member-groups)
-
-[member-roles](http://localhost:3001/api/member-roles)
-
-[Member Server Settings](http://localhost:3001/api/member-server-settings)
-
 # Time Consistency
 
 https://github.com/kyung-lee-official/nextjs-sandbox/tree/main/src/app/styles/date
