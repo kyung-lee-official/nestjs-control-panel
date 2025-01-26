@@ -20,7 +20,7 @@ export class SeedServer {
 export const seedServerOperationOptions: ApiOperationOptions = {
 	summary: "Seed the server with a member",
 	description:
-		"# Seed the server only available when the server is not seeded, the seed member will be the admin, if frontend sends a seed request, check if at least one member exists, if at least one member already exists, return `400` bad request.",
+		"# Seed the server \n\nOnly available when the server is not seeded, the seed member will be `admin`, if frontend sends a seed request, check if at least one member exists, if at least one member already exists, return `400` bad request.",
 };
 
 export const seedServerBodyOptions: ApiBodyOptions = {
@@ -29,9 +29,9 @@ export const seedServerBodyOptions: ApiBodyOptions = {
 	examples: {
 		"Seed server": {
 			value: {
-				email: "admin@example.com",
-				name: "admin",
-				password: "1234Abcd!",
+				email: process.env.E2E_TEST_ADMIN_EMAIL,
+				name: process.env.E2E_TEST_ADMIN_NAME,
+				password: process.env.E2E_TEST_PASSWORD,
 			},
 		},
 	},

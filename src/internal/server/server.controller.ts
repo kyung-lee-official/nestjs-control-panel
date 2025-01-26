@@ -35,6 +35,10 @@ import { UpdateServerSettingsDto } from "./dto/update-server-settings.dto";
 import { updateServerSettingsBodyOptions } from "./swagger/update-server-settings.swagger";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { IsVerifiedGuard } from "../authentication/guards/is-verified.guard";
+import {
+	getPermissionsOkResponseOptions,
+	getPermissionsOperationOptions,
+} from "./swagger/get-permissions.swagger";
 
 @ApiTags("Server")
 @Controller("internal/server")
@@ -42,7 +46,8 @@ export class ServerController {
 	constructor(private readonly serverService: ServerService) {}
 
 	@ApiBearerAuth()
-	@ApiOperation({ summary: "Get server permissions" })
+	@ApiOperation(getPermissionsOperationOptions)
+	@ApiOkResponse(getPermissionsOkResponseOptions)
 	@UseGuards(JwtGuard)
 	@Get("permissions")
 	permissions() {
@@ -50,9 +55,9 @@ export class ServerController {
 	}
 
 	@ApiOperation(seedServerOperationOptions)
-	@ApiOkResponse(seedServerOkResponseOptions)
 	@ApiBadRequestResponse(seedServerBadRequestResponseOptions)
 	@ApiBody(seedServerBodyOptions)
+	@ApiOkResponse(seedServerOkResponseOptions)
 	@UsePipes(new ZodValidationPipe(seedServerSchema))
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Post("seed")
@@ -63,25 +68,27 @@ export class ServerController {
 	@ApiOperation(isSeededOperationOptions)
 	@ApiOkResponse(isSeededOkResponseOptions)
 	@Get("is-seeded")
-	isSeeded(): Promise<{ isSeeded: boolean }> {
-		return this.serverService.isSeeded();
+	async isSeeded(): Promise<{ isSeeded: boolean }> {
+		return await this.serverService.isSeeded();
 	}
 
 	@Get("is-sign-up-available")
-	isSignUpAvailable(): Promise<{ isSignUpAvailable: boolean }> {
-		return this.serverService.isSignUpAvailable();
+	async isSignUpAvailable(): Promise<{ isSignUpAvailable: boolean }> {
+		return await this.serverService.isSignUpAvailable();
 	}
 
 	@Get("is-google-sign-in-available")
-	isGoogleSignInAvailable(): Promise<{ isGoogleSignInAvailable: boolean }> {
-		return this.serverService.isGoogleSignInAvailable();
+	async isGoogleSignInAvailable(): Promise<{
+		isGoogleSignInAvailable: boolean;
+	}> {
+		return await this.serverService.isGoogleSignInAvailable();
 	}
 
 	// @ApiBearerAuth()
 	// @UseGuards(JwtGuard, IsVerifiedGuard, GetServerSettingsGuard)
 	@Get("settings")
-	getServerSettings() {
-		return this.serverService.getServerSettings();
+	async getServerSettings() {
+		return await this.serverService.getServerSettings();
 	}
 
 	@ApiBearerAuth()
@@ -93,9 +100,4 @@ export class ServerController {
 	) {
 		return this.serverService.updateServerSettings(updateServerSettingsDto);
 	}
-
-	// @Patch(":id")
-	// updateServerSettings(@Param("id") id: string, @Body() updateServerDto: UpdateServerDto) {
-	// 	return this.serverService.update(+id, updateServerDto);
-	// }
 }
