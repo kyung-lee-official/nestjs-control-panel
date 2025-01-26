@@ -18,7 +18,7 @@ export class StatsService {
 
 	async create(createStatDto: CreateStatDto) {
 		const { ownerId, month, statSections } = createStatDto;
-		const monthISOString = dayjs(month).toISOString();
+		const monthISOString = dayjs(month).startOf("month").toISOString();
 
 		/* check weight sum */
 		const weightSum = statSections.reduce(
