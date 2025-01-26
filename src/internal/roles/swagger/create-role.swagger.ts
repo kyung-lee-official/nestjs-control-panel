@@ -18,16 +18,17 @@ export const createRoleOperationOptions: ApiOperationOptions = {
 export const createRoleBodyOptions: ApiBodyOptions = {
 	type: CreateRole,
 	examples: {
-		"Create a role": {
+		"Create a role without super-role": {
 			value: {
 				id: "new-role",
 				name: "New Role",
 			},
 		},
-		"Create a role 2": {
+		"Create a role with super-role (admin)": {
 			value: {
 				id: "new-role-2",
 				name: "New Role 2",
+				superRoleId: "admin",
 			},
 		},
 	},

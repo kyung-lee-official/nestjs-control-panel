@@ -40,16 +40,20 @@ export class RolesService {
 	}
 
 	async create(createRoleDto: CreateRoleDto): Promise<MemberRole> {
+		const { id, name, superRoleId } = createRoleDto;
 		const role = await this.prismaService.memberRole.create({
 			data: {
-				id: createRoleDto.id,
-				name: createRoleDto.name,
+				id: id,
+				name: name,
+				superRole: {
+					connect: superRoleId ? { id: superRoleId } : Prisma.skip,
+				},
 			},
 		});
 		return role;
 	}
 
-	async findAllRoles() {
+	async getAllRoles() {
 		const roles = await this.prismaService.memberRole.findMany({
 			include: {
 				members: true,

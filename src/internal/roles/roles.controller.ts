@@ -53,6 +53,7 @@ import {
 	deleteRoleOperationOptions,
 	deleteRoleParamsOptions,
 } from "./swagger/delete-role-by-id.swagger";
+import { getallRolesOperationOptions } from "./swagger/get-all-roles.swagger";
 
 @ApiTags("Roles")
 @ApiBearerAuth()
@@ -65,25 +66,26 @@ export class RolesController {
 	@ApiOperation({ summary: "Get roles permissions" })
 	@UseGuards(JwtGuard)
 	@Get("permissions")
-	permissions() {
-		return this.rolesService.permissions();
+	async permissions() {
+		return await this.rolesService.permissions();
 	}
 
 	@ApiOperation(createRoleOperationOptions)
 	@ApiBody(createRoleBodyOptions)
 	@UseGuards(CreateRoleGuard)
 	@Post()
-	create(
+	async create(
 		@Body(new ZodValidationPipe(createRoleSchema))
 		createRoleDto: CreateRoleDto
 	) {
-		return this.rolesService.create(createRoleDto);
+		return await this.rolesService.create(createRoleDto);
 	}
 
+	@ApiOperation(getallRolesOperationOptions)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Get()
-	findAllRoles() {
-		return this.rolesService.findAllRoles();
+	async getAllRoles() {
+		return await this.rolesService.getAllRoles();
 	}
 
 	@ApiOperation(findRolesByIdsOperationOptions)
