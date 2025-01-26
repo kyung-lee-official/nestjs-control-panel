@@ -66,60 +66,6 @@ http://localhost:3001/api/internal#/Members
 
 http://localhost:3001/api/internal#/Roles
 
-## permissions
-
-CASL adds fields and conditions to the existing permission system to realize complex rules.
-
--   Realize field-specific rules: https://casl.js.org/v6/en/guide/restricting-fields
-
--   Realize grouping, so requesters can only access resources belongs them. For example, the requestee must belongs to at least one member-group that is **owned** by the requester.
-
-Other permission rule logic must be implemented in corresponding services file instead of the _casl-ability.factory.ts_ file.
-
-Checkout each service section doc for details.
-
--   [x] Get all permissions.
-
-## CHITUBOX Manual Analytics
-
-### chituboxManualFeedbacks
-
--   id
--   url
--   payload
--   ip
--   country
-
--   [x] Create a feedback.
--   [x] Find feedbacks by `startDate` and `endDate`.
-
-Response example:
-
-```ts
-[
-	{
-		id: "2",
-		pageId: "/en-US/chitubox-basic/v2.0.0/introduction",
-		url: "manual.chitubox.com/en-US/docs/chitubox-basic/latest/introduction",
-		payload: "USEFUL",
-		ip: "65.49.207.134",
-		country: "US",
-		createdAt: "2023-06-20T04:05:53.606Z",
-		updatedAt: "2023-06-20T04:05:53.606Z",
-	},
-	{
-		id: "3",
-		pageId: "/en-US/chitubox-basic/v2.0.0/introduction",
-		url: "manual.chitubox.com/en-US/docs/chitubox-basic/latest/introduction",
-		payload: "USEFUL",
-		ip: "65.49.207.134",
-		country: "US",
-		createdAt: "2023-06-21T10:05:27.467Z",
-		updatedAt: "2023-06-21T10:05:27.467Z",
-	},
-];
-```
-
 # Time Consistency
 
 https://github.com/kyung-lee-official/nextjs-sandbox/tree/main/src/app/styles/date
