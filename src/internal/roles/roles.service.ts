@@ -114,17 +114,9 @@ export class RolesService {
 				throw new BadRequestException('Can\'t rename "default" role');
 			}
 		}
-		// 	if (name.toLowerCase() === "default") {
-		// 		throw new BadRequestException(
-		// 			'Can\'t rename the role to "default"'
-		// 		);
-		// 	}
-		// 	if (name === "") {
-		// 		throw new BadRequestException(
-		// 			"role name can not be empty"
-		// 		);
-		// 	}
-		// }
+		if (name === "") {
+			throw new BadRequestException("role name can not be empty");
+		}
 		const newRole = await this.prismaService.memberRole.update({
 			where: { id: id },
 			data: {
