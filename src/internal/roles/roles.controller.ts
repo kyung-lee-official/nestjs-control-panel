@@ -54,6 +54,10 @@ import {
 	deleteRoleParamsOptions,
 } from "./swagger/delete-role-by-id.swagger";
 import { getallRolesOperationOptions } from "./swagger/get-all-roles.swagger";
+import {
+	udpateRoleByIdBodyOptions,
+	updateRoleByIdOperationOptions,
+} from "./swagger/update-role-by-id.swagger";
 
 @ApiTags("Roles")
 @ApiBearerAuth()
@@ -110,15 +114,16 @@ export class RolesController {
 		return this.rolesService.findRoleById(id);
 	}
 
+	@ApiOperation(updateRoleByIdOperationOptions)
+	@ApiBody(udpateRoleByIdBodyOptions)
 	@UseGuards(UpdateRoleByIdGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@Patch(":id")
+	@Patch()
 	updateRoleById(
-		@Param("id") id: string,
 		@Body(new ZodValidationPipe(updateRoleByIdSchema))
 		updateRoleDto: UpdateRoleByIdDto
 	) {
-		return this.rolesService.updateRoleById(id, updateRoleDto);
+		return this.rolesService.updateRoleById(updateRoleDto);
 	}
 
 	@ApiOperation(deleteRoleOperationOptions)

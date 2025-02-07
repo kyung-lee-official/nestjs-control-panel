@@ -24,7 +24,7 @@ export class UpdateRoleByIdGuard implements CanActivate {
 
 		const role = await this.prismaService.memberRole.findUnique({
 			where: {
-				id: req.params.id,
+				id: req.body.id,
 			},
 		});
 		if (!role) {

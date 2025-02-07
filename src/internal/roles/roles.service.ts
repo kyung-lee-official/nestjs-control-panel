@@ -1,4 +1,10 @@
-import { Inject, Injectable, NotFoundException, Scope } from "@nestjs/common";
+import {
+	BadRequestException,
+	Inject,
+	Injectable,
+	NotFoundException,
+	Scope,
+} from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 
 import { PrismaService } from "../../prisma/prisma.service";
@@ -95,16 +101,19 @@ export class RolesService {
 	}
 
 	async updateRoleById(
-		id: string,
 		updateRoleDto: UpdateRoleByIdDto
 	): Promise<MemberRole> {
-		const { name, superRoleId, ids } = updateRoleDto;
-		// if (name) {
-		// 	if (name.toLowerCase() === "admin") {
-		// 		throw new BadRequestException(
-		// 			'Can\'t rename the role to "admin"'
-		// 		);
-		// 	}
+		const { id, name, superRoleId, memberIds } = updateRoleDto;
+		if (id === "admin") {
+			if (name !== "Admin") {
+				throw new BadRequestException('Can\'t rename "admin" role');
+			}
+		}
+		if (id === "default") {
+			if (name !== "Default") {
+				throw new BadRequestException('Can\'t rename "default" role');
+			}
+		}
 		// 	if (name.toLowerCase() === "default") {
 		// 		throw new BadRequestException(
 		// 			'Can\'t rename the role to "default"'
@@ -124,8 +133,8 @@ export class RolesService {
 					connect: superRoleId ? { id: superRoleId } : Prisma.skip,
 				},
 				members: {
-					set: !!ids.length
-						? ids.map((id) => {
+					set: !!memberIds.length
+						? memberIds.map((id) => {
 								return { id: id };
 							})
 						: [],
