@@ -69,6 +69,32 @@ export class RolesService {
 		return roles;
 	}
 
+	/**
+	 * Get all super roles of a role
+	 * @param roleId role id to get super roles
+	 * @returns list of super roles id
+	 */
+	async getSuperRoles(roleId: string): Promise<string[]> {
+		const superRolesIdList: string[] = [];
+		const prismaService = this.prismaService;
+		async function checkRecursively(roleId: string) {
+			const superRole = await prismaService.memberRole.findUnique({
+				where: {
+					id: roleId,
+				},
+				include: {
+					superRole: true,
+				},
+			});
+			if (superRole?.superRole) {
+				superRolesIdList.push(superRole.superRole.id);
+				await checkRecursively(superRole.superRole.id);
+			}
+		}
+		await checkRecursively(roleId);
+		return superRolesIdList;
+	}
+
 	async findRolesByIds(findRolesByIdsDto: FindRolesByIdsDto) {
 		const { roleIds } = findRolesByIdsDto;
 		const roles = await this.prismaService.memberRole.findMany({
@@ -120,6 +146,19 @@ export class RolesService {
 		if (name === "") {
 			throw new BadRequestException("role name can not be empty");
 		}
+		if (id === superRoleId) {
+			throw new BadRequestException("role can not be its own super role");
+		}
+		/* circular super role check */
+		if (superRoleId) {
+			const superRolesIdList = await this.getSuperRoles(superRoleId);
+			if (superRolesIdList.includes(id)) {
+				throw new BadRequestException(
+					"target super role is a sub-role of the current role, this will create a circular reference, which is not allowed"
+				);
+			}
+		}
+
 		const newRole = await this.prismaService.memberRole.update({
 			where: { id: id },
 			data: {
