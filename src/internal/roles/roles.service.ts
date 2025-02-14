@@ -137,11 +137,14 @@ export class RolesService {
 			if (name !== "Admin") {
 				throw new BadRequestException('Can\'t rename "admin" role');
 			}
+			if (memberIds.length < 1) {
+				throw new BadRequestException(
+					'"admin" role must have at least one member'
+				);
+			}
 		}
 		if (id === "default") {
-			if (name !== "Default") {
-				throw new BadRequestException('Can\'t rename "default" role');
-			}
+			throw new BadRequestException('Can\'t update "default" role');
 		}
 		if (name === "") {
 			throw new BadRequestException("role name can not be empty");
@@ -183,6 +186,12 @@ export class RolesService {
 	}
 
 	async remove(id: string) {
+		if (id === "admin") {
+			throw new BadRequestException("Cannot delete admin roles");
+		}
+		if (id === "default") {
+			throw new BadRequestException("Cannot delete default roles");
+		}
 		const deletedRole = await this.prismaService.memberRole.delete({
 			where: { id: id },
 		});

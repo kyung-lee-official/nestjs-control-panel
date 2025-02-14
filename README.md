@@ -12,10 +12,9 @@ https://github.com/kyung-lee-official/permission-design
 
 ## Common Compliance
 
--   member-role `admin` and `default` should be created when the server is seeded, and be assigned to the first member. `admin` should be assigned to `default`'s `superRole` field. Both `admin` and `default` member-roles are immutable, except for their associate members. every member must be assigned to the `default` member-role, which only has `["get] me` permission.
--   Any newly created member must be assigned to the `default` role.
--   Only admin can create, update and delete member-roles
--   Only admin can freeze or unfreeze a member
+-   member-role `admin` and `default` should be created when the server is seeded, and be assigned to the first member. `admin` should be assigned to `default`'s `superRole` field. Both `admin` and `default` member-roles are immutable, except for `admin`'s associate members. every member must be assigned to the `default` member-role, which only has `["get"] me` permission, `admin` role must have at least one member.
+-   Only admin can create, update and delete member-roles.
+-   Only admin can freeze or unfreeze a member.
 <!-- -   The `admin` member-role must be verified before performing any actions. -->
 -   The `admin` member-role has full permissions and `admin` member-role cannot be frozen or deleted. member-role `admin`'s permissions cannot be changed.
 -   members can't freeze themselves.
