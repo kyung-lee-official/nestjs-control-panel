@@ -142,6 +142,11 @@ export class RolesService {
 					'"admin" role must have at least one member'
 				);
 			}
+			if (superRoleId) {
+				throw new BadRequestException(
+					'"admin" can not have a super role'
+				);
+			}
 		}
 		if (id === "default") {
 			throw new BadRequestException('Can\'t update "default" role');
