@@ -63,6 +63,7 @@ export class RolesService {
 		const roles = await this.prismaService.memberRole.findMany({
 			include: {
 				members: true,
+				superRole: true,
 			},
 		});
 		return roles;
@@ -80,6 +81,7 @@ export class RolesService {
 				: Prisma.skip,
 			include: {
 				members: true,
+				superRole: true,
 			},
 		});
 		return roles;
@@ -92,6 +94,7 @@ export class RolesService {
 			},
 			include: {
 				members: true,
+				superRole: true,
 			},
 		});
 		if (!role) {
@@ -131,6 +134,10 @@ export class RolesService {
 							})
 						: [],
 				},
+			},
+			include: {
+				members: true,
+				superRole: true,
 			},
 		});
 		return newRole;
