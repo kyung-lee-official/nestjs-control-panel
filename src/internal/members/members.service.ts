@@ -54,8 +54,7 @@ export class MembersService {
 	}
 
 	/**
-	 * .
-	 * this function only returns members belonging to owned groups of the requester only.
+	 * This function only returns members belonging to owned groups of the requester only.
 	 * @returns member
 	 */
 	async search(findMembersDto: FindMembersDto): Promise<Member[]> {
