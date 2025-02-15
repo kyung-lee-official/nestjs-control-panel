@@ -214,10 +214,10 @@ export class EmailService {
 				to: email /* list of receivers, comma separated */,
 				subject: "Reset your password 🗝️" /* subject line */,
 				text: textTemplate(
-					`${process.env.FRONTEND_HOST}/signin/resetPassword?token=${token}`
+					`${process.env.FRONTEND_HOST}/sign-in/reset-password?token=${token}`
 				) /* plain text body */,
 				html: htmlTemplate(
-					`${process.env.FRONTEND_HOST}/signin/resetPassword?token=${token}`
+					`${process.env.FRONTEND_HOST}/sign-in/reset-password?token=${token}`
 				) /* html body */,
 			});
 		} catch (error) {
