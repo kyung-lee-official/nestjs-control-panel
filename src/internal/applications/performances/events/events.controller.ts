@@ -30,7 +30,7 @@ import {
 import { CreateEventGuard } from "./guards/create-event.guard";
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
-import { UpdateEventDto } from "./dto/update-event.dto";
+import { UpdateEventDto, updateEventDtoSchema } from "./dto/update-event.dto";
 import {
 	updateEventAttachmentApiBodyOptions,
 	updateEventAttachmentApiOperationOptions,
@@ -74,7 +74,8 @@ export class EventsController {
 	@Patch("update-event-by-id/:id")
 	async updateEventById(
 		@Param("id", ParseIntPipe) id: number,
-		@Body() updateEventDto: UpdateEventDto
+		@Body(new ZodValidationPipe(updateEventDtoSchema))
+		updateEventDto: UpdateEventDto
 	) {
 		return await this.eventsService.updateEventById(id, updateEventDto);
 	}
