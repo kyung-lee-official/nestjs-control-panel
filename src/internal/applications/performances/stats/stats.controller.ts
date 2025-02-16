@@ -24,6 +24,7 @@ import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { ExcludePasswordInterceptor } from "src/interceptors/exclude-password.interceptor";
 import { updateStatApiBodyOptions } from "./swagger/update-stat.swagger";
 import { SearchStatDto, searchStatDtoSchema } from "./dto/search-stat.dto";
+import { CreateStatGuard } from "./guards/create-stat.guard";
 
 @ApiTags("Performance Stats")
 @ApiBearerAuth()
@@ -34,6 +35,7 @@ export class StatsController {
 
 	@ApiOperation(createStatApiOperationOptions)
 	@ApiBody(createStatApiBodyOptions)
+	@UseGuards(CreateStatGuard)
 	@UsePipes(new ZodValidationPipe(createStatDtoSchema))
 	@Post()
 	async create(@Body() createStatDto: CreateStatDto) {
