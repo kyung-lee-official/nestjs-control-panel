@@ -18,6 +18,8 @@ import {
 	createEventTemplateApiOperationOptions,
 } from "./swagger/create-event-template.swagger";
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
+import { CreateTemplateGuard } from "./guards/create-template.guard";
+import { GetTemplatesByRoleIdGuard } from "./guards/get-templates-by-role-id.guard";
 
 @ApiTags("Performance Event Template")
 @Controller("performance/event-templates")
@@ -28,12 +30,14 @@ export class EventTemplatesController {
 
 	@ApiOperation(createEventTemplateApiOperationOptions)
 	@ApiBody(createEventTemplateApiBodyOptions)
+	@UseGuards(CreateTemplateGuard)
 	@Post()
 	async create(@Body() createEventTemplateDto: CreateEventTemplateDto) {
 		return await this.eventTemplatesService.create(createEventTemplateDto);
 	}
 
 	@Get("get-by-role-id/:roleId")
+	@UseGuards(GetTemplatesByRoleIdGuard)
 	async getByRoleId(@Param("roleId") roleId: string) {
 		return await this.eventTemplatesService.getByRoleId(roleId);
 	}
