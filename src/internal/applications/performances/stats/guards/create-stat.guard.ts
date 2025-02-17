@@ -20,12 +20,15 @@ export class CreateStatGuard implements CanActivate {
 		const req = context.switchToHttp().getRequest();
 
 		const { ownerId } = req.body;
+		if (!ownerId) {
+			throw new BadRequestException("owner id is required");
+		}
 		const owner = await this.prismaService.member.findUnique({
 			where: { id: ownerId },
 			include: { memberRoles: true },
 		});
 		if (!owner) {
-			throw new BadRequestException("Owner not found");
+			throw new BadRequestException("owner not found");
 		}
 
 		const requester = req.requester;
