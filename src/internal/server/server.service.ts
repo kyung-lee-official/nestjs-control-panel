@@ -63,6 +63,23 @@ export class ServerService {
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
 
+		/* create 'admin' and 'default' roles */
+		const adminRole = await this.prismaService.memberRole.create({
+			data: {
+				id: "admin",
+				name: "Admin",
+				subRoles: {
+					create: [
+						{
+							id: "default",
+							name: "Default",
+						},
+					],
+				},
+			},
+		});
+
+		/* add member to 'admin' and 'default' roles */
 		const member = await this.prismaService.member.create({
 			data: {
 				email,
@@ -70,18 +87,12 @@ export class ServerService {
 				name,
 				isVerified: false,
 				memberRoles: {
-					create: [
+					connect: [
 						{
 							id: "admin",
-							name: "Admin",
-							subRoles: {
-								create: [
-									{
-										id: "default",
-										name: "Default",
-									},
-								],
-							},
+						},
+						{
+							id: "default",
 						},
 					],
 				},
