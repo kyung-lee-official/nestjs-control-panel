@@ -26,6 +26,15 @@ import { updateStatApiBodyOptions } from "./swagger/update-stat.swagger";
 import { SearchStatDto, searchStatDtoSchema } from "./dto/search-stat.dto";
 import { CreateStatGuard } from "./guards/create-stat.guard";
 import { DeleteStatGuard } from "./guards/delete-stat.guard";
+import { UpdateStatGuard } from "./guards/update-stat.guard";
+import { GetStatGuard } from "./guards/get-stat.guard";
+import { SearchStatGuard } from "./guards/search-stat.guard";
+import {
+	searchStatApiBodyOptions,
+	searchStatApiOperationOptions,
+} from "./swagger/search-stat.swagger";
+import { GetAllStatsGuard } from "./guards/get-all-stats.guard";
+
 @ApiTags("Performance Stats")
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -42,18 +51,23 @@ export class StatsController {
 		return await this.statsService.create(createStatDto);
 	}
 
+	@ApiOperation({ summary: "Get all performance stats, 'admin' only" })
+	@UseGuards(GetAllStatsGuard)
 	@Get()
 	async getAll() {
 		return await this.statsService.getAll();
 	}
 
 	@UseInterceptors(ExcludePasswordInterceptor)
+	@UseGuards(GetStatGuard)
 	@Get(":id")
 	async getStatById(@Param("id", ParseIntPipe) id: number) {
 		return this.statsService.getStatById(id);
 	}
 
-	@ApiOperation({ summary: "Search performance stats, UTC time" })
+	@ApiOperation(searchStatApiOperationOptions)
+	@ApiBody(searchStatApiBodyOptions)
+	@UseGuards(SearchStatGuard)
 	@Post("search")
 	async searchStats(
 		@Body(new ZodValidationPipe(searchStatDtoSchema))
@@ -63,7 +77,7 @@ export class StatsController {
 	}
 
 	@ApiBody(updateStatApiBodyOptions)
-	// @UseGuards(UpdateStatGuard)
+	@UseGuards(UpdateStatGuard)
 	@Patch(":id")
 	async updateStatById(
 		@Param("id", ParseIntPipe) id: number,
