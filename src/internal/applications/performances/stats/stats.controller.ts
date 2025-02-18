@@ -25,7 +25,7 @@ import { ExcludePasswordInterceptor } from "src/interceptors/exclude-password.in
 import { updateStatApiBodyOptions } from "./swagger/update-stat.swagger";
 import { SearchStatDto, searchStatDtoSchema } from "./dto/search-stat.dto";
 import { CreateStatGuard } from "./guards/create-stat.guard";
-
+import { DeleteStatGuard } from "./guards/delete-stat.guard";
 @ApiTags("Performance Stats")
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -63,6 +63,7 @@ export class StatsController {
 	}
 
 	@ApiBody(updateStatApiBodyOptions)
+	// @UseGuards(UpdateStatGuard)
 	@Patch(":id")
 	async updateStatById(
 		@Param("id", ParseIntPipe) id: number,
@@ -73,6 +74,7 @@ export class StatsController {
 	}
 
 	@ApiOperation({ summary: "Delete a performance stat" })
+	@UseGuards(DeleteStatGuard)
 	@Delete(":id")
 	async remove(@Param("id", ParseIntPipe) id: number) {
 		return await this.statsService.remove(id);
