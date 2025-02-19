@@ -19,7 +19,7 @@ import { FindMembersByIdsDto } from "./dto/find-members-by-ids.dto";
 import { CreateMemberDto } from "./dto/create-member.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { NotFrozenGuard } from "./guards/not-frozen.guard";
-import { FindMembersDto } from "./dto/find-members.dto";
+import { FindMembersDto, findMembersSchema } from "./dto/find-members.dto";
 import { Member } from "@prisma/client";
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { MemberWithoutPassword } from "../../utils/types";
@@ -70,7 +70,10 @@ export class MembersController {
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@HttpCode(200)
 	@Post("/search")
-	search(@Body() findMembersDto: FindMembersDto) {
+	search(
+		@Body(new ZodValidationPipe(findMembersSchema))
+		findMembersDto: FindMembersDto
+	) {
 		return this.membersService.search(findMembersDto);
 	}
 
