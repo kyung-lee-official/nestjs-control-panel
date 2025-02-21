@@ -1,0 +1,21 @@
+model FacebookGroupSource {
+    groupAddress String @unique
+    groupName    String
+}
+
+model FacebookGroupRecord {
+    groupAddress             String                  @unique
+    groupName                String
+    memberCount              Int
+    monthlyPostCount         Int
+    facebookGroupCrawlTask   FacebookGroupCrawlTask? @relation(fields: [facebookGroupCrawlTaskId], references: [id])
+    facebookGroupCrawlTaskId String?
+}
+
+model FacebookGroupCrawlTask {
+    id        String                @id @default(uuid())
+    records   FacebookGroupRecord[]
+    isAborted Boolean
+    createdAt DateTime              @default(now())
+    updatedAt DateTime              @updatedAt
+}

@@ -8,6 +8,7 @@ import { EmailModule } from "./internal/email/email.module";
 import { EventTemplatesModule } from "./internal/applications/performances/event-templates/event-templates.module";
 import { StatsModule } from "./internal/applications/performances/stats/stats.module";
 import { EventsModule } from "./internal/applications/performances/events/events.module";
+import { FacebookGroupModule } from "./internal/applications/sns-crawler/facebook-group/facebook-group.module";
 
 export function setupSwagger(app: INestApplication<any>) {
 	const membersOption = new DocumentBuilder()
@@ -37,7 +38,12 @@ export function setupSwagger(app: INestApplication<any>) {
 		app,
 		applicationsOption,
 		{
-			include: [StatsModule, EventTemplatesModule, EventsModule],
+			include: [
+				StatsModule,
+				EventTemplatesModule,
+				EventsModule,
+				FacebookGroupModule,
+			],
 		}
 	);
 	SwaggerModule.setup("api/applications", app, applicationsDocument);
