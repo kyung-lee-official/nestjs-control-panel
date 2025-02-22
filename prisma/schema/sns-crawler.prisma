@@ -4,16 +4,16 @@ model FacebookGroupSource {
 }
 
 model FacebookGroupRecord {
-    groupAddress             String                  @unique
+    groupAddress             String                 @unique
     groupName                String
     memberCount              Int
     monthlyPostCount         Int
-    facebookGroupCrawlTask   FacebookGroupCrawlTask? @relation(fields: [facebookGroupCrawlTaskId], references: [id])
-    facebookGroupCrawlTaskId String?
+    facebookGroupCrawlTask   FacebookGroupCrawlTask @relation(fields: [facebookGroupCrawlTaskId], references: [id])
+    facebookGroupCrawlTaskId Int
 }
 
 model FacebookGroupCrawlTask {
-    id        String                @id @default(uuid())
+    id        Int                   @id @default(autoincrement())
     records   FacebookGroupRecord[]
     isAborted Boolean
     createdAt DateTime              @default(now())
