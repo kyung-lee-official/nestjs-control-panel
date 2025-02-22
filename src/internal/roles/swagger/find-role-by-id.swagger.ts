@@ -13,7 +13,7 @@ export const findRoleByIdOperationOptions: ApiOperationOptions = {
 	summary: "Find role by id",
 };
 
-export const findRoleByIdBodyOptions: ApiParamOptions = {
+export const findRoleByIdParamOptions: ApiParamOptions = {
 	name: "id",
 	type: String,
 	description: "Role id",

@@ -46,7 +46,7 @@ import {
 } from "./swagger/create-role.swagger";
 import { CreateRoleDto, createRoleSchema } from "./dto/create-role.dto";
 import {
-	findRoleByIdBodyOptions,
+	findRoleByIdParamOptions,
 	findRoleByIdOperationOptions,
 } from "./swagger/find-role-by-id.swagger";
 import {
@@ -106,7 +106,7 @@ export class RolesController {
 	}
 
 	@ApiOperation(findRoleByIdOperationOptions)
-	@ApiParam(findRoleByIdBodyOptions)
+	@ApiParam(findRoleByIdParamOptions)
 	@UseGuards(FindRoleByIdGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Get(":id")
