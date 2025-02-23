@@ -4,10 +4,12 @@ model FacebookGroupSource {
 }
 
 model FacebookGroupRecord {
-    groupAddress             String                 @unique
+    id                       Int                    @id @default(autoincrement())
+    groupAddress             String
     groupName                String
     memberCount              Int
     monthlyPostCount         Int
+    sourceLength             Int
     facebookGroupCrawlTask   FacebookGroupCrawlTask @relation(fields: [facebookGroupCrawlTaskId], references: [id])
     facebookGroupCrawlTaskId Int
 }
