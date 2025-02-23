@@ -1,4 +1,12 @@
-import { Controller, Get, Body, Patch } from "@nestjs/common";
+import {
+	Controller,
+	Get,
+	Body,
+	Patch,
+	Post,
+	Param,
+	ParseIntPipe,
+} from "@nestjs/common";
 import { FacebookGroupService } from "./facebook-group.service";
 import {
 	FacebookGroupOverwriteSourceDto,
@@ -6,6 +14,7 @@ import {
 } from "./dto/facebook-group-overwrite-source.dto";
 import { FacebookGroupUpdateSourceDto } from "./dto/facebook-group-update-source.dto";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
+import { ApiOperation } from "@nestjs/swagger";
 
 @Controller("internal/applications/facebook-group")
 export class FacebookGroupController {
@@ -35,10 +44,28 @@ export class FacebookGroupController {
 		return await this.facebookGroupService.getSource();
 	}
 
-	// @Post("task")
-	// async createTask() {
-	// 	return await this.facebookGroupService.createTask();
-	// }
+	@Post("start-task")
+	async startTask() {
+		return await this.facebookGroupService.startTask();
+	}
+
+	@Get("tasks")
+	async getTasks() {
+		return await this.facebookGroupService.getTasks();
+	}
+
+	@ApiOperation({
+		summary: "Get task by id, can be used to pool task status",
+	})
+	@Get("task/:taskId")
+	async getTaskById(@Param("taskId", ParseIntPipe) taskId: number) {
+		return await this.facebookGroupService.getTaskById(taskId);
+	}
+
+	@Post("abort-task/:taskId")
+	async abortTask(@Param("taskId", ParseIntPipe) taskId: number) {
+		return await this.facebookGroupService.abortTask(taskId);
+	}
 
 	// @Patch(":id")
 	// async update(
