@@ -9,15 +9,14 @@ model FacebookGroupRecord {
     groupName                String
     memberCount              Int
     monthlyPostCount         Int
-    sourceLength             Int
     facebookGroupCrawlTask   FacebookGroupCrawlTask @relation(fields: [facebookGroupCrawlTaskId], references: [id])
     facebookGroupCrawlTaskId Int
 }
 
 model FacebookGroupCrawlTask {
-    id        Int                   @id @default(autoincrement())
-    records   FacebookGroupRecord[]
-    isAborted Boolean
-    createdAt DateTime              @default(now())
-    updatedAt DateTime              @updatedAt
+    id           Int                   @id @default(autoincrement())
+    sourceLength Int
+    records      FacebookGroupRecord[]
+    createdAt    DateTime              @default(now())
+    updatedAt    DateTime              @updatedAt
 }
