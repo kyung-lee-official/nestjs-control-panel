@@ -57,7 +57,7 @@ export class FacebookGroupService {
 				records: {
 					create: [],
 				},
-				isAborted: false,
+				sourceLength: sourceData.length,
 			},
 		});
 		const startRes = await axios.post(
@@ -71,7 +71,7 @@ export class FacebookGroupService {
 			throw new InternalServerErrorException("Start task failed");
 		}
 		this.crawl(task.id, sourceData);
-		return startRes.data;
+		return { ...startRes.data, taskId: task.id };
 	}
 
 	async crawl(taskId, sourceData) {
@@ -99,7 +99,6 @@ export class FacebookGroupService {
 								memberCount: crawlRes.data.memberCount,
 								monthlyPostCount:
 									crawlRes.data.monthlyPostCount,
-								sourceLength: sourceData.length,
 							},
 						},
 					},
@@ -127,25 +126,26 @@ export class FacebookGroupService {
 	}
 
 	async getTaskById(taskId: number) {
-		return await this.prismaService.facebookGroupCrawlTask.findUnique({
-			where: {
-				id: taskId,
-			},
-			include: {
-				records: true,
-			},
-		});
+		const task = await this.prismaService.facebookGroupCrawlTask.findUnique(
+			{
+				where: {
+					id: taskId,
+				},
+				include: {
+					records: true,
+				},
+			}
+		);
+		const status = await axios.get(
+			`facebook-crawler/get-status/${taskId}`,
+			{
+				baseURL: process.env.SNS_CRAWLER_HOST,
+			}
+		);
+		return { ...task, ...status.data };
 	}
 
 	async abortTask(taskId: number) {
-		await this.prismaService.facebookGroupCrawlTask.update({
-			where: {
-				id: taskId,
-			},
-			data: {
-				isAborted: true,
-			},
-		});
 		const crawlerRes = await axios.post(
 			"facebook-crawler/abort",
 			{
