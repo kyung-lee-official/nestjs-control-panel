@@ -136,12 +136,9 @@ export class FacebookGroupService {
 				},
 			}
 		);
-		const status = await axios.get(
-			`facebook-crawler/get-status/${taskId}`,
-			{
-				baseURL: process.env.SNS_CRAWLER_HOST,
-			}
-		);
+		const status = await axios.get(`facebook-crawler/get-status`, {
+			baseURL: process.env.SNS_CRAWLER_HOST,
+		});
 		return { ...task, ...status.data };
 	}
 
@@ -156,6 +153,13 @@ export class FacebookGroupService {
 			}
 		);
 		return crawlerRes.data;
+	}
+
+	async getStatus() {
+		const status = await axios.get(`facebook-crawler/get-status`, {
+			baseURL: process.env.SNS_CRAWLER_HOST,
+		});
+		return status.data;
 	}
 
 	// async update(id: number, updateFacebookGroupDto: OverFacebookGroupDto) {

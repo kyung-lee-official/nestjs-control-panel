@@ -67,6 +67,11 @@ export class FacebookGroupController {
 		return await this.facebookGroupService.abortTask(taskId);
 	}
 
+	@Get("status")
+	async getStatus() {
+		return await this.facebookGroupService.getStatus();
+	}
+
 	// @Patch(":id")
 	// async update(
 	// 	@Param("id") id: string,
