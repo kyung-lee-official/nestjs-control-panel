@@ -142,12 +142,10 @@ export class FacebookGroupService {
 		return { ...task, ...status.data };
 	}
 
-	async abortTask(taskId: number) {
+	async abortTask() {
 		const crawlerRes = await axios.post(
 			"facebook-crawler/abort",
-			{
-				taskId: taskId,
-			},
+			{},
 			{
 				baseURL: process.env.SNS_CRAWLER_HOST,
 			}

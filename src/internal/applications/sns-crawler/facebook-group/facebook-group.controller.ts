@@ -62,9 +62,9 @@ export class FacebookGroupController {
 		return await this.facebookGroupService.getTaskById(taskId);
 	}
 
-	@Post("abort-task/:taskId")
-	async abortTask(@Param("taskId", ParseIntPipe) taskId: number) {
-		return await this.facebookGroupService.abortTask(taskId);
+	@Post("abort-task")
+	async abortTask() {
+		return await this.facebookGroupService.abortTask();
 	}
 
 	@Get("status")
