@@ -7,7 +7,7 @@ import { CreateChituboxManualFeedbackDto } from "./dto/create-chitubox-manual-fe
 import dayjs from "dayjs";
 import axios from "axios";
 import { Iso8601DateRangeDto } from "./dto/iso8601-date-range.dto";
-import { PrismaService } from "../prisma/prisma.service";
+import { PrismaService } from "../../../prisma/prisma.service";
 import { ChituboxManualFeedback } from "@prisma/client";
 
 @Injectable()

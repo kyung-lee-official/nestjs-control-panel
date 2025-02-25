@@ -2,7 +2,7 @@ import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ConfigModule } from "@nestjs/config";
-import { ChituboxManualFeedbacksModule } from "./chitubox-manual-feedbacks/chitubox-manual-feedbacks.module";
+import { ChituboxManualFeedbacksModule } from "./internal/applications/chitubox-manual-feedbacks/chitubox-manual-feedbacks.module";
 import { PaypalModule } from "./paypal/paypal.module";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { DevtoolsModule } from "@nestjs/devtools-integration";
