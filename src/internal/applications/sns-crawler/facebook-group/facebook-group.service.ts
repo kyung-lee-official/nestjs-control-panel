@@ -8,7 +8,6 @@ import { FacebookGroupOverwriteSourceDto } from "./dto/facebook-group-overwrite-
 import { FacebookGroupUpdateSourceDto } from "./dto/facebook-group-update-source.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import axios from "axios";
-import { FacebookGroupCrawlRes } from "./response/facebook-group-crawl.res";
 
 @Injectable()
 export class FacebookGroupService {
@@ -61,17 +60,17 @@ export class FacebookGroupService {
 				sourceLength: sourceData.length,
 			},
 		});
-		const createRes = await axios.post(
-			"facebook-crawler/create",
+		const launchRes = await axios.post(
+			"facebook-crawler/launch",
 			{ taskId: task.id },
 			{
 				baseURL: process.env.SNS_CRAWLER_HOST,
 			}
 		);
-		if (!createRes) {
-			throw new InternalServerErrorException("Creating task failed");
+		if (!launchRes) {
+			throw new InternalServerErrorException("Launching browser failed");
 		}
-		return createRes.data;
+		return launchRes.data;
 	}
 
 	async crawl(taskId: number) {
@@ -137,12 +136,96 @@ export class FacebookGroupService {
 								groupAddress:
 									crawlRes.data.crawledDatum.groupAddress,
 								groupName: crawlRes.data.crawledDatum.groupName,
+								failed: crawlRes.data.crawledDatum.failed,
 								memberCount:
 									crawlRes.data.crawledDatum.memberCount,
 								monthlyPostCount:
 									crawlRes.data.crawledDatum.monthlyPostCount,
 							},
 						},
+					},
+				});
+			} catch (error) {
+				console.error(error);
+				continue;
+			}
+		}
+		/* stop the crawler when all sources are crawled */
+		await this.abortTask();
+	}
+
+	async recrawlFailedRecords(taskId: number) {
+		const task = await this.prismaService.facebookGroupCrawlTask.findUnique(
+			{
+				where: {
+					id: taskId,
+				},
+				include: {
+					records: {
+						where: {
+							failed: true,
+						},
+					},
+				},
+			}
+		);
+		if (!task) {
+			throw new NotFoundException("Task not found");
+		}
+		if (task.records.length === 0) {
+			throw new BadRequestException("No failed records");
+		}
+		const launchRes = await axios.post(
+			"facebook-crawler/launch",
+			{ taskId: task.id },
+			{
+				baseURL: process.env.SNS_CRAWLER_HOST,
+			}
+		);
+		if (!launchRes) {
+			throw new InternalServerErrorException("Launching browser failed");
+		}
+		const failedRecords = task.records;
+		for (const r of failedRecords) {
+			let crawlRes;
+			try {
+				crawlRes = await axios.post(
+					"facebook-crawler/crawl",
+					{
+						taskId: taskId,
+						sourceData: {
+							groupAddress: r.groupAddress,
+							groupName: r.groupName,
+						},
+					},
+					{
+						baseURL: process.env.SNS_CRAWLER_HOST,
+					}
+				);
+			} catch (error: any) {
+				console.error(error.response.data);
+				throw error;
+			}
+			try {
+				if (!crawlRes.data) {
+					await this.abortTask();
+					return {
+						taskId: task.id,
+						/* TODO: add more props */
+					};
+				}
+				if (crawlRes.data.taskId === null) {
+					return crawlRes.data;
+				}
+				await this.prismaService.facebookGroupRecord.update({
+					where: {
+						id: r.id,
+					},
+					data: {
+						failed: crawlRes.data.crawledDatum.failed,
+						memberCount: crawlRes.data.crawledDatum.memberCount,
+						monthlyPostCount:
+							crawlRes.data.crawledDatum.monthlyPostCount,
 					},
 				});
 			} catch (error) {

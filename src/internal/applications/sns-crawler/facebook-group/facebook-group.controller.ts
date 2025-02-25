@@ -54,6 +54,11 @@ export class FacebookGroupController {
 		return await this.facebookGroupService.crawl(taskId);
 	}
 
+	@Post("recrawl-failed-records/:taskId")
+	async recrawlFailedRecords(@Param("taskId", ParseIntPipe) taskId: number) {
+		return await this.facebookGroupService.recrawlFailedRecords(taskId);
+	}
+
 	@Get("tasks")
 	async getTasks() {
 		return await this.facebookGroupService.getTasks();
