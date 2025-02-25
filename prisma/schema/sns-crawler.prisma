@@ -7,7 +7,7 @@ model FacebookGroupRecord {
     id                       Int                    @id @default(autoincrement())
     groupAddress             String
     groupName                String
-    failed                   Boolean                @default(false)
+    failed                   Boolean
     memberCount              Int
     monthlyPostCount         Int
     facebookGroupCrawlTask   FacebookGroupCrawlTask @relation(fields: [facebookGroupCrawlTaskId], references: [id])
