@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	Injectable,
 	InternalServerErrorException,
 	NotFoundException,
@@ -46,7 +47,7 @@ export class FacebookGroupService {
 		return await this.prismaService.facebookGroupSource.findMany();
 	}
 
-	async startTask() {
+	async createTask() {
 		const sourceData =
 			await this.prismaService.facebookGroupSource.findMany();
 		if (sourceData.length === 0) {
@@ -60,24 +61,48 @@ export class FacebookGroupService {
 				sourceLength: sourceData.length,
 			},
 		});
-		const startRes = await axios.post(
-			"facebook-crawler/start",
+		const createRes = await axios.post(
+			"facebook-crawler/create",
 			{ taskId: task.id },
 			{
 				baseURL: process.env.SNS_CRAWLER_HOST,
 			}
 		);
-		if (!startRes) {
-			throw new InternalServerErrorException("Start task failed");
+		if (!createRes) {
+			throw new InternalServerErrorException("Creating task failed");
 		}
-		this.crawl(task.id, sourceData);
-		return { ...startRes.data, taskId: task.id };
+		return createRes.data;
 	}
 
-	async crawl(taskId, sourceData) {
+	async crawl(taskId: number) {
+		const sourceData =
+			await this.prismaService.facebookGroupSource.findMany();
+		if (!sourceData) {
+			throw new InternalServerErrorException("Invalid source");
+		}
+		if (sourceData.length === 0) {
+			throw new NotFoundException("No available source");
+		}
+		const task = await this.prismaService.facebookGroupCrawlTask.findUnique(
+			{
+				where: {
+					id: taskId,
+				},
+				include: {
+					records: true,
+				},
+			}
+		);
+		if (!task) {
+			throw new NotFoundException("Task not found");
+		}
+		if (task.records.length > 0) {
+			throw new BadRequestException("Task records not empty");
+		}
 		for (const s of sourceData) {
+			let crawlRes;
 			try {
-				const crawlRes = await axios.post<FacebookGroupCrawlRes>(
+				crawlRes = await axios.post(
 					"facebook-crawler/crawl",
 					{
 						taskId: taskId,
@@ -87,18 +112,35 @@ export class FacebookGroupService {
 						baseURL: process.env.SNS_CRAWLER_HOST,
 					}
 				);
+			} catch (error: any) {
+				console.error(error.response.data);
+				throw error;
+			}
+			try {
+				if (!crawlRes.data) {
+					await this.abortTask();
+					return {
+						taskId: task.id,
+						/* TODO: add more props */
+					};
+				}
+				if (crawlRes.data.taskId === null) {
+					return crawlRes.data;
+				}
 				await this.prismaService.facebookGroupCrawlTask.update({
 					where: {
-						id: crawlRes.data.taskId,
+						id: crawlRes.data.crawledDatum.taskId,
 					},
 					data: {
 						records: {
 							create: {
-								groupAddress: crawlRes.data.groupAddress,
-								groupName: crawlRes.data.groupName,
-								memberCount: crawlRes.data.memberCount,
+								groupAddress:
+									crawlRes.data.crawledDatum.groupAddress,
+								groupName: crawlRes.data.crawledDatum.groupName,
+								memberCount:
+									crawlRes.data.crawledDatum.memberCount,
 								monthlyPostCount:
-									crawlRes.data.monthlyPostCount,
+									crawlRes.data.crawledDatum.monthlyPostCount,
 							},
 						},
 					},
@@ -108,13 +150,8 @@ export class FacebookGroupService {
 				continue;
 			}
 		}
-		await axios.post(
-			"facebook-crawler/abort",
-			{},
-			{
-				baseURL: process.env.SNS_CRAWLER_HOST,
-			}
-		);
+		/* stop the crawler when all sources are crawled */
+		await this.abortTask();
 	}
 
 	async getTasks() {
@@ -136,10 +173,7 @@ export class FacebookGroupService {
 				},
 			}
 		);
-		const status = await axios.get(`facebook-crawler/get-status`, {
-			baseURL: process.env.SNS_CRAWLER_HOST,
-		});
-		return { ...task, ...status.data };
+		return task;
 	}
 
 	async abortTask() {
@@ -154,10 +188,15 @@ export class FacebookGroupService {
 	}
 
 	async getStatus() {
-		const status = await axios.get(`facebook-crawler/get-status`, {
-			baseURL: process.env.SNS_CRAWLER_HOST,
-		});
-		return status.data;
+		try {
+			const status = await axios.get(`facebook-crawler/get-status`, {
+				baseURL: process.env.SNS_CRAWLER_HOST,
+			});
+			return status.data;
+		} catch (error: any) {
+			console.log("An error occured... ", error.response.data);
+			throw error;
+		}
 	}
 
 	// async update(id: number, updateFacebookGroupDto: OverFacebookGroupDto) {

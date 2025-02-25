@@ -44,9 +44,14 @@ export class FacebookGroupController {
 		return await this.facebookGroupService.getSource();
 	}
 
-	@Post("start-task")
-	async startTask() {
-		return await this.facebookGroupService.startTask();
+	@Post("create-task")
+	async createTask() {
+		return await this.facebookGroupService.createTask();
+	}
+
+	@Post("start-crawling/:taskId")
+	async crawl(@Param("taskId", ParseIntPipe) taskId: number) {
+		return await this.facebookGroupService.crawl(taskId);
 	}
 
 	@Get("tasks")
