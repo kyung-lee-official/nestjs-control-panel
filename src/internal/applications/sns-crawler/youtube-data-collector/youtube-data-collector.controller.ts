@@ -1,12 +1,4 @@
-import {
-	Controller,
-	Get,
-	Post,
-	Body,
-	Patch,
-	Param,
-	Delete,
-} from "@nestjs/common";
+import { Controller, Get, Body, Patch } from "@nestjs/common";
 import { YoutubeDataCollectorService } from "./youtube-data-collector.service";
 import { ApiTags } from "@nestjs/swagger";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
@@ -16,7 +8,7 @@ import {
 } from "./dto/youtube-data-overwrite-source.dto";
 
 @ApiTags("Youtube Data Collector")
-@Controller("youtube-data-collector")
+@Controller("internal/applications/youtube-data-collector")
 export class YoutubeDataCollectorController {
 	constructor(
 		private readonly youtubeDataCollectorService: YoutubeDataCollectorService
