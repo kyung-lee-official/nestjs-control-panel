@@ -21,3 +21,24 @@ model FacebookGroupCrawlTask {
     createdAt    DateTime              @default(now())
     updatedAt    DateTime              @updatedAt
 }
+
+// model YouTubeToken {
+//     token String @unique
+// }
+
+// model YouTubeVideoInfoSettings {
+//     id                       Int @id @default(autoincrement())
+//     targetSearchResultNumber Int
+//     maxResultsPerPage        Int
+//     maxCommentsPerPage       Int
+//     minimumSubscriberCount   Int
+// }
+
+model YouTubeVideoInfoSearchKeyword {
+    id      Int    @id @default(autoincrement())
+    keyword String
+}
+
+// model YouTubeVideoInfoTask {
+//     id Int @id @default(autoincrement())
+// }
