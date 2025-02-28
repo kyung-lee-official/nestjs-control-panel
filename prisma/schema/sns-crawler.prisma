@@ -22,9 +22,10 @@ model FacebookGroupCrawlTask {
     updatedAt    DateTime              @updatedAt
 }
 
-// model YouTubeToken {
-//     token String @unique
-// }
+model YouTubeToken {
+    token         String    @unique
+    quotaRunOutAt DateTime?
+}
 
 // model YouTubeVideoInfoSettings {
 //     id                       Int @id @default(autoincrement())
