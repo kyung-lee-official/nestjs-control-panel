@@ -22,24 +22,66 @@ model FacebookGroupCrawlTask {
     updatedAt    DateTime              @updatedAt
 }
 
-model YouTubeToken {
-    token         String    @unique
-    quotaRunOutAt DateTime?
+model YouTubeDataToken {
+    token          String    @unique
+    isRecentlyUsed Boolean
+    quotaRunOutAt  DateTime?
 }
 
-// model YouTubeVideoInfoSettings {
-//     id                       Int @id @default(autoincrement())
-//     targetSearchResultNumber Int
-//     maxResultsPerPage        Int
-//     maxCommentsPerPage       Int
-//     minimumSubscriberCount   Int
-// }
-
-model YouTubeVideoInfoSearchKeyword {
+model YouTubeDataSearchKeyword {
     id      Int    @id @default(autoincrement())
-    keyword String
+    keyword String @unique
 }
 
-// model YouTubeVideoInfoTask {
-//     id Int @id @default(autoincrement())
-// }
+model YouTubeDataTask {
+    id                      Int                      @id @default(autoincrement())
+    youTubeDataTaskKeywords YouTubeDataTaskKeyword[]
+    searches                YouTubeDataApiSearch[]
+    channels                YouTubeDataApiChannel[]
+    videos                  YouTubeDataApiVideo[]
+    createdAt               DateTime                 @default(now())
+    updatedAt               DateTime                 @updatedAt
+}
+
+model YouTubeDataTaskKeyword {
+    id      Int             @id @default(autoincrement())
+    keyword String
+    pending Boolean
+    failed  Boolean
+    task    YouTubeDataTask @relation(fields: [taskId], references: [id])
+    taskId  Int
+}
+
+model YouTubeDataApiSearch {
+    id                String           @unique
+    keyword           String
+    publishedAt       DateTime
+    channelId         String
+    youTubeDataTask   YouTubeDataTask @relation(fields: [youTubeDataTaskId], references: [id])
+    youTubeDataTaskId Int
+}
+
+model YouTubeDataApiChannel {
+    id                Int             @id @default(autoincrement())
+    channelId         String
+    channelTitle      String
+    viewCount         Int
+    subscriberCount   Int
+    videoCount        Int
+    youTubeDataTask   YouTubeDataTask @relation(fields: [youTubeDataTaskId], references: [id])
+    youTubeDataTaskId Int
+}
+
+model YouTubeDataApiVideo {
+    id                Int             @id @default(autoincrement())
+    videoId           String
+    title             String
+    description       String
+    viewCount         Int
+    likeCount         Int
+    dislikeCount      Int
+    favoriteCount     Int
+    commentCount      Int
+    YouTubeDataTask   YouTubeDataTask @relation(fields: [youTubeDataTaskId], references: [id])
+    youTubeDataTaskId Int
+}
