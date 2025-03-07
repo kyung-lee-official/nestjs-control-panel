@@ -25,6 +25,7 @@ model FacebookGroupCrawlTask {
 model YouTubeDataToken {
     token          String    @unique
     isRecentlyUsed Boolean
+    isExpired      Boolean
     quotaRunOutAt  DateTime?
 }
 
@@ -43,17 +44,22 @@ model YouTubeDataTask {
     updatedAt               DateTime                 @updatedAt
 }
 
+enum YouTubeDataTaskKeywordStatus {
+    PENDING
+    SUCCESS
+    FAILED
+}
+
 model YouTubeDataTaskKeyword {
-    id      Int             @id @default(autoincrement())
+    id      Int                          @id @default(autoincrement())
     keyword String
-    pending Boolean
-    failed  Boolean
-    task    YouTubeDataTask @relation(fields: [taskId], references: [id])
+    status  YouTubeDataTaskKeywordStatus @default(PENDING)
+    task    YouTubeDataTask              @relation(fields: [taskId], references: [id])
     taskId  Int
 }
 
 model YouTubeDataApiSearch {
-    id                String           @unique
+    id                Int             @id @default(autoincrement())
     keyword           String
     publishedAt       DateTime
     channelId         String
