@@ -61,6 +61,7 @@ model YouTubeDataTaskKeyword {
 model YouTubeDataApiSearch {
     id                Int             @id @default(autoincrement())
     keyword           String
+    videoId           String
     publishedAt       DateTime
     channelId         String
     youTubeDataTask   YouTubeDataTask @relation(fields: [youTubeDataTaskId], references: [id])
