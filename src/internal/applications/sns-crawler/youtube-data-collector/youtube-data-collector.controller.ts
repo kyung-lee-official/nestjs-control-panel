@@ -32,10 +32,12 @@ import {
 	YouTubeDataUpdateTokenStateDto,
 	youtubeDataUpdateTokenStateSchema,
 } from "./dto/youtube-data-update-token-state.dto";
+
 import {
-	UpdateTaskKeywordSearchesByIdDto,
-	updateTaskKeywordSearchesByIdSchema,
-} from "./dto/update-task-keyword-by-id.dto";
+	YouTubeDataGetSearchesDto,
+	youtubeDataGetSearchesSchema,
+} from "./dto/youtube-data-get-searches.dto";
+import { youtubeDataGetSearchesBodyOptions } from "./swagger/youtube-data-get-searches.swagger";
 
 @ApiTags("Youtube Data Collector")
 @Controller("internal/applications/youtube-data-collector")
@@ -59,20 +61,20 @@ export class YoutubeDataCollectorController {
 		return await this.youtubeDataCollectorService.getTokens();
 	}
 
-	@ApiOperation(youtubeDataUpdateTokenStateOperationOptions)
-	@ApiBody(youtubeDataUpdateTokenStateBodyOptions)
-	@Patch("update-token-state")
-	async updateTokenState(
-		@Body(
-			"recentlyUsedToken",
-			new ZodValidationPipe(youtubeDataUpdateTokenStateSchema)
-		)
-		youtubeDataUpdateTokenStateDto: YouTubeDataUpdateTokenStateDto
-	) {
-		return await this.youtubeDataCollectorService.updateTokenState(
-			youtubeDataUpdateTokenStateDto
-		);
-	}
+	// @ApiOperation(youtubeDataUpdateTokenStateOperationOptions)
+	// @ApiBody(youtubeDataUpdateTokenStateBodyOptions)
+	// @Patch("update-token-state")
+	// async updateTokenState(
+	// 	@Body(
+	// 		"recentlyUsedToken",
+	// 		new ZodValidationPipe(youtubeDataUpdateTokenStateSchema)
+	// 	)
+	// 	youtubeDataUpdateTokenStateDto: YouTubeDataUpdateTokenStateDto
+	// ) {
+	// 	return await this.youtubeDataCollectorService.updateTokenState(
+	// 		youtubeDataUpdateTokenStateDto
+	// 	);
+	// }
 
 	@Delete(":token")
 	async deleteToken(@Param("token") token: string) {
@@ -109,6 +111,11 @@ export class YoutubeDataCollectorController {
 		return await this.youtubeDataCollectorService.getTaskById(taskId);
 	}
 
+	@Delete("delete-task-by-id/:taskId")
+	async deleteTaskById(@Param("taskId", ParseIntPipe) taskId: number) {
+		return await this.youtubeDataCollectorService.deleteTaskById(taskId);
+	}
+
 	@Get("get-task-keyword-by-id/:keywordId")
 	async getTaskKeywordById(
 		@Param("keywordId", ParseIntPipe) keywordId: number
@@ -118,15 +125,36 @@ export class YoutubeDataCollectorController {
 		);
 	}
 
-	// @Patch("update-task-keyword-searches-by-id")
-	// async updateTaskKeywordSearchesById(
-	// 	@Body(new ZodValidationPipe(updateTaskKeywordSearchesByIdSchema))
-	// 	updateTaskKeywordSearchesByIdDto: UpdateTaskKeywordSearchesByIdDto
-	// ) {
-	// 	return await this.youtubeDataCollectorService.updateTaskKeywordSearchesById(
-	// 		updateTaskKeywordSearchesByIdDto
-	// 	);
-	// }
+	@ApiBody(youtubeDataGetSearchesBodyOptions)
+	@Post("get-searches-by-task-id-and-keyword")
+	async getSearchesByTaskIdAndKeyword(
+		@Body(new ZodValidationPipe(youtubeDataGetSearchesSchema))
+		youtubeDataGetSearchesDto: YouTubeDataGetSearchesDto
+	) {
+		return await this.youtubeDataCollectorService.getSearchesByTaskIdAndKeyword(
+			youtubeDataGetSearchesDto
+		);
+	}
+
+	@Post("start-task-by-id")
+	async startTaskById(
+		@Body(new ZodValidationPipe(youtubeDataSearchSchema))
+		youtubeDataSearchDto: YouTubeDataSearchDto
+	) {
+		return await this.youtubeDataCollectorService.startTaskById(
+			youtubeDataSearchDto
+		);
+	}
+
+	@Get("meta")
+	async getMeta() {
+		return await this.youtubeDataCollectorService.getMeta();
+	}
+
+	@Get("test-youtube-api")
+	async testYoutubeApi() {
+		return await this.youtubeDataCollectorService.testYoutubeApi();
+	}
 
 	// @ApiBody(youtubeDataSearchBodyOptions)
 	// @Post("search")

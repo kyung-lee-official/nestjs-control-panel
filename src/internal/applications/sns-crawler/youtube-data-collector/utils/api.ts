@@ -25,8 +25,8 @@ export const getSearchResults = async (
 			part: ["id", "snippet"],
 			type: "video",
 			maxResults: maxResultsPerPage,
-			start: start,
-			end: end,
+			publishedAfter: start,
+			publishedBefore: end,
 			pageToken: pageToken,
 		},
 		{
@@ -34,7 +34,6 @@ export const getSearchResults = async (
 			arrayFormat: "comma",
 		}
 	);
-
 	const response = await axios.get(
 		`https://youtube.googleapis.com/youtube/v3/search?${query}`,
 		{

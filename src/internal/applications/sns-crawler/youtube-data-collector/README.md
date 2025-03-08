@@ -332,6 +332,8 @@ https://www.googleapis.com/youtube/v3/search?key=AIzaSyDv1_AWBZXH-EduSyxOi5YFpkU
 
 ## Error Messages
 
+https://developers.google.com/youtube/v3/docs/errors
+
 ### Token Expired
 
 ```json
