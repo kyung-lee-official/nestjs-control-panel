@@ -7,8 +7,8 @@ export async function getChannelsDetail(
 	channelIds: string[]
 ): Promise<ChannelInfoStruct[]> {
 	const channelInfoStack: ChannelInfoStruct[] = [];
-	const chunkifiedChannelId = chunkify(channelIds, 50);
-	for (const chunk of chunkifiedChannelId) {
+	const chunkifiedChannelIds = chunkify(channelIds, 50);
+	for (const chunk of chunkifiedChannelIds) {
 		// console.log(`Fetching ${chalk.bgBlue(" channel ")} info of the following channels:`);
 		// console.log(util.inspect(chunk, { showHidden: true, depth: null, colors: true, breakLength: Infinity }));
 		let chunkChannelInfo: any;
