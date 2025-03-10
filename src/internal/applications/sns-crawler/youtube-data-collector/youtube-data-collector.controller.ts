@@ -154,6 +154,24 @@ export class YoutubeDataCollectorController {
 		);
 	}
 
+	@Get("fetch-videos-by-task-id/:taskId")
+	async fetchYouTubeVideosByTaskId(
+		@Param("taskId", ParseIntPipe) taskId: number
+	) {
+		return await this.youtubeDataCollectorService.fetchYouTubeVideosByTaskId(
+			taskId
+		);
+	}
+
+	@Get("get-videos-by-task-id/:taskId")
+	async getYouTubeVideosByTaskId(
+		@Param("taskId", ParseIntPipe) taskId: number
+	) {
+		return await this.youtubeDataCollectorService.getYouTubeVideosByTaskId(
+			taskId
+		);
+	}
+
 	@Post("start-task-by-id")
 	async startTaskById(
 		@Body(new ZodValidationPipe(youtubeDataSearchSchema))

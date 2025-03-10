@@ -81,20 +81,20 @@ export const getChunkifiedChannelsDetail = async (
 
 /**
  * https://developers.google.com/youtube/v3/docs/videos
- * @param ids YouTube video Ids, maximum 50
+ * @param videoids YouTube video Ids, maximum 50
  * @returns video info
  */
-export const getVideoDetails = async (
+export const getChunkifiedVideoDetails = async (
 	token: string,
-	ids: string[]
+	videoids: string[]
 ): Promise<any> => {
-	if (ids.length > 50) {
-		throw new Error("The length of ids can not be greater then 50.");
+	if (videoids.length > 50) {
+		throw new Error("The length of video ids can not be greater then 50.");
 	}
 	const query = qs.stringify(
 		{
 			key: token,
-			id: ids,
+			id: videoids,
 			part: ["id", "contentDetails", "status", "statistics", "snippet"],
 		},
 		{

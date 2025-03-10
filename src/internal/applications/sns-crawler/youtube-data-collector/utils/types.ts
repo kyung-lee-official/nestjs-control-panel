@@ -19,13 +19,15 @@ export type ChannelInfoStruct = {
 	videoCount: number;
 };
 
-export type VideoInfoStruct = ChannelInfoStruct & {
-	durationAsSeconds: string;
-	viewCount: string;
-	likeCount: string;
-	favoriteCount: string;
-	commentCount: string;
+export type VideoInfoStruct = {
+	videoId: string;
+	title: string;
 	description: string;
+	durationAsSeconds: number;
+	viewCount: number;
+	likeCount: number;
+	favoriteCount: number;
+	commentCount: number;
 };
 
 export type CommentInfoStruct = SearchResultStruct & {

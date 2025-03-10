@@ -14,6 +14,7 @@ import dayjs from "dayjs";
 import { SearchResultStruct } from "./utils/types";
 import { YouTubeDataGetSearchesDto } from "./dto/youtube-data-get-searches.dto";
 import { getChannelsDetail } from "./utils/getChannelsDetail";
+import { getVideosDetail } from "./utils/getVideoDetails";
 
 type Flags = {
 	tokenObj: {
@@ -273,6 +274,13 @@ export class YoutubeDataCollectorService {
 		if (!this.meta.tokenObj) {
 			throw new BadRequestException("Please provide a token");
 		}
+		/* clear old data */
+		const oldChannels =
+			await this.prismaService.youTubeDataApiChannel.deleteMany({
+				where: {
+					youTubeDataTaskId: taskId,
+				},
+			});
 		const task = await this.prismaService.youTubeDataTask.findUnique({
 			where: {
 				id: taskId,
@@ -356,6 +364,120 @@ export class YoutubeDataCollectorService {
 				},
 			});
 		return channels;
+	}
+
+	async fetchYouTubeVideosByTaskId(taskId: number) {
+		await this.setValidToken();
+		this.meta = {
+			tokenObj: this.meta.tokenObj,
+			taskId: taskId,
+			status: "fetching-videos",
+			pendingFlag: "shouldStart",
+			start: this.meta.start,
+			end: this.meta.end,
+			targetResultCount: 0,
+		};
+		if (this.meta.status === "fetching-searches") {
+			return this.meta;
+		} else {
+			this.meta.taskId = taskId;
+			this.meta.status = "fetching-searches";
+		}
+		if (!this.meta.tokenObj) {
+			throw new BadRequestException("Please provide a token");
+		}
+		/* clear old data */
+		const oldVideos =
+			await this.prismaService.youTubeDataApiVideo.deleteMany({
+				where: {
+					youTubeDataTaskId: taskId,
+				},
+			});
+		const task = await this.prismaService.youTubeDataTask.findUnique({
+			where: {
+				id: taskId,
+			},
+			include: {
+				searches: {
+					select: {
+						videoId: true,
+					},
+				},
+			},
+		});
+		if (!task) {
+			throw new NotFoundException("Task not found.");
+		}
+		const videoIds = task.searches.map((s) => s.videoId);
+		/* remove duplicate videos */
+		const uniqueVideoIds = videoIds.filter((videoId, index, self) => {
+			return self.indexOf(videoId) === index;
+		});
+		try {
+			const videosInfo = await getVideosDetail(
+				this.meta.tokenObj.token,
+				uniqueVideoIds
+			);
+			const dbVideos =
+				await this.prismaService.youTubeDataApiVideo.createMany({
+					data: videosInfo.map((v) => {
+						return {
+							videoId: v.videoId,
+							title: v.title,
+							description: v.description,
+							durationAsSeconds: v.durationAsSeconds,
+							viewCount: v.viewCount,
+							likeCount: v.likeCount,
+							favoriteCount: v.favoriteCount,
+							commentCount: v.commentCount,
+							youTubeDataTaskId: taskId,
+						};
+					}),
+				});
+			this.meta.taskId = null;
+			this.meta.status = "idle";
+		} catch (error: any) {
+			if (axios.isAxiosError(error)) {
+				/* possible reason: proxy down */
+				if (error.code === "ECONNABORTED") {
+					console.error("Request timed out:", error.message);
+				} else if (error.response) {
+					if (
+						error.response.data.error.message ===
+						"API key expired. Please renew the API key."
+					) {
+						await this.setValidToken({
+							token: this.meta.tokenObj.token,
+							isRecentlyUsed: false,
+							isExpired: true,
+						});
+					}
+					if (
+						error.response.data.error.errors.some(
+							(err) => err.reason === "quotaExceeded"
+						)
+					) {
+						await this.setValidToken({
+							token: this.meta.tokenObj.token,
+							isRecentlyUsed: false,
+							quotaRunOutAt: dayjs().toDate(),
+							isExpired: false,
+						});
+					}
+				}
+			} else {
+				console.error(error);
+			}
+		}
+	}
+
+	async getYouTubeVideosByTaskId(taskId: number) {
+		const videos = await this.prismaService.youTubeDataApiVideo.findMany({
+			where: {
+				youTubeDataTaskId: taskId,
+			},
+		});
+		return videos;
 	}
 
 	async startTaskById(youtubeDataSearchDto: YouTubeDataSearchDto) {
