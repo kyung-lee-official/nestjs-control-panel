@@ -84,9 +84,9 @@ model YouTubeDataApiVideo {
     videoId           String
     title             String
     description       String
+    durationAsSeconds Int
     viewCount         Int
     likeCount         Int
-    dislikeCount      Int
     favoriteCount     Int
     commentCount      Int
     YouTubeDataTask   YouTubeDataTask @relation(fields: [youTubeDataTaskId], references: [id])
