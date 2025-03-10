@@ -15,14 +15,25 @@ export async function getChannelsDetail(
 		chunkChannelInfo = await getChunkifiedChannelsDetail(token, chunk);
 		if (chunkChannelInfo.items) {
 			for (const item of chunkChannelInfo.items) {
+				const viewCount = Number.isInteger(
+					parseInt(item.statistics.viewCount)
+				)
+					? BigInt(item.statistics.viewCount)
+					: BigInt(0);
+				const subscriberCount = item.statistics.hiddenSubscriberCount
+					? BigInt(0)
+					: BigInt(item.statistics.subscriberCount);
+				const videoCount = Number.isInteger(
+					parseInt(item.statistics.videoCount)
+				)
+					? BigInt(item.statistics.videoCount)
+					: BigInt(0);
 				channelInfoStack.push({
 					channelId: item.id,
 					channelTitle: item.snippet.title,
-					viewCount: parseInt(item.statistics.viewCount),
-					subscriberCount: item.statistics.hiddenSubscriberCount
-						? 0
-						: parseInt(item.statistics.subscriberCount),
-					videoCount: parseInt(item.statistics.videoCount),
+					viewCount: viewCount,
+					subscriberCount: subscriberCount,
+					videoCount: videoCount,
 				});
 			}
 		}

@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "YouTubeDataApiChannel" ALTER COLUMN "viewCount" SET DATA TYPE BIGINT,
+ALTER COLUMN "subscriberCount" SET DATA TYPE BIGINT,
+ALTER COLUMN "videoCount" SET DATA TYPE BIGINT;

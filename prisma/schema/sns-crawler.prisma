@@ -72,9 +72,9 @@ model YouTubeDataApiChannel {
     id                Int             @id @default(autoincrement())
     channelId         String
     channelTitle      String
-    viewCount         Int
-    subscriberCount   Int
-    videoCount        Int
+    viewCount         BigInt
+    subscriberCount   BigInt
+    videoCount        BigInt
     youTubeDataTask   YouTubeDataTask @relation(fields: [youTubeDataTaskId], references: [id])
     youTubeDataTaskId Int
 }
@@ -85,10 +85,10 @@ model YouTubeDataApiVideo {
     title             String
     description       String
     durationAsSeconds Int
-    viewCount         Int
-    likeCount         Int
-    favoriteCount     Int
-    commentCount      Int
+    viewCount         BigInt
+    likeCount         BigInt
+    favoriteCount     BigInt
+    commentCount      BigInt
     YouTubeDataTask   YouTubeDataTask @relation(fields: [youTubeDataTaskId], references: [id])
     youTubeDataTaskId Int
 }

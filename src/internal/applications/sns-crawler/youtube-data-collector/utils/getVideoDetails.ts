@@ -26,6 +26,27 @@ export async function getVideosDetail(
 		const chunkVideoInfo = await getChunkifiedVideoDetails(token, chunk);
 		if (chunkVideoInfo.data.items) {
 			for (const item of chunkVideoInfo.data.items) {
+				const viewCount = Number.isInteger(
+					parseInt(item.statistics.viewCount)
+				)
+					? BigInt(item.statistics.viewCount)
+					: BigInt(0);
+				const likeCount = Number.isInteger(
+					parseInt(item.statistics.likeCount)
+				)
+					? BigInt(item.statistics.likeCount)
+					: BigInt(0);
+				const favoriteCount = Number.isInteger(
+					parseInt(item.statistics.favoriteCount)
+				)
+					? BigInt(item.statistics.favoriteCount)
+					: BigInt(0);
+				const commentCount = Number.isInteger(
+					parseInt(item.statistics.commentCount)
+				)
+					? BigInt(item.statistics.commentCount)
+					: BigInt(0);
+
 				videoInfoStack.push({
 					videoId: item.id,
 					title: item.snippet.title,
@@ -33,10 +54,10 @@ export async function getVideosDetail(
 					durationAsSeconds: dayjs
 						.duration(item.contentDetails.duration)
 						.asSeconds(),
-					viewCount: parseInt(item.statistics.viewCount) || 0,
-					likeCount: parseInt(item.statistics.likeCount) || 0,
-					favoriteCount: parseInt(item.statistics.favoriteCount) || 0,
-					commentCount: parseInt(item.statistics.commentCount) || 0,
+					viewCount: viewCount,
+					likeCount: likeCount,
+					favoriteCount: favoriteCount,
+					commentCount: commentCount,
 				});
 			}
 		}

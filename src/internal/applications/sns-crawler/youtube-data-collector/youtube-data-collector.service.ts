@@ -363,7 +363,17 @@ export class YoutubeDataCollectorService {
 					youTubeDataTaskId: taskId,
 				},
 			});
-		return channels;
+		const stringifiedChannels = channels.map((c) => {
+			return {
+				id: c.id,
+				channelId: c.channelId,
+				channelTitle: c.channelTitle,
+				viewCount: c.viewCount.toString(),
+				subscriberCount: c.subscriberCount.toString(),
+				videoCount: c.videoCount.toString(),
+			};
+		});
+		return stringifiedChannels;
 	}
 
 	async fetchYouTubeVideosByTaskId(taskId: number) {
@@ -477,7 +487,20 @@ export class YoutubeDataCollectorService {
 				youTubeDataTaskId: taskId,
 			},
 		});
-		return videos;
+		const stringifiedVideos = videos.map((v) => {
+			return {
+				id: v.id,
+				videoId: v.videoId,
+				title: v.title,
+				description: v.description,
+				durationAsSeconds: v.durationAsSeconds,
+				viewCount: v.viewCount.toString(),
+				likeCount: v.likeCount.toString(),
+				favoriteCount: v.favoriteCount.toString(),
+				commentCount: v.commentCount.toString(),
+			};
+		});
+		return stringifiedVideos;
 	}
 
 	async startTaskById(youtubeDataSearchDto: YouTubeDataSearchDto) {
@@ -629,15 +652,15 @@ export class YoutubeDataCollectorService {
 				title: video?.title,
 				description: video?.description,
 				durationAsSeconds: video?.durationAsSeconds,
-				viewCount: video?.viewCount,
-				likeCount: video?.likeCount,
-				favoriteCount: video?.favoriteCount,
-				commentCount: video?.commentCount,
+				viewCount: video?.viewCount.toString(),
+				likeCount: video?.likeCount.toString(),
+				favoriteCount: video?.favoriteCount.toString(),
+				commentCount: video?.commentCount.toString(),
 				channelId: s.channelId,
 				channelTitle: channel?.channelTitle,
-				channelViewCount: channel?.viewCount,
-				channelVideoCount: channel?.videoCount,
-				subscriberCount: channel?.subscriberCount,
+				channelViewCount: channel?.viewCount.toString(),
+				channelVideoCount: channel?.videoCount.toString(),
+				subscriberCount: channel?.subscriberCount.toString(),
 			};
 		});
 		return compositeData;

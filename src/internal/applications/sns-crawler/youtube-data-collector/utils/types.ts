@@ -13,10 +13,10 @@ export type SearchResultStruct = {
 export type ChannelInfoStruct = {
 	channelId: string;
 	channelTitle: string;
-	viewCount: number;
+	viewCount: bigint;
 	/* YouTube API doesn't respond info of some channels, for example, channel id UCtD0k7G4PjhcLK9WBc97Mbw */
-	subscriberCount: number;
-	videoCount: number;
+	subscriberCount: bigint;
+	videoCount: bigint;
 };
 
 export type VideoInfoStruct = {
@@ -24,10 +24,10 @@ export type VideoInfoStruct = {
 	title: string;
 	description: string;
 	durationAsSeconds: number;
-	viewCount: number;
-	likeCount: number;
-	favoriteCount: number;
-	commentCount: number;
+	viewCount: bigint;
+	likeCount: bigint;
+	favoriteCount: bigint;
+	commentCount: bigint;
 };
 
 export type CommentInfoStruct = SearchResultStruct & {
