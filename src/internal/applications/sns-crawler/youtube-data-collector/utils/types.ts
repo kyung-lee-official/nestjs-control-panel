@@ -10,9 +10,13 @@ export type SearchResultStruct = {
 	channelId: string;
 };
 
-export type ChannelInfoStruct = SearchResultStruct & {
+export type ChannelInfoStruct = {
+	channelId: string;
+	channelTitle: string;
+	viewCount: number;
 	/* YouTube API doesn't respond info of some channels, for example, channel id UCtD0k7G4PjhcLK9WBc97Mbw */
-	subscriberCount?: string;
+	subscriberCount: number;
+	videoCount: number;
 };
 
 export type VideoInfoStruct = ChannelInfoStruct & {

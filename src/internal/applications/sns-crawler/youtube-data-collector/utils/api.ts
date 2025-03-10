@@ -50,7 +50,7 @@ export const getSearchResults = async (
  * @param channelIds YouTube channel Ids, maximum 50
  * @returns channel info
  */
-export const getChannelDetails = async (
+export const getChunkifiedChannelsDetail = async (
 	token: string,
 	channelIds: string[]
 ): Promise<any> => {
@@ -61,14 +61,14 @@ export const getChannelDetails = async (
 		{
 			key: token,
 			id: channelIds,
-			part: ["id", "statistics"],
+			part: ["id", "snippet", "statistics"],
 		},
 		{
 			encodeValuesOnly: true,
 			arrayFormat: "comma",
 		}
 	);
-	const response = await axios
+	const res = await axios
 		.get(`https://youtube.googleapis.com/youtube/v3/channels?${query}`, {
 			timeout: 5000,
 		})
@@ -76,7 +76,7 @@ export const getChannelDetails = async (
 			console.error(error);
 			throw error;
 		});
-	return response;
+	return res.data;
 };
 
 /**

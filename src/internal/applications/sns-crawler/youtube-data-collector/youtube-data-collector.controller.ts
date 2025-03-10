@@ -136,6 +136,24 @@ export class YoutubeDataCollectorController {
 		);
 	}
 
+	@Get("fetch-channels-by-task-id/:taskId")
+	async fetchYouTubeChannelsByTaskId(
+		@Param("taskId", ParseIntPipe) taskId: number
+	) {
+		return await this.youtubeDataCollectorService.fetchYouTubeChannelsByTaskId(
+			taskId
+		);
+	}
+
+	@Get("get-channels-by-task-id/:taskId")
+	async getYouTubeChannelsByTaskId(
+		@Param("taskId", ParseIntPipe) taskId: number
+	) {
+		return await this.youtubeDataCollectorService.getYouTubeChannelsByTaskId(
+			taskId
+		);
+	}
+
 	@Post("start-task-by-id")
 	async startTaskById(
 		@Body(new ZodValidationPipe(youtubeDataSearchSchema))
