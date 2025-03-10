@@ -601,6 +601,48 @@ export class YoutubeDataCollectorService {
 		return this.meta;
 	}
 
+	async getCompositeData(taskId: number) {
+		const task = await this.prismaService.youTubeDataTask.findUnique({
+			where: {
+				id: taskId,
+			},
+			include: {
+				searches: true,
+				channels: true,
+				videos: true,
+			},
+		});
+		if (!task) {
+			throw new NotFoundException("Task not found.");
+		}
+		const searches = task.searches;
+		const channels = task.channels;
+		const videos = task.videos;
+		/* per search as a datum */
+		const compositeData = searches.map((s) => {
+			const video = videos.find((v) => v.videoId === s.videoId);
+			const channel = channels.find((c) => c.channelId === s.channelId);
+			return {
+				keyword: s.keyword,
+				publishedAt: s.publishedAt,
+				videoId: s.videoId,
+				title: video?.title,
+				description: video?.description,
+				durationAsSeconds: video?.durationAsSeconds,
+				viewCount: video?.viewCount,
+				likeCount: video?.likeCount,
+				favoriteCount: video?.favoriteCount,
+				commentCount: video?.commentCount,
+				channelId: s.channelId,
+				channelTitle: channel?.channelTitle,
+				channelViewCount: channel?.viewCount,
+				channelVideoCount: channel?.videoCount,
+				subscriberCount: channel?.subscriberCount,
+			};
+		});
+		return compositeData;
+	}
+
 	async testYoutubeApi() {
 		const url =
 			// "https://jsonplaceholder.typicode.com/posts/1",

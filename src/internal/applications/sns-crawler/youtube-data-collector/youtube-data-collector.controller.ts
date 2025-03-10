@@ -187,6 +187,11 @@ export class YoutubeDataCollectorController {
 		return await this.youtubeDataCollectorService.getMeta();
 	}
 
+	@Get("get-composite-data-by-task-id/:taskId")
+	async getCompositeData(@Param("taskId", ParseIntPipe) taskId: number) {
+		return await this.youtubeDataCollectorService.getCompositeData(taskId);
+	}
+
 	@Get("test-youtube-api")
 	async testYoutubeApi() {
 		return await this.youtubeDataCollectorService.testYoutubeApi();
