@@ -55,7 +55,17 @@ export class FacebookGroupService {
 		const task = await this.prismaService.facebookGroupCrawlTask.create({
 			data: {
 				records: {
-					create: [],
+					createMany: {
+						data: sourceData.map((s) => {
+							return {
+								groupAddress: s.groupAddress,
+								groupName: s.groupName,
+								status: "PENDING",
+								memberCount: 0,
+								monthlyPostCount: 0,
+							};
+						}),
+					},
 				},
 				sourceLength: sourceData.length,
 			},
@@ -95,17 +105,17 @@ export class FacebookGroupService {
 		if (!task) {
 			throw new NotFoundException("Task not found");
 		}
-		if (task.records.length > 0) {
-			throw new BadRequestException("Task records not empty");
-		}
-		for (const s of sourceData) {
+		for (const r of task.records) {
 			let crawlRes;
 			try {
 				crawlRes = await axios.post(
 					"facebook-crawler/crawl",
 					{
 						taskId: taskId,
-						sourceData: s,
+						sourceData: {
+							groupAddress: r.groupAddress,
+							groupName: r.groupName,
+						},
 					},
 					{
 						baseURL: process.env.SNS_CRAWLER_HOST,
@@ -126,23 +136,15 @@ export class FacebookGroupService {
 				if (crawlRes.data.taskId === null) {
 					return crawlRes.data;
 				}
-				await this.prismaService.facebookGroupCrawlTask.update({
+				await this.prismaService.facebookGroupRecord.update({
 					where: {
-						id: crawlRes.data.crawledDatum.taskId,
+						id: r.id,
 					},
 					data: {
-						records: {
-							create: {
-								groupAddress:
-									crawlRes.data.crawledDatum.groupAddress,
-								groupName: crawlRes.data.crawledDatum.groupName,
-								failed: crawlRes.data.crawledDatum.failed,
-								memberCount:
-									crawlRes.data.crawledDatum.memberCount,
-								monthlyPostCount:
-									crawlRes.data.crawledDatum.monthlyPostCount,
-							},
-						},
+						status: crawlRes.data.crawledDatum.status,
+						memberCount: crawlRes.data.crawledDatum.memberCount,
+						monthlyPostCount:
+							crawlRes.data.crawledDatum.monthlyPostCount,
 					},
 				});
 			} catch (error) {
@@ -163,7 +165,14 @@ export class FacebookGroupService {
 				include: {
 					records: {
 						where: {
-							failed: true,
+							OR: [
+								{
+									status: "FAILED",
+								},
+								{
+									status: "PENDING",
+								},
+							],
 						},
 					},
 				},
@@ -222,7 +231,7 @@ export class FacebookGroupService {
 						id: r.id,
 					},
 					data: {
-						failed: crawlRes.data.crawledDatum.failed,
+						status: crawlRes.data.crawledDatum.status,
 						memberCount: crawlRes.data.crawledDatum.memberCount,
 						monthlyPostCount:
 							crawlRes.data.crawledDatum.monthlyPostCount,
