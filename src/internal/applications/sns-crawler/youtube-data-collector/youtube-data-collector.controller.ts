@@ -175,7 +175,7 @@ export class YoutubeDataCollectorController {
 		return await this.youtubeDataCollectorService.testYoutubeApi();
 	}
 
-	@Post("abort")
+	@Post("abort-task")
 	abort() {
 		return this.youtubeDataCollectorService.abort();
 	}
