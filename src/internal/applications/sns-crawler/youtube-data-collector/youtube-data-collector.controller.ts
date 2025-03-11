@@ -53,21 +53,6 @@ export class YoutubeDataCollectorController {
 		return await this.youtubeDataCollectorService.getTokens();
 	}
 
-	// @ApiOperation(youtubeDataUpdateTokenStateOperationOptions)
-	// @ApiBody(youtubeDataUpdateTokenStateBodyOptions)
-	// @Patch("update-token-state")
-	// async updateTokenState(
-	// 	@Body(
-	// 		"recentlyUsedToken",
-	// 		new ZodValidationPipe(youtubeDataUpdateTokenStateSchema)
-	// 	)
-	// 	youtubeDataUpdateTokenStateDto: YouTubeDataUpdateTokenStateDto
-	// ) {
-	// 	return await this.youtubeDataCollectorService.updateTokenState(
-	// 		youtubeDataUpdateTokenStateDto
-	// 	);
-	// }
-
 	@Delete(":token")
 	async deleteToken(@Param("token") token: string) {
 		return await this.youtubeDataCollectorService.deleteToken(token);

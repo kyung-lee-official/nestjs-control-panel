@@ -672,6 +672,11 @@ export class YoutubeDataCollectorService {
 		return compositeData;
 	}
 
+	async abort() {
+		this.meta.shouldStop = true;
+		return this.meta;
+	}
+
 	async testYoutubeApi() {
 		const url =
 			// "https://jsonplaceholder.typicode.com/posts/1",
@@ -679,10 +684,5 @@ export class YoutubeDataCollectorService {
 		const res = await axios.get(url);
 		console.log(res.data);
 		return res.data;
-	}
-
-	async abort() {
-		this.meta.shouldStop = true;
-		return this.meta;
 	}
 }
