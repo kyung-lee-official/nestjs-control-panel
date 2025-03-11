@@ -23,21 +23,13 @@ import {
 	YouTubeDataSearchDto,
 	youtubeDataSearchSchema,
 } from "./dto/youtube-data-search.dto";
-import { youtubeDataSearchBodyOptions } from "./swagger/youtube-data-search.swagger";
-import {
-	youtubeDataUpdateTokenStateBodyOptions,
-	youtubeDataUpdateTokenStateOperationOptions,
-} from "./swagger/youtube-data-update-token-state.swagger";
-import {
-	YouTubeDataUpdateTokenStateDto,
-	youtubeDataUpdateTokenStateSchema,
-} from "./dto/youtube-data-update-token-state.dto";
 
 import {
 	YouTubeDataGetSearchesDto,
 	youtubeDataGetSearchesSchema,
 } from "./dto/youtube-data-get-searches.dto";
 import { youtubeDataGetSearchesBodyOptions } from "./swagger/youtube-data-get-searches.swagger";
+import { youtubeDataStartTaskByIdOperationOptions } from "./swagger/youtube-data-start-task-by-id.swagger";
 
 @ApiTags("Youtube Data Collector")
 @Controller("internal/applications/youtube-data-collector")
@@ -172,6 +164,7 @@ export class YoutubeDataCollectorController {
 		);
 	}
 
+	@ApiOperation(youtubeDataStartTaskByIdOperationOptions)
 	@Post("start-task-by-id")
 	async startTaskById(
 		@Body(new ZodValidationPipe(youtubeDataSearchSchema))
@@ -197,22 +190,8 @@ export class YoutubeDataCollectorController {
 		return await this.youtubeDataCollectorService.testYoutubeApi();
 	}
 
-	// @ApiBody(youtubeDataSearchBodyOptions)
-	// @Post("search")
-	// async search(
-	// 	@Body(new ZodValidationPipe(youtubeDataSearchSchema))
-	// 	youTubeSearchDto: YouTubeDataSearchDto
-	// ) {
-	// 	return await this.youtubeDataCollectorService.search(youTubeSearchDto);
-	// }
-
-	// @Post("abort")
-	// abort() {
-	// 	return this.youtubeDataCollectorService.abort();
-	// }
-
-	// @Delete(":id")
-	// remove(@Param("id") id: string) {
-	// 	return this.youtubeDataCollectorService.remove(+id);
-	// }
+	@Post("abort")
+	abort() {
+		return this.youtubeDataCollectorService.abort();
+	}
 }

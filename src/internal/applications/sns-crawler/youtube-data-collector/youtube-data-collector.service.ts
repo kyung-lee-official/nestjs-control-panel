@@ -28,7 +28,7 @@ type Flags = {
 		| "fetching-searches"
 		| "fetching-channels"
 		| "fetching-videos";
-	pendingFlag: "shouldStart" | "shouldStop" | null;
+	shouldStop: boolean;
 	start: string;
 	end: string;
 	targetResultCount: number;
@@ -40,7 +40,7 @@ export class YoutubeDataCollectorService {
 		tokenObj: null,
 		taskId: null,
 		status: "idle",
-		pendingFlag: "shouldStop",
+		shouldStop: false,
 		start: dayjs().subtract(1, "month").toISOString(),
 		end: dayjs().toISOString(),
 		targetResultCount: 500,
@@ -111,8 +111,8 @@ export class YoutubeDataCollectorService {
 					{ quotaRunOutAt: null },
 					{
 						quotaRunOutAt: {
-							/* before 1 month ago */
-							lte: dayjs().subtract(1, "month").toDate(),
+							/* youtube data token quota resets every day */
+							lte: dayjs().subtract(1, "day").toDate(),
 						},
 					},
 				],
@@ -260,7 +260,7 @@ export class YoutubeDataCollectorService {
 			tokenObj: this.meta.tokenObj,
 			taskId: taskId,
 			status: "fetching-channels",
-			pendingFlag: "shouldStart",
+			shouldStop: false,
 			start: this.meta.start,
 			end: this.meta.end,
 			targetResultCount: 0,
@@ -382,7 +382,7 @@ export class YoutubeDataCollectorService {
 			tokenObj: this.meta.tokenObj,
 			taskId: taskId,
 			status: "fetching-videos",
-			pendingFlag: "shouldStart",
+			shouldStop: false,
 			start: this.meta.start,
 			end: this.meta.end,
 			targetResultCount: 0,
@@ -510,7 +510,7 @@ export class YoutubeDataCollectorService {
 			tokenObj: this.meta.tokenObj,
 			taskId: taskId,
 			status: "idle",
-			pendingFlag: "shouldStart",
+			shouldStop: false,
 			start: start,
 			end: end,
 			targetResultCount: targetResultCount,
@@ -538,6 +538,12 @@ export class YoutubeDataCollectorService {
 				},
 			});
 		for (const keyword of keywords) {
+			if (this.meta.shouldStop) {
+				this.meta.taskId = null;
+				this.meta.status = "idle";
+				this.meta.shouldStop = false;
+				return this.meta;
+			}
 			if (!this.meta.tokenObj) {
 				throw new BadRequestException("Please provide a token");
 			}
@@ -617,7 +623,7 @@ export class YoutubeDataCollectorService {
 		}
 		this.meta.taskId = null;
 		this.meta.status = "idle";
-		this.meta.pendingFlag = null;
+		this.meta.shouldStop = false;
 	}
 
 	async getMeta() {
@@ -675,76 +681,8 @@ export class YoutubeDataCollectorService {
 		return res.data;
 	}
 
-	// async search(youTubeSearchDto: YouTubeDataSearchDto) {
-	// 	const { taskId, start, end, targetResultCount } = youTubeSearchDto;
-	// 	const dbKeywords =
-	// 		await this.prismaService.youTubeDataTaskKeyword.findMany({
-	// 			where: {
-	// 				taskId: taskId,
-	// 			},
-	// 		});
-	// 	for (const k of dbKeywords) {
-	// 		if (this.pendingAbort) {
-	// 			this.pendingAbort = false;
-	// 			return;
-	// 		}
-	// 		try {
-	// 			const results = await searchKeyword(
-	// 				this.token,
-	// 				k.keyword,
-	// 				start,
-	// 				end,
-	// 				targetResultCount
-	// 			);
-	// 			const youtubeDataTaskKeyword =
-	// 				await this.prismaService.youTubeDataTaskKeyword.update({
-	// 					where: {
-	// 						id: k.id,
-	// 					},
-	// 					data: {
-	// 						pending: false,
-	// 						failed: false,
-	// 						searches: {
-	// 							create: results.map((r) => {
-	// 								return {
-	// 									keyword: k.keyword,
-	// 									id: r.videoId,
-	// 									publishedAt: r.publishedAt,
-	// 									channelId: r.channelId,
-	// 								};
-	// 							}),
-	// 						},
-	// 					},
-	// 				});
-	// 		} catch (error: any) {
-	// 			console.error(
-	// 				`an error occurred when searching for ${k.keyword}`
-	// 			);
-	// 			console.error(error);
-	// 			if (
-	// 				error.response.data.error.errors[0].reason ===
-	// 				"quotaExceeded"
-	// 			) {
-	// 				await this.updateToken(this.token);
-	// 			}
-	// 			await this.prismaService.youTubeDataTaskKeyword.update({
-	// 				where: {
-	// 					id: k.id,
-	// 				},
-	// 				data: {
-	// 					failed: true,
-	// 				},
-	// 			});
-	// 			continue;
-	// 		}
-	// 	}
-	// 	return await this.prismaService.youTubeDataTaskKeyword.findUnique({
-	// 		where: {
-	// 			id: taskId,
-	// 		},
-	// 		include: {
-	// 			searches: true,
-	// 		},
-	// 	});
-	// }
+	async abort() {
+		this.meta.shouldStop = true;
+		return this.meta;
+	}
 }
