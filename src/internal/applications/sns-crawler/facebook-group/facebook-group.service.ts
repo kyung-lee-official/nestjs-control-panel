@@ -282,11 +282,20 @@ export class FacebookGroupService {
 		}
 	}
 
+	async remove(taskId: number) {
+		await this.prismaService.facebookGroupRecord.deleteMany({
+			where: {
+				facebookGroupCrawlTaskId: taskId,
+			},
+		});
+		return await this.prismaService.facebookGroupCrawlTask.delete({
+			where: {
+				id: taskId,
+			},
+		});
+	}
+
 	// async update(id: number, updateFacebookGroupDto: OverFacebookGroupDto) {
 	// 	return await `This action updates a #${id} facebookGroup`;
-	// }
-
-	// async remove(id: number) {
-	// 	return await `This action removes a #${id} facebookGroup`;
 	// }
 }

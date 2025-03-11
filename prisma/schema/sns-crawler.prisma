@@ -3,14 +3,20 @@ model FacebookGroupSource {
     groupName    String
 }
 
+enum FacebookGroupRecordStatus {
+    PENDING
+    SUCCESS
+    FAILED
+}
+
 model FacebookGroupRecord {
-    id                       Int                    @id @default(autoincrement())
+    id                       Int                       @id @default(autoincrement())
     groupAddress             String
     groupName                String
-    failed                   Boolean
+    status                   FacebookGroupRecordStatus
     memberCount              Int
     monthlyPostCount         Int
-    facebookGroupCrawlTask   FacebookGroupCrawlTask @relation(fields: [facebookGroupCrawlTaskId], references: [id])
+    facebookGroupCrawlTask   FacebookGroupCrawlTask    @relation(fields: [facebookGroupCrawlTaskId], references: [id])
     facebookGroupCrawlTaskId Int
 }
 

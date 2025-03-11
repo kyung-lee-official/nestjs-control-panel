@@ -6,6 +6,7 @@ import {
 	Post,
 	Param,
 	ParseIntPipe,
+	Delete,
 } from "@nestjs/common";
 import { FacebookGroupService } from "./facebook-group.service";
 import {
@@ -83,16 +84,16 @@ export class FacebookGroupController {
 		return await this.facebookGroupService.getStatus();
 	}
 
+	@Delete("delete-task/:taskId")
+	async remove(@Param("taskId", ParseIntPipe) taskId: number) {
+		return this.facebookGroupService.remove(taskId);
+	}
+
 	// @Patch(":id")
 	// async update(
 	// 	@Param("id") id: string,
 	// 	@Body() updateFacebookGroupDto: UpdateFacebookGroupDto
 	// ) {
 	// 	return this.facebookGroupService.update(+id, updateFacebookGroupDto);
-	// }
-
-	// @Delete(":id")
-	// async remove(@Param("id") id: string) {
-	// 	return this.facebookGroupService.remove(+id);
 	// }
 }
