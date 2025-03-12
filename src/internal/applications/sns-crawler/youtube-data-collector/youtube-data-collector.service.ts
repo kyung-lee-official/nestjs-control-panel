@@ -353,6 +353,8 @@ export class YoutubeDataCollectorService {
 			} else {
 				console.error(error);
 			}
+			this.meta.taskId = null;
+			this.meta.status = "idle";
 		}
 	}
 
@@ -478,6 +480,8 @@ export class YoutubeDataCollectorService {
 			} else {
 				console.error(error);
 			}
+			this.meta.taskId = null;
+			this.meta.status = "idle";
 		}
 	}
 
