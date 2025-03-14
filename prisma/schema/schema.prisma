@@ -41,3 +41,11 @@ model MemberServerSetting {
     allowPublicSignUp Boolean
     allowGoogleSignIn Boolean
 }
+
+model EventLog {
+    id         Int      @id @default(autoincrement())
+    memberId   String
+    memberName String
+    eventType  String
+    createdAt  DateTime @default(now())
+}

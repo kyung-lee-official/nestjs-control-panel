@@ -21,6 +21,7 @@ import { CredentialData, getCredential } from "qcloud-cos-sts";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { UpdateMyPasswordDto } from "./dto/update-my-password.dto";
 import { REQUEST } from "@nestjs/core";
+import { LogService } from "../log/log.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthenticationService {
@@ -29,6 +30,7 @@ export class AuthenticationService {
 		private readonly request: any,
 		private readonly prismaService: PrismaService,
 		private readonly jwtService: JwtService,
+		private readonly logService: LogService,
 		private readonly emailService: EmailService
 	) {}
 
@@ -99,6 +101,7 @@ export class AuthenticationService {
 		if (member && (await bcrypt.compare(password, member.password))) {
 			const payload = { email };
 			const jwt = this.jwtService.sign(payload);
+			await this.logService.createSignInLog(member.id);
 			return { jwt };
 		} else {
 			throw new UnauthorizedException(

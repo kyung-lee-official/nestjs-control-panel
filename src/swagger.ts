@@ -10,6 +10,7 @@ import { StatsModule } from "./internal/applications/performances/stats/stats.mo
 import { EventsModule } from "./internal/applications/performances/events/events.module";
 import { FacebookGroupModule } from "./internal/applications/sns-crawler/facebook-group/facebook-group.module";
 import { YoutubeDataCollectorModule } from "./internal/applications/sns-crawler/youtube-data-collector/youtube-data-collector.module";
+import { LogModule } from "./internal/log/log.module";
 
 export function setupSwagger(app: INestApplication<any>) {
 	const membersOption = new DocumentBuilder()
@@ -25,6 +26,7 @@ export function setupSwagger(app: INestApplication<any>) {
 			EmailModule,
 			MembersModule,
 			InternalRolesModule,
+			LogModule,
 		],
 	});
 	SwaggerModule.setup("api/internal", app, membersDocument);
