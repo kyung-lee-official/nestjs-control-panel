@@ -79,6 +79,7 @@ import {
 	updateMyPasswordOperationOptions,
 } from "./swagger/update-my-password.swagger";
 import { UpdateMyPasswordGuard } from "./guards/update-member-password.guard";
+import { SignUpGuard } from "./guards/sign-up.guard";
 
 @ApiTags("Authentication")
 @Controller("authentication")
@@ -92,6 +93,7 @@ export class AuthenticationController {
 	@ApiOkResponse(signUpOkResponseOptions)
 	@ApiForbiddenResponse(signUpForbiddenResponseOptions)
 	@UsePipes(new ZodValidationPipe(signUpSchema))
+	@UseGuards(SignUpGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Post("sign-up")
 	async signUp(@Body() signUpDto: SignUpDto) {
