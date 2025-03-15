@@ -1,6 +1,5 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateEventTemplateDto } from "./dto/create-event-template.dto";
-import { UpdateEventTemplateDto } from "./dto/update-event-template.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { REQUEST } from "@nestjs/core";
 

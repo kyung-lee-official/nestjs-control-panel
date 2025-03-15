@@ -7,6 +7,7 @@ import {
 	Param,
 	ParseIntPipe,
 	Delete,
+	UseGuards,
 } from "@nestjs/common";
 import { FacebookGroupService } from "./facebook-group.service";
 import {
@@ -15,9 +16,12 @@ import {
 } from "./dto/facebook-group-overwrite-source.dto";
 import { FacebookGroupUpdateSourceDto } from "./dto/facebook-group-update-source.dto";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
-import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 
 @ApiTags("Facebook Group Crawler")
+@ApiBearerAuth()
+@UseGuards(JwtGuard)
 @Controller("internal/applications/facebook-group")
 export class FacebookGroupController {
 	constructor(private readonly facebookGroupService: FacebookGroupService) {}

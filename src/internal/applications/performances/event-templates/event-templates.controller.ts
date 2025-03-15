@@ -3,7 +3,6 @@ import {
 	Get,
 	Post,
 	Body,
-	Patch,
 	Param,
 	Delete,
 	ParseIntPipe,
@@ -11,8 +10,7 @@ import {
 } from "@nestjs/common";
 import { EventTemplatesService } from "./event-templates.service";
 import { CreateEventTemplateDto } from "./dto/create-event-template.dto";
-import { UpdateEventTemplateDto } from "./dto/update-event-template.dto";
-import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
 	createEventTemplateApiBodyOptions,
 	createEventTemplateApiOperationOptions,
@@ -22,6 +20,8 @@ import { CreateTemplateGuard } from "./guards/create-template.guard";
 import { GetTemplatesByRoleIdGuard } from "./guards/get-templates-by-role-id.guard";
 
 @ApiTags("Performance Event Template")
+@ApiBearerAuth()
+@UseGuards(JwtGuard)
 @Controller("performance/event-templates")
 export class EventTemplatesController {
 	constructor(
@@ -42,7 +42,6 @@ export class EventTemplatesController {
 		return await this.eventTemplatesService.getByRoleId(roleId);
 	}
 
-	@UseGuards(JwtGuard)
 	@Get("get-by-my-role-templates")
 	async getMyRoleTemplates() {
 		return await this.eventTemplatesService.getMyRoleTemplates();

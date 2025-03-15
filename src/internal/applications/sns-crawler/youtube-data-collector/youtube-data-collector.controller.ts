@@ -7,9 +7,10 @@ import {
 	Delete,
 	Param,
 	ParseIntPipe,
+	UseGuards,
 } from "@nestjs/common";
 import { YoutubeDataCollectorService } from "./youtube-data-collector.service";
-import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import {
 	YoutubeDataOverwriteSourceDto,
@@ -30,8 +31,11 @@ import {
 } from "./dto/youtube-data-get-searches.dto";
 import { youtubeDataGetSearchesBodyOptions } from "./swagger/youtube-data-get-searches.swagger";
 import { youtubeDataStartTaskByIdOperationOptions } from "./swagger/youtube-data-start-task-by-id.swagger";
+import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 
 @ApiTags("Youtube Data Collector")
+@ApiBearerAuth()
+@UseGuards(JwtGuard)
 @Controller("internal/applications/youtube-data-collector")
 export class YoutubeDataCollectorController {
 	constructor(
