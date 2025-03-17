@@ -171,9 +171,9 @@ export class RolesService {
 			where: { id: id },
 			data: {
 				name: name,
-				superRole: {
-					connect: superRoleId ? { id: superRoleId } : Prisma.skip,
-				},
+				superRole: superRoleId
+					? { connect: { id: superRoleId } }
+					: { disconnect: true },
 				members: {
 					set: !!memberIds.length
 						? memberIds.map((id) => {
