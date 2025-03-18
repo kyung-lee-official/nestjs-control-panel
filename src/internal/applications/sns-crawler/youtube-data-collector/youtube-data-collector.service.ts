@@ -149,8 +149,13 @@ export class YoutubeDataCollectorService {
 		youtubeDataOverwriteSourceDto: YoutubeDataOverwriteSourceDto
 	) {
 		await this.prismaService.youTubeDataSearchKeyword.deleteMany();
+		const uniquifiedData = youtubeDataOverwriteSourceDto.filter(
+			(s, i, a) => {
+				return a.findIndex((d) => d.keyword === s.keyword) === i;
+			}
+		);
 		return await this.prismaService.youTubeDataSearchKeyword.createMany({
-			data: youtubeDataOverwriteSourceDto,
+			data: uniquifiedData,
 		});
 	}
 

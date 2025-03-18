@@ -26,8 +26,11 @@ export class FacebookGroupService {
 				groupName: s.groupName,
 			};
 		});
+		const uniquifiedData = nontrailingData.filter((s, i, a) => {
+			return a.findIndex((d) => d.groupAddress === s.groupAddress) === i;
+		});
 		return await this.prismaService.facebookGroupSource.createMany({
-			data: nontrailingData,
+			data: uniquifiedData,
 		});
 	}
 
