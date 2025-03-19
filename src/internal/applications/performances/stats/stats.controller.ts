@@ -45,9 +45,11 @@ export class StatsController {
 	@ApiOperation(createStatApiOperationOptions)
 	@ApiBody(createStatApiBodyOptions)
 	@UseGuards(CreateStatGuard)
-	@UsePipes(new ZodValidationPipe(createStatDtoSchema))
 	@Post()
-	async create(@Body() createStatDto: CreateStatDto) {
+	async create(
+		@Body(new ZodValidationPipe(createStatDtoSchema))
+		createStatDto: CreateStatDto
+	) {
 		return await this.statsService.create(createStatDto);
 	}
 

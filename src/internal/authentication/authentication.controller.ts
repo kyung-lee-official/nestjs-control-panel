@@ -57,7 +57,10 @@ import {
 	resetPasswordApiBodyOptions,
 	resetPasswordApiOperationOptions,
 } from "./swagger/reset-password.swagger";
-import { ResetPasswordDto } from "./dto/reset-password.dto";
+import {
+	ResetPasswordDto,
+	resetPasswordSchema,
+} from "./dto/reset-password.dto";
 import {
 	getTencentCosTempCredentialApiOkResponseOptions,
 	getTencentCosTempCredentialApiOperationOptions,
@@ -154,7 +157,8 @@ export class AuthenticationController {
 	@ApiBody(resetPasswordApiBodyOptions)
 	@Post("/reset-password")
 	resetPassword(
-		@Body() resetPasswordDto: ResetPasswordDto
+		@Body(new ZodValidationPipe(resetPasswordSchema))
+		resetPasswordDto: ResetPasswordDto
 	): Promise<{ isReset: boolean }> {
 		return this.authenticationService.resetPassword(resetPasswordDto);
 	}

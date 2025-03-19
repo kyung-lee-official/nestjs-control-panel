@@ -9,7 +9,10 @@ import {
 	UseGuards,
 } from "@nestjs/common";
 import { EventTemplatesService } from "./event-templates.service";
-import { CreateEventTemplateDto } from "./dto/create-event-template.dto";
+import {
+	CreateEventTemplateDto,
+	createEventTemplateDtoSchema,
+} from "./dto/create-event-template.dto";
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
 	createEventTemplateApiBodyOptions,
@@ -18,6 +21,7 @@ import {
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 import { CreateTemplateGuard } from "./guards/create-template.guard";
 import { GetTemplatesByRoleIdGuard } from "./guards/get-templates-by-role-id.guard";
+import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 
 @ApiTags("Performance Event Template")
 @ApiBearerAuth()
@@ -32,7 +36,10 @@ export class EventTemplatesController {
 	@ApiBody(createEventTemplateApiBodyOptions)
 	@UseGuards(CreateTemplateGuard)
 	@Post()
-	async create(@Body() createEventTemplateDto: CreateEventTemplateDto) {
+	async create(
+		@Body(new ZodValidationPipe(createEventTemplateDtoSchema))
+		createEventTemplateDto: CreateEventTemplateDto
+	) {
 		return await this.eventTemplatesService.create(createEventTemplateDto);
 	}
 

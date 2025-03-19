@@ -16,7 +16,10 @@ import {
 	forgetPasswordApiOperationOptions,
 	forgetPasswordNotFoundApiResponseOptions,
 } from "./swagger/forget-password.swagger";
-import { ForgetPasswordDto } from "./dto/forget-password.dto";
+import {
+	ForgetPasswordDto,
+	forgetPasswordSchema,
+} from "./dto/forget-password.dto";
 import { ChangeEmailDto, changeEmailSchema } from "./dto/change-email.dto";
 import {
 	verifyNewEmailApiBodyOptions,
@@ -74,7 +77,8 @@ export class EmailController {
 	@ApiNotFoundResponse(forgetPasswordNotFoundApiResponseOptions)
 	@Post("/forget-password")
 	forgetPassword(
-		@Body() forgetPasswordDto: ForgetPasswordDto
+		@Body(new ZodValidationPipe(forgetPasswordSchema))
+		forgetPasswordDto: ForgetPasswordDto
 	): Promise<void> {
 		return this.emailService.forgetPassword(forgetPasswordDto);
 	}
