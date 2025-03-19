@@ -15,8 +15,11 @@ import {
 	HttpCode,
 } from "@nestjs/common";
 import { MembersService } from "./members.service";
-import { FindMembersByIdsDto } from "./dto/find-members-by-ids.dto";
-import { CreateMemberDto } from "./dto/create-member.dto";
+import {
+	FindMembersByIdsDto,
+	findMembersByIdsSchema,
+} from "./dto/find-members-by-ids.dto";
+import { CreateMemberDto, createMemberSchema } from "./dto/create-member.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { NotFrozenGuard } from "./guards/not-frozen.guard";
 import { FindMembersDto, findMembersSchema } from "./dto/find-members.dto";
@@ -34,14 +37,16 @@ import { CreateMemberGuard } from "./guards/create-member.guard";
 import { FindMembersGuard } from "./guards/find-members.guard";
 import { UpdateMemberProfileGuard } from "./guards/update-member-profile.guard";
 import { MemberVerificationGuard } from "./guards/member-verification.guard";
-import { UpdateMemberProfileDto } from "./dto/update-member-profile.dto";
+import {
+	UpdateMemberProfileDto,
+	updateMemberProfileSchema,
+} from "./dto/update-member-profile.dto";
 import { updateMemberProfileBodyOptions } from "./swagger/update-member-profile.swagger";
 import { FreezeMemberDto, freezeMemberSchema } from "./dto/freeze-member.dto";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { findMembersByIdsBodyOptions } from "./swagger/find-members-by-ids.swagger";
 import { FreezeMemberGuard } from "./guards/freeze-member.guard";
 import { freezeMemberBodyOptions } from "./swagger/freeze-member.swagger";
-import { TransferAdminGuard } from "./guards/transfer-admin.guard";
 import { RemoveMemberGuard } from "./guards/remove-member.guard";
 import {
 	searchMemberBodyOptions,
@@ -60,7 +65,10 @@ export class MembersController {
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(CreateMemberGuard)
 	@Post("/create")
-	create(@Body() createMemberDto: CreateMemberDto) {
+	create(
+		@Body(new ZodValidationPipe(createMemberSchema))
+		createMemberDto: CreateMemberDto
+	) {
 		return this.membersService.create(createMemberDto);
 	}
 
@@ -80,9 +88,10 @@ export class MembersController {
 	@ApiBody(findMembersByIdsBodyOptions)
 	@UseGuards(FindMembersGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
-	@Post("find-members-by-ids/:id")
+	@Post("find-members-by-ids")
 	findMembersByIds(
-		@Body() findMembersByIdsDto: FindMembersByIdsDto
+		@Body(new ZodValidationPipe(findMembersByIdsSchema))
+		findMembersByIdsDto: FindMembersByIdsDto
 	): Promise<Member[]> {
 		return this.membersService.findMembersByIds(findMembersByIdsDto);
 	}
@@ -108,7 +117,8 @@ export class MembersController {
 	@Patch("/:id/profile")
 	updateProfile(
 		@Param("id") id: string,
-		@Body() updateMemberProfileDto: UpdateMemberProfileDto
+		@Body(new ZodValidationPipe(updateMemberProfileSchema))
+		updateMemberProfileDto: UpdateMemberProfileDto
 	): Promise<Member> {
 		return this.membersService.updateProfile(id, updateMemberProfileDto);
 	}
@@ -138,14 +148,6 @@ export class MembersController {
 		freezeMemberDto: FreezeMemberDto
 	): Promise<Member> {
 		return this.membersService.freeze(id, freezeMemberDto);
-	}
-
-	@ApiOperation({ summary: "Transfer member admin" })
-	@UseGuards(NotFrozenGuard, TransferAdminGuard)
-	@UseInterceptors(ExcludePasswordInterceptor)
-	@Patch("/:id/transfer-member-admin")
-	transferMemberAdmin(@Param("id") id: string) {
-		return this.membersService.transferMemberAdmin(id);
 	}
 
 	@UseGuards(RemoveMemberGuard)

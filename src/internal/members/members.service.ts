@@ -168,43 +168,6 @@ export class MembersService {
 		return frozenRequestee;
 	}
 
-	async transferMemberAdmin(id: string) {
-		await this.prismaService.memberRole.update({
-			where: { id: "admin" },
-			data: {
-				members: {
-					set: [{ id: id }],
-				},
-			},
-		});
-
-		/* Move the old admin to the default role if the old admin is not in any role */
-		const oldAdmin = await this.prismaService.member.findUnique({
-			where: { id: this.request.requester.id },
-			include: {
-				memberRoles: true,
-			},
-		});
-		if (oldAdmin?.memberRoles.length === 0) {
-			await this.prismaService.memberRole.update({
-				where: { id: "default" },
-				data: {
-					members: {
-						connect: { id: this.request.requester.id },
-					},
-				},
-			});
-		}
-
-		const newAdmin = await this.prismaService.member.findUnique({
-			where: { id: id },
-			include: {
-				memberRoles: true,
-			},
-		});
-		return newAdmin;
-	}
-
 	async remove(id: string): Promise<Member> {
 		const deletedRequestee = await this.prismaService.member.delete({
 			where: { id: id },

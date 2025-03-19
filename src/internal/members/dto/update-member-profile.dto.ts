@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const updateMemberProfileSchema = z.object({
+export const updateMemberProfileSchema = z.object({
 	name: z.string(),
 });
 
