@@ -1,4 +1,5 @@
 model FacebookGroupSource {
+    excelRow     Int
     groupAddress String @unique
     groupName    String
 }
@@ -11,6 +12,7 @@ enum FacebookGroupRecordStatus {
 
 model FacebookGroupRecord {
     id                       Int                       @id @default(autoincrement())
+    excelRow                 Int
     groupAddress             String
     groupName                String
     status                   FacebookGroupRecordStatus
@@ -36,8 +38,9 @@ model YouTubeDataToken {
 }
 
 model YouTubeDataSearchKeyword {
-    id      Int    @id @default(autoincrement())
-    keyword String @unique
+    id       Int    @id @default(autoincrement())
+    excelRow Int
+    keyword  String @unique
 }
 
 model YouTubeDataTask {
@@ -57,11 +60,12 @@ enum YouTubeDataTaskKeywordStatus {
 }
 
 model YouTubeDataTaskKeyword {
-    id      Int                          @id @default(autoincrement())
-    keyword String
-    status  YouTubeDataTaskKeywordStatus @default(PENDING)
-    task    YouTubeDataTask              @relation(fields: [taskId], references: [id])
-    taskId  Int
+    id       Int                          @id @default(autoincrement())
+    excelRow Int
+    keyword  String
+    status   YouTubeDataTaskKeywordStatus @default(PENDING)
+    task     YouTubeDataTask              @relation(fields: [taskId], references: [id])
+    taskId   Int
 }
 
 model YouTubeDataApiSearch {

@@ -20,6 +20,7 @@ export class FacebookGroupService {
 		/* remove trailing slash */
 		const nontrailingData = facebookGroupOverwriteSourceDto.map((s) => {
 			return {
+				excelRow: s.excelRow,
 				groupAddress: s.groupAddress.endsWith("/")
 					? s.groupAddress.slice(0, -1)
 					: s.groupAddress,
@@ -61,6 +62,7 @@ export class FacebookGroupService {
 					createMany: {
 						data: sourceData.map((s) => {
 							return {
+								excelRow: s.excelRow,
 								groupAddress: s.groupAddress,
 								groupName: s.groupName,
 								status: "PENDING",
@@ -289,8 +291,42 @@ export class FacebookGroupService {
 			});
 			return status.data;
 		} catch (error: any) {
-			console.log("An error occured... ", error.response.data);
-			throw error;
+			if (axios.isAxiosError(error)) {
+				if (error.code === "ECONNABORTED") {
+					/*  Timeout error */
+					console.error("Request timed out:", error.message);
+					/*  Handle timeout error appropriately (e.g., retry, show user message) */
+				} else if (error.response) {
+					/*  Server responded with an error status code */
+					console.error(
+						"Server error:",
+						error.response.status,
+						error.response.data
+					);
+					if (error.response.status === 404) {
+						/*  Handle 404 Not Found */
+						console.error("Resource not found");
+						/* handle 404 error, like redirecting to a not found page. */
+					} else if (error.response.status >= 500) {
+						/*  Handle 5xx server errors */
+						console.error("Server error occured.");
+						/* Handle server errors, for example, show a retry button. */
+					}
+					/* You can also access the error.response.data to get more specific error messages from the backend. */
+					console.error(error.response.data);
+				} else if (error.request) {
+					/* Request was made, but no response was received */
+					console.error(
+						"No response received, check if your crawler service is running."
+					);
+				} else {
+					/* Error setting up the request */
+					console.error("Error setting up request:", error.message);
+				}
+			} else {
+				console.error("An unexpected error occurred:", error);
+			}
+			throw error; /* Rethrow the error to be handled by the caller. */
 		}
 	}
 

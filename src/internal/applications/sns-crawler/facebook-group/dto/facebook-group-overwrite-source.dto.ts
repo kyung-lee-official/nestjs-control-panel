@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const overwriteSourceSchema = z.array(
 	z.object({
+		excelRow: z.number().int(),
 		groupAddress: z
 			.string()
 			.url()

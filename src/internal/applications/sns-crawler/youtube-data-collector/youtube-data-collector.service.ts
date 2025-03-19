@@ -174,6 +174,7 @@ export class YoutubeDataCollectorService {
 				youTubeDataTaskKeywords: {
 					create: keywords.map((k) => {
 						return {
+							excelRow: k.excelRow,
 							keyword: k.keyword,
 							status: YouTubeDataTaskKeywordStatus.PENDING,
 						};
@@ -656,12 +657,45 @@ export class YoutubeDataCollectorService {
 		const searches = task.searches;
 		const channels = task.channels;
 		const videos = task.videos;
+		const keywordExcelRows: { keyword: string; excelRow: number }[] = [];
+		for (const s of searches) {
+			/**
+			 * logically there should only be one keyword matches the condition, however,
+			 * the prisma model we defined doesn't guarantee that, so we have to use
+			 * findFirst instead of findUnique here
+			 */
+			const keyword =
+				await this.prismaService.youTubeDataTaskKeyword.findFirst({
+					where: {
+						AND: [
+							{
+								taskId: taskId,
+							},
+							{
+								keyword: s.keyword,
+							},
+						],
+					},
+				});
+			if (!keyword) {
+				throw new NotFoundException(
+					`Can't find a keyword that matches the condition: taskId: ${taskId}, keyword: ${s.keyword}`
+				);
+			}
+			keywordExcelRows.push({
+				keyword: s.keyword,
+				excelRow: keyword.excelRow,
+			});
+		}
+
 		/* per search as a datum */
 		const compositeData = searches.map((s) => {
+			const ker = keywordExcelRows.find((k) => k.keyword === s.keyword);
 			const video = videos.find((v) => v.videoId === s.videoId);
 			const channel = channels.find((c) => c.channelId === s.channelId);
 			return {
-				keyword: s.keyword,
+				keyword: ker?.keyword,
+				excelRow: ker?.excelRow,
 				publishedAt: s.publishedAt,
 				videoId: s.videoId,
 				title: video?.title,
