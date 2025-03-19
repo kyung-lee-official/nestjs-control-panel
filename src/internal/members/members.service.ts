@@ -161,12 +161,6 @@ export class MembersService {
 
 	async freeze(id: string, freezeMemberDto: FreezeMemberDto) {
 		const { isFrozen } = freezeMemberDto;
-		// if (id === admin.id) {
-		// 	throw new ForbiddenException("Can't freeze the 'admin' member");
-		// }
-		// if (requester.id === id) {
-		// 	throw new ForbiddenException("Can't freeze yourself");
-		// }
 		const frozenRequestee = await this.prismaService.member.update({
 			where: { id: id },
 			data: { isFrozen: isFrozen },
