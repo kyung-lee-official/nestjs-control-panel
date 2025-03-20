@@ -17,6 +17,8 @@ export class UpdateRoleByIds {
 
 export const updateRoleByIdOperationOptions: ApiOperationOptions = {
 	summary: "Update role by id",
+	description:
+		"Update role by id, the `memberIds` field is an array of user ids",
 };
 
 export const udpateRoleByIdBodyOptions: ApiBodyOptions = {
@@ -27,6 +29,7 @@ export const udpateRoleByIdBodyOptions: ApiBodyOptions = {
 				id: "test-role",
 				name: "Test Role",
 				superRoleId: "admin",
+				memberIds: [],
 			},
 		},
 	},
