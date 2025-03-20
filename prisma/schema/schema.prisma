@@ -32,7 +32,8 @@ model MemberRole {
     members       Member[]
     createdAt     DateTime        @default(now())
     updatedAt     DateTime        @updatedAt
-    // applications/performance/event-templates
+    // applications/performance
+	statSection  StatSection[]
     eventTemplate EventTemplate[]
 }
 

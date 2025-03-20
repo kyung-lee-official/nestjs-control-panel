@@ -9,15 +9,17 @@ model PerformanceStat {
 }
 
 model StatSection {
-    id          Int             @id @default(autoincrement())
-    stat        PerformanceStat @relation(fields: [statId], references: [id])
-    statId      Int
-    weight      Int
-    title       String
-    description String?
-    events      Event[]
-    createdAt   DateTime        @default(now())
-    updatedAt   DateTime        @updatedAt
+    id           Int             @id @default(autoincrement())
+    stat         PerformanceStat @relation(fields: [statId], references: [id])
+    statId       Int
+    weight       Int
+    title        String
+    description  String?
+    memberRole   MemberRole      @relation(fields: [memberRoleId], references: [id])
+    memberRoleId String
+    events       Event[]
+    createdAt    DateTime        @default(now())
+    updatedAt    DateTime        @updatedAt
 }
 
 model EventTemplate {
