@@ -43,8 +43,9 @@ export class UpdateApprovalGuard implements CanActivate {
 		if (!performanceEvent) {
 			throw new NotFoundException("Performance event not found");
 		}
-		const sectionRole = performanceEvent.section.memberRoleId;
-		const superRoleIds = await this.utilsService.getSuperRoles(sectionRole);
+		const sectionRoleId = performanceEvent.section.memberRoleId;
+		const superRoleIds =
+			await this.utilsService.getSuperRoles(sectionRoleId);
 		console.log(superRoleIds);
 
 		if (!performanceEvent) {
@@ -54,7 +55,8 @@ export class UpdateApprovalGuard implements CanActivate {
 			kind: "internal:applications:performances:event:approval",
 			id: "*",
 			attr: {
-				// performanceEventBe,
+				// sectionRoleId: sectionRoleId,
+				superRoleIds: superRoleIds,
 			},
 		};
 
@@ -65,7 +67,7 @@ export class UpdateApprovalGuard implements CanActivate {
 		};
 		const decision = await cerbos.checkResource(checkResourceRequest);
 
-		const result = !!decision.isAllowed("create");
+		const result = !!decision.isAllowed("update");
 
 		return result;
 	}
