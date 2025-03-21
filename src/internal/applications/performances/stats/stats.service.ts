@@ -196,6 +196,7 @@ export class StatsService {
 				},
 				data: {
 					weight: requestSectionForUpdate!.weight,
+					memberRoleId: requestSectionForUpdate!.memberRoleId,
 					title: requestSectionForUpdate!.title,
 					description:
 						requestSectionForUpdate?.description ?? Prisma.skip,

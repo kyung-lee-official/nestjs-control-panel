@@ -1,5 +1,3 @@
-import { Principal } from "@cerbos/core";
-
 export function exclude<
 	Entity extends ArrayLike<unknown>,
 	Key extends keyof Entity,
@@ -26,25 +24,4 @@ export function excludePassword(object: any) {
 		}
 	}
 	return object;
-}
-
-export function getCerbosPrincipal(requester: any): Principal {
-	return {
-		id: requester.id,
-		roles: requester.memberRoles.map((role) => role.id),
-		attr: {
-			...requester,
-			memberRoles: requester.memberRoles.map((role) => {
-				return {
-					id: role.id,
-					name: role.name,
-					superRoleId: role.superRoleId,
-					createdAt: role.createdAt.toISOString(),
-					updatedAt: role.updatedAt.toISOString(),
-				};
-			}),
-			createdAt: requester.createdAt.toISOString(),
-			updatedAt: requester.updatedAt.toISOString(),
-		},
-	};
 }

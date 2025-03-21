@@ -81,7 +81,7 @@ import {
 	updateMyPasswordBodyOptions,
 	updateMyPasswordOperationOptions,
 } from "./swagger/update-my-password.swagger";
-import { UpdateMyPasswordGuard } from "./guards/update-member-password.guard";
+import { UpdateMyPasswordGuard } from "./guards/update-my-password.guard";
 import { SignUpGuard } from "./guards/sign-up.guard";
 
 @ApiTags("Authentication")

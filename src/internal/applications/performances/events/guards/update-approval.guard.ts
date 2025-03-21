@@ -4,47 +4,49 @@ import {
 	ExecutionContext,
 	NotFoundException,
 	BadRequestException,
-	ForbiddenException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
-import { getCerbosPrincipal } from "src/utils/data";
 import { CheckResourceRequest } from "@cerbos/core";
+import { UtilsService } from "src/utils/utils.service";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable()
 export class UpdateApprovalGuard implements CanActivate {
-	constructor(private readonly prismaService: PrismaService) {}
+	constructor(
+		private readonly prismaService: PrismaService,
+		private readonly utilsService: UtilsService
+	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
 		const requester = req.requester;
-		const eventId = req.params.id;
+		const eventId = parseInt(req.params.id);
+		if (isNaN(eventId)) {
+			throw new BadRequestException("Invalid event id");
+		}
 
-		const principal = getCerbosPrincipal(requester);
+		const principal = await this.utilsService.getCerbosPrincipal(requester);
 
 		const actions = ["update"];
 
-		/* find event and event owner */
+		/* find event and section role */
 		const performanceEvent = await this.prismaService.event.findUnique({
 			where: {
 				id: eventId,
 			},
 			include: {
-				section: {
-					include: {
-						stat: true,
-					},
-				},
+				section: true,
 			},
 		});
 		if (!performanceEvent) {
 			throw new NotFoundException("Performance event not found");
 		}
-		const eventOwner = performanceEvent.section.stat.ownerId;
-		// const superRoles = eventOwner.
-		
+		const sectionRole = performanceEvent.section.memberRoleId;
+		const superRoleIds = await this.utilsService.getSuperRoles(sectionRole);
+		console.log(superRoleIds);
+
 		if (!performanceEvent) {
 			throw new NotFoundException("Performance event not found");
 		}

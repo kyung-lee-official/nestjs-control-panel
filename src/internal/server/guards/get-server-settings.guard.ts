@@ -7,18 +7,21 @@ import {
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
 import { CheckResourceRequest } from "@cerbos/core";
-import { getCerbosPrincipal } from "src/utils/data";
+import { UtilsService } from "src/utils/utils.service";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable()
 export class GetServerSettingsGuard implements CanActivate {
-	constructor(private readonly prismaService: PrismaService) {}
+	constructor(
+		private readonly prismaService: PrismaService,
+		private readonly utilsService: UtilsService
+	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
 		const requester = req.requester;
-		const principal = getCerbosPrincipal(requester);
+		const principal = await this.utilsService.getCerbosPrincipal(requester);
 
 		const actions = ["read"];
 

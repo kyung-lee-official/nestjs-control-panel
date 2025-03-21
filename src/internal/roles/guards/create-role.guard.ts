@@ -6,15 +6,18 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { PrismaService } from "../../../prisma/prisma.service";
-import { getCerbosPrincipal } from "src/utils/data";
 import { GRPC as Cerbos } from "@cerbos/grpc";
 import { CheckResourceRequest } from "@cerbos/core";
+import { UtilsService } from "src/utils/utils.service";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable()
 export class CreateRoleGuard implements CanActivate {
-	constructor(private readonly prismaService: PrismaService) {}
+	constructor(
+		private readonly prismaService: PrismaService,
+		private readonly utilsService: UtilsService
+	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
@@ -27,7 +30,7 @@ export class CreateRoleGuard implements CanActivate {
 		}
 
 		const requester = req.requester;
-		const principal = getCerbosPrincipal(requester);
+		const principal = await this.utilsService.getCerbosPrincipal(requester);
 
 		const actions = ["create"];
 
