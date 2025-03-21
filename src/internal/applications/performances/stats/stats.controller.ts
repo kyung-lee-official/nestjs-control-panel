@@ -22,7 +22,10 @@ import {
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { ExcludePasswordInterceptor } from "src/interceptors/exclude-password.interceptor";
-import { updateStatApiBodyOptions } from "./swagger/update-stat.swagger";
+import {
+	updateStatApiBodyOptions,
+	updateStatApiOperationOptions,
+} from "./swagger/update-stat.swagger";
 import { SearchStatDto, searchStatDtoSchema } from "./dto/search-stat.dto";
 import { CreateStatGuard } from "./guards/create-stat.guard";
 import { DeleteStatGuard } from "./guards/delete-stat.guard";
@@ -78,6 +81,7 @@ export class StatsController {
 		return await this.statsService.searchStats(searchStatDto);
 	}
 
+	@ApiOperation(updateStatApiOperationOptions)
 	@ApiBody(updateStatApiBodyOptions)
 	@UseGuards(UpdateStatGuard)
 	@Patch(":id")

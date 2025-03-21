@@ -44,6 +44,7 @@ import {
 	updateApprovalApiBodyOptions,
 	updateApprovalApiOperationOptions,
 } from "./swagger/update-event-approval.swagger";
+import { UpdateApprovalGuard } from "./guards/update-approval.guard";
 
 @ApiTags("Events")
 @ApiBearerAuth()
@@ -87,6 +88,7 @@ export class EventsController {
 
 	@ApiOperation(updateApprovalApiOperationOptions)
 	@ApiBody(updateApprovalApiBodyOptions)
+	@UseGuards(UpdateApprovalGuard)
 	@Patch("update-approval-by-event-id/:id")
 	async updateApprovalByEventId(
 		@Param("id", ParseIntPipe) id: number,

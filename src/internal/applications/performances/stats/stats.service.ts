@@ -1,6 +1,5 @@
 import {
 	BadRequestException,
-	Body,
 	Injectable,
 	NotFoundException,
 } from "@nestjs/common";
@@ -69,6 +68,7 @@ export class StatsService {
 			include: {
 				statSections: {
 					include: {
+						memberRole: true,
 						events: true,
 					},
 				},
@@ -85,6 +85,7 @@ export class StatsService {
 				owner: true,
 				statSections: {
 					include: {
+						memberRole: true,
 						events: true,
 					},
 				},
@@ -92,7 +93,7 @@ export class StatsService {
 		});
 	}
 
-	async searchStats(@Body() searchStatDto: SearchStatDto) {
+	async searchStats(searchStatDto: SearchStatDto) {
 		const { ownerId, year } = searchStatDto;
 		const startDate = dayjs(year).startOf("year").toDate();
 		const endDate = dayjs(year).endOf("year").toDate();
@@ -108,6 +109,7 @@ export class StatsService {
 	}
 
 	async updateStatById(id: number, updateStatDto: UpdateStatDto) {
+		/* ownerId and month cannot be updated, but we will keep them in the dto for simplicity */
 		const { ownerId, month, statSections: requestSections } = updateStatDto;
 
 		/* check weight sum */
@@ -126,6 +128,7 @@ export class StatsService {
 			include: {
 				statSections: {
 					include: {
+						memberRole: true,
 						events: true,
 					},
 				},
@@ -205,6 +208,7 @@ export class StatsService {
 			data: sectionsToCreate.map((s) => {
 				return {
 					weight: s.weight,
+					memberRoleId: s.memberRoleId,
 					title: s.title,
 					description: s.description,
 					statId: id,

@@ -6,6 +6,7 @@ export const createStatDtoSchema = z.object({
 	statSections: z.array(
 		z.object({
 			weight: z.number().int().min(0).max(100),
+			memberRoleId: z.string(),
 			title: z.string(),
 			description: z.string().optional(),
 		})

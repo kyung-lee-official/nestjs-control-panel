@@ -1,7 +1,7 @@
 import { ApiBodyOptions, ApiOperationOptions } from "@nestjs/swagger";
 
 export const updateStatApiOperationOptions: ApiOperationOptions = {
-	summary: "Update a performance stat",
+	summary: "Update a performance stat, ",
 };
 
 export const updateStatApiBodyOptions: ApiBodyOptions = {
