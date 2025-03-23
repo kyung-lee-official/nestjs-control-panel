@@ -13,7 +13,7 @@ import { UtilsService } from "src/utils/utils.service";
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable()
-export class UpdateApprovalGuard implements CanActivate {
+export class DeleteEventGuard implements CanActivate {
 	constructor(
 		private readonly prismaService: PrismaService,
 		private readonly utilsService: UtilsService
@@ -29,7 +29,7 @@ export class UpdateApprovalGuard implements CanActivate {
 
 		const principal = await this.utilsService.getCerbosPrincipal(requester);
 
-		const actions = ["update"];
+		const actions = ["delete"];
 
 		/* find event and section role */
 		const performanceEvent = await this.prismaService.event.findUnique({
@@ -37,24 +37,28 @@ export class UpdateApprovalGuard implements CanActivate {
 				id: eventId,
 			},
 			include: {
-				section: true,
+				section: {
+					include: {
+						stat: true,
+					},
+				},
 			},
 		});
 		if (!performanceEvent) {
 			throw new NotFoundException("Performance event not found");
 		}
+		const performanceStatOwnerId = performanceEvent.section.stat.ownerId;
 		const sectionRoleId = performanceEvent.section.memberRoleId;
 		const superRoleIds =
 			await this.utilsService.getSuperRoles(sectionRoleId);
-
 		if (!performanceEvent) {
 			throw new NotFoundException("Performance event not found");
 		}
 		const resource = {
-			kind: "internal:applications:performances:event:approval",
+			kind: "internal:applications:performances:event",
 			id: "*",
 			attr: {
-				// sectionRoleId: sectionRoleId,
+				performanceStatOwnerId: performanceStatOwnerId,
 				superRoleIds: superRoleIds,
 			},
 		};
@@ -66,7 +70,7 @@ export class UpdateApprovalGuard implements CanActivate {
 		};
 		const decision = await cerbos.checkResource(checkResourceRequest);
 
-		const result = !!decision.isAllowed("update");
+		const result = !!decision.isAllowed("delete");
 
 		return result;
 	}

@@ -45,6 +45,10 @@ import {
 	updateApprovalApiOperationOptions,
 } from "./swagger/update-event-approval.swagger";
 import { UpdateApprovalGuard } from "./guards/update-approval.guard";
+import { GetEventGuard } from "./guards/get-event.gaurd";
+import { GetAllEventGuard } from "./guards/get-all-events.guard";
+import { UpdateEventGuard } from "./guards/update-event.gaurd";
+import { DeleteEventGuard } from "./guards/delete-event.gaurd";
 
 @ApiTags("Events")
 @ApiBearerAuth()
@@ -62,16 +66,19 @@ export class EventsController {
 		return await this.eventsService.create(createEventDto);
 	}
 
+	@UseGuards(GetAllEventGuard)
 	@Get()
 	async findAll() {
 		return this.eventsService.findAll();
 	}
 
+	@UseGuards(GetEventGuard)
 	@Get(":id")
 	async findEventById(@Param("id", ParseIntPipe) id: number) {
 		return await this.eventsService.findEventById(id);
 	}
 
+	@UseGuards(UpdateEventGuard)
 	@Patch("update-event-by-id/:id")
 	async updateEventById(
 		@Param("id", ParseIntPipe) id: number,
@@ -81,6 +88,7 @@ export class EventsController {
 		return await this.eventsService.updateEventById(id, updateEventDto);
 	}
 
+	@UseGuards(DeleteEventGuard)
 	@Delete(":id")
 	async remove(@Param("id", ParseIntPipe) id: number) {
 		return await this.eventsService.remove(id);
@@ -101,11 +109,13 @@ export class EventsController {
 		);
 	}
 
+	@UseGuards(GetEventGuard)
 	@Get("get-attachment-list-by-event-id/:id")
 	async getAttachmentListByEventId(@Param("id", ParseIntPipe) id: number) {
 		return this.eventsService.getAttachmentListByEventId(id);
 	}
 
+	@UseGuards(GetEventGuard)
 	@Get("get-attachment/:id/:filename")
 	async getAttachment(
 		@Param("id", ParseIntPipe) id: number,
@@ -118,6 +128,7 @@ export class EventsController {
 	@ApiOperation(updateEventAttachmentApiOperationOptions)
 	@ApiConsumes("multipart/form-data")
 	@ApiBody(updateEventAttachmentApiBodyOptions)
+	@UseGuards(UpdateEventGuard)
 	@Put("upload-attachments-by-event-id/:id")
 	@UseInterceptors(FileInterceptor("file"))
 	async uploadEventAttachment(
@@ -127,6 +138,7 @@ export class EventsController {
 		return this.eventsService.uploadEventAttachment(id, file);
 	}
 
+	@UseGuards(UpdateEventGuard)
 	@Delete("delete-attachment/:id/:filename")
 	async deleteAttachment(
 		@Param("id", ParseIntPipe) id: number,
