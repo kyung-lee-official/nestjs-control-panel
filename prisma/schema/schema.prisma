@@ -9,18 +9,17 @@ datasource db {
 }
 
 model Member {
-    id            String            @id @default(uuid())
-    email         String            @unique
-    name          String
-    password      String
-    isVerified    Boolean?
-    isFrozen      Boolean?          @default(false)
-    memberRoles   MemberRole[]
-    createdAt     DateTime          @default(now())
-    updatedAt     DateTime          @updatedAt
+    id          String            @id @default(uuid())
+    email       String            @unique
+    name        String
+    password    String
+    isVerified  Boolean?
+    isFrozen    Boolean?          @default(false)
+    memberRoles MemberRole[]
+    createdAt   DateTime          @default(now())
+    updatedAt   DateTime          @updatedAt
     // applications/performance/stats
-    perfStats     PerformanceStat[]
-    eventComments EventComment[]
+    perfStats   PerformanceStat[]
 }
 
 model MemberRole {
@@ -33,7 +32,7 @@ model MemberRole {
     createdAt     DateTime        @default(now())
     updatedAt     DateTime        @updatedAt
     // applications/performance
-	statSection  StatSection[]
+    statSection   StatSection[]
     eventTemplate EventTemplate[]
 }
 

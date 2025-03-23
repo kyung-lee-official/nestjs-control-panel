@@ -61,7 +61,6 @@ model EventComment {
     id        Int      @id @default(autoincrement())
     event     Event    @relation(fields: [eventId], references: [id])
     eventId   Int
-    member    Member   @relation(fields: [memberId], references: [id])
     memberId  String
     content   String
     createdAt DateTime @default(now())
