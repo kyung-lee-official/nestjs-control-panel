@@ -52,6 +52,7 @@ import {
 	searchMemberBodyOptions,
 	searchMemberOperationOptions,
 } from "./swagger/search-members.swagger";
+import { verifyMemberOperationOptions } from "./swagger/verify-member.swagger";
 
 @ApiTags("Members")
 @ApiBearerAuth()
@@ -64,7 +65,7 @@ export class MembersController {
 	@ApiBody(createMemberBodyOptions)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(CreateMemberGuard)
-	@Post("/create")
+	@Post("create")
 	create(
 		@Body(new ZodValidationPipe(createMemberSchema))
 		createMemberDto: CreateMemberDto
@@ -77,7 +78,7 @@ export class MembersController {
 	@UseGuards(FindMembersGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@HttpCode(200)
-	@Post("/search")
+	@Post("search")
 	search(
 		@Body(new ZodValidationPipe(findMembersSchema))
 		findMembersDto: FindMembersDto
@@ -104,6 +105,7 @@ export class MembersController {
 		return this.membersService.findMe();
 	}
 
+	@ApiOperation(verifyMemberOperationOptions)
 	@UseGuards(MemberVerificationGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Patch("/:id/member-verification")

@@ -38,7 +38,7 @@ export class UpdateMemberProfileGuard implements CanActivate {
 		}
 		const resource = {
 			kind: "internal:members",
-			id: "*",
+			id: member.id,
 			attr: {
 				...member,
 				memberRoles: member.memberRoles.map((role) => role.id),

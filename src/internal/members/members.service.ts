@@ -39,6 +39,7 @@ export class MembersService {
 				email,
 				password: hashedPassword,
 				name,
+				isVerified: true,
 				memberRoles: {
 					connect: { id: "default" },
 				},
