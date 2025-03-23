@@ -7,7 +7,7 @@ import {
 	UnauthorizedException,
 } from "@nestjs/common/exceptions";
 import { FindMembersByIdsDto } from "./dto/find-members-by-ids.dto";
-import { writeFile } from "fs/promises";
+import { rm, writeFile } from "fs/promises";
 import { existsSync, mkdirSync } from "fs";
 import { FreezeMemberDto } from "./dto/freeze-member.dto";
 import { PrismaService } from "../../prisma/prisma.service";
@@ -16,6 +16,7 @@ import { FindMembersDto } from "./dto/find-members.dto";
 import { MemberWithoutPassword } from "../../utils/types";
 import { EmailService } from "../email/email.service";
 import { UpdateMemberProfileDto } from "./dto/update-member-profile.dto";
+import { UtilsService } from "src/utils/utils.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class MembersService {
@@ -23,18 +24,15 @@ export class MembersService {
 		@Inject(REQUEST)
 		private readonly request: any,
 		private readonly emailService: EmailService,
-		private readonly prismaService: PrismaService
+		private readonly prismaService: PrismaService,
+		private readonly utilsService: UtilsService
 	) {}
 
-	/**
-	 * Create a new member.
-	 * @param createMemberDto
-	 * @returns member
-	 */
 	async create(createMemberDto: CreateMemberDto) {
-		let { email, password, name } = createMemberDto;
+		let { email, name } = createMemberDto;
 		email = email.toLowerCase();
 		const salt = await bcrypt.genSalt();
+		const password = await this.utilsService.generatePassword();
 		const hashedPassword = await bcrypt.hash(password, salt);
 		const member = await this.prismaService.member.create({
 			data: {
@@ -49,7 +47,7 @@ export class MembersService {
 				memberRoles: true,
 			},
 		});
-		this.emailService.sendVerificationEmail(email);
+		this.emailService.sendInitialPasswordEmail(email, password);
 		return member;
 	}
 
@@ -169,9 +167,67 @@ export class MembersService {
 	}
 
 	async remove(id: string): Promise<Member> {
-		const deletedRequestee = await this.prismaService.member.delete({
-			where: { id: id },
+		const result = await this.prismaService.$transaction(async (tx) => {
+			const member = await tx.member.findUnique({
+				where: { id: id },
+			});
+			if (!member) {
+				throw new NotFoundException("Member not found");
+			}
+			/* delete performance stats */
+			const memberPerformanceStats = await tx.performanceStat.findMany({
+				where: { ownerId: member.id },
+			});
+			for (const stat of memberPerformanceStats) {
+				const statSections = await tx.statSection.findMany({
+					where: { statId: stat.id },
+				});
+				for (const section of statSections) {
+					const events = await tx.event.findMany({
+						where: { sectionId: section.id },
+					});
+					for (const event of events) {
+						/* delete event attachments */
+						await rm(
+							`./storage/internal/apps/performances/event-attachments/${event.id}`,
+							{
+								recursive: true,
+								force: true,
+							}
+						);
+						/* delete event comments */
+						await tx.eventComment.deleteMany({
+							where: { eventId: event.id },
+						});
+						/* delete event */
+						await tx.event.delete({
+							where: { id: event.id },
+						});
+					}
+					/* delete section */
+					await tx.statSection.delete({
+						where: { id: section.id },
+					});
+				}
+				/* delete stat */
+				await tx.performanceStat.delete({
+					where: { id: stat.id },
+				});
+			}
+			/* delete avatar */
+			const avatarPath = `./storage/internal/avatar/${member.id}`;
+			if (existsSync(avatarPath)) {
+				await rm(avatarPath, {
+					recursive: true,
+					force: true,
+				});
+			}
+			/* delete member */
+			const deletedRequestee = await tx.member.delete({
+				where: { id: id },
+			});
+			return deletedRequestee;
 		});
-		return deletedRequestee;
+		return result;
 	}
 }

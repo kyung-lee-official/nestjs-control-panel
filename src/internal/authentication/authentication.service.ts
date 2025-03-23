@@ -15,13 +15,13 @@ import { PrismaService } from "src/prisma/prisma.service";
 import bcrypt from "bcrypt";
 import { EmailService } from "../email/email.service";
 import axios from "axios";
-import { generatePassword } from "src/utils/algorithms";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { CredentialData, getCredential } from "qcloud-cos-sts";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { UpdateMyPasswordDto } from "./dto/update-my-password.dto";
 import { REQUEST } from "@nestjs/core";
 import { LogService } from "../log/log.service";
+import { UtilsService } from "src/utils/utils.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthenticationService {
@@ -30,6 +30,7 @@ export class AuthenticationService {
 		private readonly request: any,
 		private readonly prismaService: PrismaService,
 		private readonly jwtService: JwtService,
+		private readonly utilsService: UtilsService,
 		private readonly logService: LogService,
 		private readonly emailService: EmailService
 	) {}
@@ -228,7 +229,7 @@ export class AuthenticationService {
 						where: { email: email },
 					});
 				if (!isMemberExists) {
-					const password = generatePassword();
+					const password = await this.utilsService.generatePassword();
 					const salt = await bcrypt.genSalt();
 					const hashedPassword = await bcrypt.hash(password, salt);
 					const member = this.prismaService.member.create({
@@ -271,7 +272,7 @@ export class AuthenticationService {
 						},
 					});
 				const email = googleUser.email.toLowerCase();
-				const password = generatePassword();
+				const password = await this.utilsService.generatePassword();
 				const salt = await bcrypt.genSalt();
 				const hashedPassword = await bcrypt.hash(password, salt);
 				const member = await this.prismaService.member.create({

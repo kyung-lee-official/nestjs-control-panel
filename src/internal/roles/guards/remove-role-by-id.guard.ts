@@ -23,7 +23,7 @@ export class RemoveRoleByIdGuard implements CanActivate {
 		const requester = req.requester;
 		const principal = await this.utilsService.getCerbosPrincipal(requester);
 
-		const actions = ["remove"];
+		const actions = ["delete"];
 
 		const role = await this.prismaService.memberRole.findUnique({
 			where: {
@@ -51,7 +51,7 @@ export class RemoveRoleByIdGuard implements CanActivate {
 		};
 		const decision = await cerbos.checkResource(checkResourceRequest);
 
-		const result = !!decision.isAllowed("remove");
+		const result = !!decision.isAllowed("delete");
 
 		return result;
 	}

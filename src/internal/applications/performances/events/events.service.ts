@@ -86,23 +86,27 @@ export class EventsService {
 	}
 
 	async remove(id: number) {
-		/* delete event attachments */
-		await rm(
-			`./storage/internal/apps/performances/event-attachments/${id}`,
-			{
-				recursive: true,
-				force: true,
-			}
-		);
-		await this.prismaService.eventComment.deleteMany({
-			where: {
-				eventId: id,
-			},
-		});
-		return await this.prismaService.event.delete({
-			where: {
-				id,
-			},
+		await this.prismaService.$transaction(async (tx) => {
+			/* delete event attachments */
+			await rm(
+				`./storage/internal/apps/performances/event-attachments/${id}`,
+				{
+					recursive: true,
+					force: true,
+				}
+			);
+			/* delete event comments */
+			await tx.eventComment.deleteMany({
+				where: {
+					eventId: id,
+				},
+			});
+			/* delete event */
+			return await tx.event.delete({
+				where: {
+					id,
+				},
+			});
 		});
 	}
 
@@ -150,14 +154,17 @@ export class EventsService {
 		id: number,
 		file: Express.Multer.File
 	): Promise<any> {
-		/* Save file to local, create folder if not exists */
+		/* save file to local, create folder if not exists */
 		const folderPath = `./storage/internal/apps/performances/event-attachments/${id}`;
 		const isExists = existsSync(folderPath);
 		if (!isExists) {
 			await mkdir(folderPath, { recursive: true });
 		}
+		const filename = Buffer.from(file.originalname, "latin1")
+			.toString("utf8")
+			.normalize("NFD");
 		await writeFile(
-			`./storage/internal/apps/performances/event-attachments/${id}/${file.originalname}`,
+			`./storage/internal/apps/performances/event-attachments/${id}/${filename}`,
 			file.buffer
 		);
 		return { success: true };

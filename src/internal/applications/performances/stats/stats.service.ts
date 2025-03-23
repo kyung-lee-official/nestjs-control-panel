@@ -156,32 +156,40 @@ export class StatsService {
 		const sectionsToCreate = requestSections.filter((s) => !s.id);
 
 		/* delete related events */
-		for (const section of dbSectionsToDelete) {
-			/* delete event attachments */
-			const eventIds = section.events.map((e) => e.id);
-			for (const id of eventIds) {
-				await rm(
-					`./storage/internal/apps/performances/event-attachments/${id}`,
-					{
-						recursive: true,
-						force: true,
-					}
-				);
+		await this.prismaService.$transaction(async (tx) => {
+			for (const section of dbSectionsToDelete) {
+				/* delete event attachments */
+				const eventIds = section.events.map((e) => e.id);
+				for (const id of eventIds) {
+					await rm(
+						`./storage/internal/apps/performances/event-attachments/${id}`,
+						{
+							recursive: true,
+							force: true,
+						}
+					);
+					/* delete event comments */
+					await tx.eventComment.deleteMany({
+						where: {
+							eventId: id,
+						},
+					});
+				}
+				/* delete events */
+				await tx.event.deleteMany({
+					where: {
+						sectionId: section.id,
+					},
+				});
 			}
-			/* delete events */
-			await this.prismaService.event.deleteMany({
+			/* delete sections */
+			await tx.statSection.deleteMany({
 				where: {
-					sectionId: section.id,
+					id: {
+						in: dbSectionsToDelete.map((s) => s.id),
+					},
 				},
 			});
-		}
-		/* delete sections */
-		await this.prismaService.statSection.deleteMany({
-			where: {
-				id: {
-					in: dbSectionsToDelete.map((s) => s.id),
-				},
-			},
 		});
 
 		/* update existing sections */
@@ -234,50 +242,59 @@ export class StatsService {
 	}
 
 	async remove(id: number) {
-		const stat = await this.prismaService.performanceStat.findUnique({
-			where: {
-				id: id,
-			},
-			include: {
-				statSections: {
-					include: {
-						events: true,
+		await this.prismaService.$transaction(async (tx) => {
+			const stat = await tx.performanceStat.findUnique({
+				where: {
+					id: id,
+				},
+				include: {
+					statSections: {
+						include: {
+							events: true,
+						},
 					},
 				},
-			},
-		});
-		if (!stat) {
-			throw new NotFoundException("Stat not found");
-		}
-		for (const section of stat.statSections) {
-			/* delete event attachments */
-			const eventIds = section.events.map((e) => e.id);
-			for (const id of eventIds) {
-				await rm(
-					`./storage/internal/apps/performances/event-attachments/${id}`,
-					{
-						recursive: true,
-						force: true,
-					}
-				);
+			});
+			if (!stat) {
+				throw new NotFoundException("Stat not found");
 			}
-			/* delete events */
-			await this.prismaService.event.deleteMany({
+			for (const section of stat.statSections) {
+				/* delete event attachments */
+				const eventIds = section.events.map((e) => e.id);
+				for (const id of eventIds) {
+					await rm(
+						`./storage/internal/apps/performances/event-attachments/${id}`,
+						{
+							recursive: true,
+							force: true,
+						}
+					);
+				}
+				/* delete event comments */
+				await tx.eventComment.deleteMany({
+					where: {
+						eventId: id,
+					},
+				});
+				/* delete events */
+				await tx.event.deleteMany({
+					where: {
+						sectionId: section.id,
+					},
+				});
+			}
+			/* delete sections */
+			await tx.statSection.deleteMany({
 				where: {
-					sectionId: section.id,
+					statId: id,
 				},
 			});
-		}
-		/* delete sections */
-		await this.prismaService.statSection.deleteMany({
-			where: {
-				statId: id,
-			},
-		});
-		return await this.prismaService.performanceStat.delete({
-			where: {
-				id: id,
-			},
+			/* delete stat */
+			return await tx.performanceStat.delete({
+				where: {
+					id: id,
+				},
+			});
 		});
 	}
 }

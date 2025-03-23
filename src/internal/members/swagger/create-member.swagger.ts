@@ -4,17 +4,16 @@ import { CreateMemberDto } from "../dto/create-member.dto";
 export class CreateMember {
 	email: string;
 	name: string;
-	password: string;
 
 	constructor(dto: CreateMemberDto) {
 		this.email = dto.email;
 		this.name = dto.name;
-		this.password = dto.password;
 	}
 }
 
 export const createMemberOperationOptions: ApiOperationOptions = {
-	summary: "Create a member by email",
+	summary:
+		"Create a member manually from a given email, usually by admin. Password will be generated and sent to the email. Verification not required.",
 };
 
 export const createMemberBodyOptions: ApiBodyOptions = {
@@ -24,14 +23,12 @@ export const createMemberBodyOptions: ApiBodyOptions = {
 			value: {
 				email: process.env.E2E_TEST_MEMBER_2_EMAIL,
 				name: process.env.E2E_TEST_MEMBER_2_NAME,
-				password: "1234Abcd!",
 			},
 		},
 		"Create test member 3 by email": {
 			value: {
 				email: process.env.E2E_TEST_MEMBER_3_EMAIL,
 				name: process.env.E2E_TEST_MEMBER_3_NAME,
-				password: "1234Abcd!",
 			},
 		},
 	},

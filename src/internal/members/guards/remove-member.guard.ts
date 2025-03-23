@@ -23,7 +23,7 @@ export class RemoveMemberGuard implements CanActivate {
 		const requester = req.requester;
 		const principal = await this.utilsService.getCerbosPrincipal(requester);
 
-		const actions = ["remove"];
+		const actions = ["delete"];
 
 		const member = await this.prismaService.member.findUnique({
 			where: {
@@ -57,7 +57,7 @@ export class RemoveMemberGuard implements CanActivate {
 		};
 		const decision = await cerbos.checkResource(checkResourceRequest);
 
-		const result = !!decision.isAllowed("remove");
+		const result = !!decision.isAllowed("delete");
 
 		return result;
 	}
