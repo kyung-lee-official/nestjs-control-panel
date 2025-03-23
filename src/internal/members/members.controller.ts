@@ -35,7 +35,7 @@ import {
 } from "./swagger/create-member.swagger";
 import { CreateMemberGuard } from "./guards/create-member.guard";
 import { FindMembersGuard } from "./guards/find-members.guard";
-import { UpdateMemberProfileGuard } from "./guards/update-member-profile.guard";
+import { UpdateMyProfileGuard } from "./guards/update-my-profile.guard";
 import { MemberVerificationGuard } from "./guards/member-verification.guard";
 import {
 	UpdateMemberProfileDto,
@@ -114,7 +114,7 @@ export class MembersController {
 	}
 
 	@ApiBody(updateMemberProfileBodyOptions)
-	@UseGuards(UpdateMemberProfileGuard)
+	@UseGuards(UpdateMyProfileGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Patch("/:id/profile")
 	updateProfile(
@@ -125,7 +125,7 @@ export class MembersController {
 		return this.membersService.updateProfile(id, updateMemberProfileDto);
 	}
 
-	@UseGuards()
+	@UseGuards(UpdateMyProfileGuard)
 	@Put("update-avatar")
 	@UseInterceptors(FileInterceptor("file"))
 	async updateAvatar(

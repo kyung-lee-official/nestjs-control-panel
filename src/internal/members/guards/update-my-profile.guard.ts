@@ -12,7 +12,7 @@ import { UtilsService } from "src/utils/utils.service";
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable()
-export class UpdateMemberProfileGuard implements CanActivate {
+export class UpdateMyProfileGuard implements CanActivate {
 	constructor(
 		private readonly prismaService: PrismaService,
 		private readonly utilsService: UtilsService
