@@ -49,6 +49,7 @@ import { GetEventGuard } from "./guards/get-event.gaurd";
 import { GetAllEventGuard } from "./guards/get-all-events.guard";
 import { UpdateEventGuard } from "./guards/update-event.gaurd";
 import { DeleteEventGuard } from "./guards/delete-event.gaurd";
+import { updateEventByIdApiOperationOptions } from "./swagger/update-event-by-id.swagger";
 
 @ApiTags("Events")
 @ApiBearerAuth()
@@ -78,6 +79,7 @@ export class EventsController {
 		return await this.eventsService.findEventById(id);
 	}
 
+	@ApiOperation(updateEventByIdApiOperationOptions)
 	@UseGuards(UpdateEventGuard)
 	@Patch("update-event-by-id/:id")
 	async updateEventById(
