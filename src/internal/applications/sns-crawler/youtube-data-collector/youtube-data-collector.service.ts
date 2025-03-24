@@ -91,7 +91,7 @@ export class YoutubeDataCollectorService {
 		token: string;
 		isRecentlyUsed: boolean;
 		quotaRunOutAt?: Date;
-		isExpired: boolean;
+		// isExpired: boolean;
 	}) {
 		if (oldToken) {
 			await this.prismaService.youTubeDataToken.update({
@@ -101,7 +101,7 @@ export class YoutubeDataCollectorService {
 				data: {
 					isRecentlyUsed: false,
 					quotaRunOutAt: oldToken.quotaRunOutAt || Prisma.skip,
-					isExpired: oldToken.isExpired,
+					// isExpired: oldToken.isExpired,
 				},
 			});
 		}
@@ -337,11 +337,11 @@ export class YoutubeDataCollectorService {
 						error.response.data.error.message ===
 						"API key expired. Please renew the API key."
 					) {
-						await this.setValidToken({
-							token: this.meta.tokenObj.token,
-							isRecentlyUsed: false,
-							isExpired: true,
-						});
+						/* this error typically occurs when the page token is expired, not YouTube API token */
+						// await this.setValidToken({
+						// 	token: this.meta.tokenObj.token,
+						// 	isRecentlyUsed: false,
+						// });
 					}
 					if (
 						error.response.data.error.errors.some(
@@ -352,7 +352,7 @@ export class YoutubeDataCollectorService {
 							token: this.meta.tokenObj.token,
 							isRecentlyUsed: false,
 							quotaRunOutAt: dayjs().toDate(),
-							isExpired: false,
+							// isExpired: false,
 						});
 					}
 				}
@@ -464,11 +464,12 @@ export class YoutubeDataCollectorService {
 						error.response.data.error.message ===
 						"API key expired. Please renew the API key."
 					) {
-						await this.setValidToken({
-							token: this.meta.tokenObj.token,
-							isRecentlyUsed: false,
-							isExpired: true,
-						});
+						/* this error typically occurs when the page token is expired, not YouTube API token */
+						// await this.setValidToken({
+						// 	token: this.meta.tokenObj.token,
+						// 	isRecentlyUsed: false,
+						// 	isExpired: true,
+						// });
 					}
 					if (
 						error.response.data.error.errors.some(
@@ -479,7 +480,7 @@ export class YoutubeDataCollectorService {
 							token: this.meta.tokenObj.token,
 							isRecentlyUsed: false,
 							quotaRunOutAt: dayjs().toDate(),
-							isExpired: false,
+							// isExpired: false,
 						});
 					}
 				}
@@ -576,11 +577,12 @@ export class YoutubeDataCollectorService {
 							error.response.data.error.message ===
 							"API key expired. Please renew the API key."
 						) {
-							await this.setValidToken({
-								token: this.meta.tokenObj.token,
-								isRecentlyUsed: false,
-								isExpired: true,
-							});
+							/* this error typically occurs when the page token is expired, not YouTube API token */
+							// await this.setValidToken({
+							// 	token: this.meta.tokenObj.token,
+							// 	isRecentlyUsed: false,
+							// 	isExpired: true,
+							// });
 						}
 						if (
 							error.response.data.error.errors.some(
@@ -591,7 +593,7 @@ export class YoutubeDataCollectorService {
 								token: this.meta.tokenObj.token,
 								isRecentlyUsed: false,
 								quotaRunOutAt: dayjs().toDate(),
-								isExpired: false,
+								// isExpired: false,
 							});
 						}
 					}
