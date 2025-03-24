@@ -261,7 +261,14 @@ export class YoutubeDataCollectorService {
 	}
 
 	async fetchYouTubeChannelsByTaskId(taskId: number) {
-		await this.setValidToken();
+		try {
+			await this.setValidToken();
+		} catch (error) {
+			console.error(error);
+			this.meta.taskId = null;
+			this.meta.status = "idle";
+			return this.meta;
+		}
 		this.meta = {
 			tokenObj: this.meta.tokenObj,
 			taskId: taskId,
@@ -348,12 +355,19 @@ export class YoutubeDataCollectorService {
 							(err) => err.reason === "quotaExceeded"
 						)
 					) {
-						await this.setValidToken({
-							token: this.meta.tokenObj.token,
-							isRecentlyUsed: false,
-							quotaRunOutAt: dayjs().toDate(),
-							// isExpired: false,
-						});
+						try {
+							await this.setValidToken({
+								token: this.meta.tokenObj.token,
+								isRecentlyUsed: false,
+								quotaRunOutAt: dayjs().toDate(),
+								// isExpired: false,
+							});
+						} catch (error) {
+							console.error(error);
+							this.meta.taskId = null;
+							this.meta.status = "idle";
+							return this.meta;
+						}
 					}
 				}
 			} else {
@@ -385,7 +399,14 @@ export class YoutubeDataCollectorService {
 	}
 
 	async fetchYouTubeVideosByTaskId(taskId: number) {
-		await this.setValidToken();
+		try {
+			await this.setValidToken();
+		} catch (error) {
+			console.error(error);
+			this.meta.taskId = null;
+			this.meta.status = "idle";
+			return this.meta;
+		}
 		this.meta = {
 			tokenObj: this.meta.tokenObj,
 			taskId: taskId,
@@ -476,12 +497,19 @@ export class YoutubeDataCollectorService {
 							(err) => err.reason === "quotaExceeded"
 						)
 					) {
-						await this.setValidToken({
-							token: this.meta.tokenObj.token,
-							isRecentlyUsed: false,
-							quotaRunOutAt: dayjs().toDate(),
-							// isExpired: false,
-						});
+						try {
+							await this.setValidToken({
+								token: this.meta.tokenObj.token,
+								isRecentlyUsed: false,
+								quotaRunOutAt: dayjs().toDate(),
+								// isExpired: false,
+							});
+						} catch (error) {
+							console.error(error);
+							this.meta.taskId = null;
+							this.meta.status = "idle";
+							return this.meta;
+						}
 					}
 				}
 			} else {
@@ -516,7 +544,14 @@ export class YoutubeDataCollectorService {
 
 	async startTaskById(youtubeDataSearchDto: YouTubeDataSearchDto) {
 		const { taskId, start, end, targetResultCount } = youtubeDataSearchDto;
-		await this.setValidToken();
+		try {
+			await this.setValidToken();
+		} catch (error) {
+			console.error(error);
+			this.meta.taskId = null;
+			this.meta.status = "idle";
+			return this.meta;
+		}
 		this.meta = {
 			tokenObj: this.meta.tokenObj,
 			taskId: taskId,
@@ -589,12 +624,19 @@ export class YoutubeDataCollectorService {
 								(err) => err.reason === "quotaExceeded"
 							)
 						) {
-							await this.setValidToken({
-								token: this.meta.tokenObj.token,
-								isRecentlyUsed: false,
-								quotaRunOutAt: dayjs().toDate(),
-								// isExpired: false,
-							});
+							try {
+								await this.setValidToken({
+									token: this.meta.tokenObj.token,
+									isRecentlyUsed: false,
+									quotaRunOutAt: dayjs().toDate(),
+									// isExpired: false,
+								});
+							} catch (error) {
+								console.error(error);
+								this.meta.taskId = null;
+								this.meta.status = "idle";
+								return this.meta;
+							}
 						}
 					}
 				} else {
