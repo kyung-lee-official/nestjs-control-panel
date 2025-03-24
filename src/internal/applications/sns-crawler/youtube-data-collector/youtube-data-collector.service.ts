@@ -91,7 +91,7 @@ export class YoutubeDataCollectorService {
 		token: string;
 		isRecentlyUsed: boolean;
 		quotaRunOutAt?: Date;
-		// isExpired: boolean;
+		isExpired: boolean;
 	}) {
 		if (oldToken) {
 			await this.prismaService.youTubeDataToken.update({
@@ -101,7 +101,7 @@ export class YoutubeDataCollectorService {
 				data: {
 					isRecentlyUsed: false,
 					quotaRunOutAt: oldToken.quotaRunOutAt || Prisma.skip,
-					// isExpired: oldToken.isExpired,
+					isExpired: oldToken.isExpired,
 				},
 			});
 		}
@@ -135,6 +135,19 @@ export class YoutubeDataCollectorService {
 			},
 		});
 		this.meta.tokenObj = newToken;
+	}
+
+	async markTokenAsAvailable(token: string) {
+		return await this.prismaService.youTubeDataToken.update({
+			where: {
+				token: token,
+			},
+			data: {
+				quotaRunOutAt: null,
+				isRecentlyUsed: false,
+				isExpired: false,
+			},
+		});
 	}
 
 	async deleteToken(token: string) {
@@ -344,11 +357,11 @@ export class YoutubeDataCollectorService {
 						error.response.data.error.message ===
 						"API key expired. Please renew the API key."
 					) {
-						/* this error typically occurs when the page token is expired, not YouTube API token */
-						// await this.setValidToken({
-						// 	token: this.meta.tokenObj.token,
-						// 	isRecentlyUsed: false,
-						// });
+						await this.setValidToken({
+							token: this.meta.tokenObj.token,
+							isRecentlyUsed: false,
+							isExpired: true,
+						});
 					}
 					if (
 						error.response.data.error.errors.some(
@@ -360,7 +373,7 @@ export class YoutubeDataCollectorService {
 								token: this.meta.tokenObj.token,
 								isRecentlyUsed: false,
 								quotaRunOutAt: dayjs().toDate(),
-								// isExpired: false,
+								isExpired: false,
 							});
 						} catch (error) {
 							console.error(error);
@@ -485,12 +498,11 @@ export class YoutubeDataCollectorService {
 						error.response.data.error.message ===
 						"API key expired. Please renew the API key."
 					) {
-						/* this error typically occurs when the page token is expired, not YouTube API token */
-						// await this.setValidToken({
-						// 	token: this.meta.tokenObj.token,
-						// 	isRecentlyUsed: false,
-						// 	isExpired: true,
-						// });
+						await this.setValidToken({
+							token: this.meta.tokenObj.token,
+							isRecentlyUsed: false,
+							isExpired: true,
+						});
 					}
 					if (
 						error.response.data.error.errors.some(
@@ -502,7 +514,7 @@ export class YoutubeDataCollectorService {
 								token: this.meta.tokenObj.token,
 								isRecentlyUsed: false,
 								quotaRunOutAt: dayjs().toDate(),
-								// isExpired: false,
+								isExpired: false,
 							});
 						} catch (error) {
 							console.error(error);
@@ -552,15 +564,58 @@ export class YoutubeDataCollectorService {
 			this.meta.status = "idle";
 			return this.meta;
 		}
-		this.meta = {
-			tokenObj: this.meta.tokenObj,
-			taskId: taskId,
-			status: "idle",
-			shouldStop: false,
-			start: start,
-			end: end,
-			targetResultCount: targetResultCount,
-		};
+		const task = await this.prismaService.youTubeDataTask.findUnique({
+			where: {
+				id: taskId,
+			},
+		});
+		if (!task) {
+			throw new NotFoundException("Task not found.");
+		}
+		if (!task.targetResultCount) {
+			await this.prismaService.youTubeDataTask.update({
+				where: {
+					id: taskId,
+				},
+				data: {
+					targetResultCount: targetResultCount,
+				},
+			});
+		}
+		if (!task.timeRangeStart || !task.timeRangeEnd) {
+			await this.prismaService.youTubeDataTask.update({
+				where: {
+					id: taskId,
+				},
+				data: {
+					timeRangeStart: new Date(start),
+					timeRangeEnd: new Date(end),
+				},
+			});
+			this.meta = {
+				tokenObj: this.meta.tokenObj,
+				taskId: taskId,
+				status: "idle",
+				shouldStop: false,
+				start: start,
+				end: end,
+				targetResultCount: task.targetResultCount
+					? task.targetResultCount
+					: targetResultCount,
+			};
+		} else {
+			this.meta = {
+				tokenObj: this.meta.tokenObj,
+				taskId: taskId,
+				status: "idle",
+				shouldStop: false,
+				start: task.timeRangeStart.toISOString(),
+				end: task.timeRangeEnd.toISOString(),
+				targetResultCount: task.targetResultCount
+					? task.targetResultCount
+					: targetResultCount,
+			};
+		}
 		if (this.meta.status !== "idle") {
 			return this.meta;
 		} else {
@@ -602,6 +657,7 @@ export class YoutubeDataCollectorService {
 					this.meta.end,
 					this.meta.targetResultCount
 				);
+				console.log(searches);
 			} catch (error: any) {
 				if (axios.isAxiosError(error)) {
 					/* possible reason: proxy down */
@@ -612,12 +668,11 @@ export class YoutubeDataCollectorService {
 							error.response.data.error.message ===
 							"API key expired. Please renew the API key."
 						) {
-							/* this error typically occurs when the page token is expired, not YouTube API token */
-							// await this.setValidToken({
-							// 	token: this.meta.tokenObj.token,
-							// 	isRecentlyUsed: false,
-							// 	isExpired: true,
-							// });
+							await this.setValidToken({
+								token: this.meta.tokenObj.token,
+								isRecentlyUsed: false,
+								isExpired: true,
+							});
 						}
 						if (
 							error.response.data.error.errors.some(
@@ -629,7 +684,7 @@ export class YoutubeDataCollectorService {
 									token: this.meta.tokenObj.token,
 									isRecentlyUsed: false,
 									quotaRunOutAt: dayjs().toDate(),
-									// isExpired: false,
+									isExpired: false,
 								});
 							} catch (error) {
 								console.error(error);

@@ -57,6 +57,11 @@ export class YoutubeDataCollectorController {
 		return await this.youtubeDataCollectorService.getTokens();
 	}
 
+	@Patch("mark-token-as-available/:token")
+	async markTokenAsAvailable(@Param("token") token: string) {
+		return await this.youtubeDataCollectorService.markTokenAsAvailable(token);
+	}
+
 	@Delete(":token")
 	async deleteToken(@Param("token") token: string) {
 		return await this.youtubeDataCollectorService.deleteToken(token);

@@ -49,6 +49,9 @@ model YouTubeDataTask {
     searches                YouTubeDataApiSearch[]
     channels                YouTubeDataApiChannel[]
     videos                  YouTubeDataApiVideo[]
+    timeRangeStart          DateTime?
+    timeRangeEnd            DateTime?
+    targetResultCount       Int?
     createdAt               DateTime                 @default(now())
     updatedAt               DateTime                 @updatedAt
 }
