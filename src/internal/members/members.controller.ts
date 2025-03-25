@@ -47,7 +47,7 @@ import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { findMembersByIdsBodyOptions } from "./swagger/find-members-by-ids.swagger";
 import { FreezeMemberGuard } from "./guards/freeze-member.guard";
 import { freezeMemberBodyOptions } from "./swagger/freeze-member.swagger";
-import { RemoveMemberGuard } from "./guards/remove-member.guard";
+import { DeleteMemberGuard } from "./guards/delete-member.guard";
 import {
 	searchMemberBodyOptions,
 	searchMemberOperationOptions,
@@ -152,7 +152,7 @@ export class MembersController {
 		return this.membersService.freeze(id, freezeMemberDto);
 	}
 
-	@UseGuards(RemoveMemberGuard)
+	@UseGuards(DeleteMemberGuard)
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@Delete("/:id")
 	remove(@Param("id") id: string): Promise<Member> {

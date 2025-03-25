@@ -12,7 +12,7 @@ import { UtilsService } from "src/utils/utils.service";
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
 @Injectable()
-export class RemoveMemberGuard implements CanActivate {
+export class DeleteMemberGuard implements CanActivate {
 	constructor(
 		private readonly prismaService: PrismaService,
 		private readonly utilsService: UtilsService
@@ -48,13 +48,10 @@ export class RemoveMemberGuard implements CanActivate {
 		};
 		const checkResourceRequest: CheckResourceRequest = {
 			principal: principal,
-			resource: {
-				kind: "internal:members",
-				id: "*",
-				attr: resource,
-			},
+			resource: resource,
 			actions: actions,
 		};
+
 		const decision = await cerbos.checkResource(checkResourceRequest);
 
 		const result = !!decision.isAllowed("delete");

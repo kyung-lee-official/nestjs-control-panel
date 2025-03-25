@@ -45,8 +45,8 @@ export class GetTemplatesByRoleIdGuard implements CanActivate {
 
 		const checkResourceRequest: CheckResourceRequest = {
 			principal: principal,
-			resource: resource,
 			actions: actions,
+			resource: resource,
 		};
 
 		const decision = await cerbos.checkResource(checkResourceRequest);
