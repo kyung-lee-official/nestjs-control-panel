@@ -4,12 +4,12 @@ import {
 	ExecutionContext,
 	NotFoundException,
 	BadRequestException,
-	ForbiddenException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { GRPC as Cerbos } from "@cerbos/grpc";
 import { CheckResourceRequest } from "@cerbos/core";
 import { UtilsService } from "src/utils/utils.service";
+import { EventTemplate } from "@prisma/client";
 
 const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
 
@@ -20,6 +20,12 @@ export class CreateEventGuard implements CanActivate {
 		private readonly utilsService: UtilsService
 	) {}
 
+	/**
+	 * who can create an event:
+	 * 	- the owner of the performance stat, or any superRole of the event's section
+	 * what event templates can be used:
+	 *  - only the templates that match the section's memberRole
+	 */
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
 		const requester = req.requester;
@@ -29,22 +35,17 @@ export class CreateEventGuard implements CanActivate {
 		const actions = ["create"];
 
 		const body = req.body;
-		const templateId = body.templateId;
+		const templateId: number | undefined = body.templateId;
+		let template: EventTemplate | null = null;
 		if (templateId) {
 			/* use template */
-			const template = await this.prismaService.eventTemplate.findUnique({
+			template = await this.prismaService.eventTemplate.findUnique({
 				where: {
 					id: templateId,
 				},
 			});
 			if (!template) {
 				throw new NotFoundException("Template not found");
-			}
-			if (!principal.roles.includes(template.memberRoleId)) {
-				/* template role not matched */
-				throw new ForbiddenException(
-					"principal roles do not include template role"
-				);
 			}
 		} else {
 			/* custom event, no validation needed */
@@ -62,6 +63,11 @@ export class CreateEventGuard implements CanActivate {
 		if (!section) {
 			throw new NotFoundException("Section not found");
 		}
+		if (template && template.memberRoleId !== section.memberRoleId) {
+			throw new BadRequestException(
+				"Template member role does not match section member role"
+			);
+		}
 		const performanceStat =
 			await this.prismaService.performanceStat.findUnique({
 				where: {
@@ -76,6 +82,8 @@ export class CreateEventGuard implements CanActivate {
 			id: "*",
 			attr: {
 				performanceStatOwnerId: performanceStat.ownerId,
+				sectionMemberRoleId: section.memberRoleId,
+				templateMemberRoleId: template ? template.memberRoleId : null,
 			},
 		};
 
