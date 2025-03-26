@@ -24,7 +24,7 @@ export class CreateEventGuard implements CanActivate {
 	 * who can create an event:
 	 * 	- the owner of the performance stat, or any superRole of the event's section
 	 * what event templates can be used:
-	 *  - only the templates that match the section's memberRole
+	 *  - only the templates that match the section's memberRole (implemented in the guard)
 	 */
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest();
@@ -63,6 +63,9 @@ export class CreateEventGuard implements CanActivate {
 		if (!section) {
 			throw new NotFoundException("Section not found");
 		}
+		const sectionSuperRoles = await this.utilsService.getSuperRoles(
+			section.memberRoleId
+		);
 		if (template && template.memberRoleId !== section.memberRoleId) {
 			throw new BadRequestException(
 				"Template member role does not match section member role"
@@ -83,7 +86,7 @@ export class CreateEventGuard implements CanActivate {
 			attr: {
 				performanceStatOwnerId: performanceStat.ownerId,
 				sectionMemberRoleId: section.memberRoleId,
-				templateMemberRoleId: template ? template.memberRoleId : null,
+				sectionSuperRoles: sectionSuperRoles,
 			},
 		};
 
@@ -93,6 +96,8 @@ export class CreateEventGuard implements CanActivate {
 			resource: resource,
 		};
 		const decision = await cerbos.checkResource(checkResourceRequest);
+		console.log(decision);
+		console.log(decision.outputs);
 
 		const result = !!decision.isAllowed("create");
 
