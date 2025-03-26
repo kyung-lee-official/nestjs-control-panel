@@ -96,8 +96,6 @@ export class CreateEventGuard implements CanActivate {
 			resource: resource,
 		};
 		const decision = await cerbos.checkResource(checkResourceRequest);
-		console.log(decision);
-		console.log(decision.outputs);
 
 		const result = !!decision.isAllowed("create");
 
