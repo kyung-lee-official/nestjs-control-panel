@@ -31,7 +31,7 @@ export class RolesService {
 		const { requester } = this.request;
 
 		const principal = await this.utilsService.getCerbosPrincipal(requester);
-		const actions = ["*"];
+		const actions = ["*", "read"];
 		const resource = {
 			kind: "internal:roles",
 			id: "*",
