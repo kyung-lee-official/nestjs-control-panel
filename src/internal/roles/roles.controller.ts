@@ -68,7 +68,6 @@ export class RolesController {
 
 	@ApiBearerAuth()
 	@ApiOperation({ summary: "Get roles permissions" })
-	@UseGuards(JwtGuard)
 	@Get("permissions")
 	async permissions() {
 		return await this.rolesService.permissions();

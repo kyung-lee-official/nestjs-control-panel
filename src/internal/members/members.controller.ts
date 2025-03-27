@@ -63,7 +63,6 @@ export class MembersController {
 
 	@ApiBearerAuth()
 	@ApiOperation({ summary: "Get members permissions" })
-	@UseGuards(JwtGuard)
 	@Get("permissions")
 	async permissions() {
 		return await this.membersService.permissions();
