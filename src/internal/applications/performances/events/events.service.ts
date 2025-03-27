@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+	BadRequestException,
+	Inject,
+	Injectable,
+	NotFoundException,
+} from "@nestjs/common";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { REQUEST } from "@nestjs/core";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -7,13 +12,18 @@ import { UpdateEventDto } from "./dto/update-event.dto";
 import { mkdir, readdir, rm, unlink, writeFile } from "fs/promises";
 import { existsSync } from "fs";
 import { UpdateApprovalDto } from "./dto/update-event-approval";
+import { UtilsService } from "src/utils/utils.service";
+import { CheckResourceRequest } from "@cerbos/core";
+import { CerbosService } from "src/cerbos/cerbos.service";
 
 @Injectable()
 export class EventsService {
 	constructor(
 		@Inject(REQUEST)
 		private request: any,
-		private readonly prismaService: PrismaService
+		private readonly prismaService: PrismaService,
+		private readonly utilsService: UtilsService,
+		private readonly cerbosService: CerbosService
 	) {}
 
 	async create(createEventDto: CreateEventDto) {
@@ -108,6 +118,50 @@ export class EventsService {
 				},
 			});
 		});
+	}
+
+	async getApprovalPermissions(id: number) {
+		const { requester } = this.request;
+		const eventId = id;
+		if (isNaN(eventId)) {
+			throw new BadRequestException("Invalid event id");
+		}
+		const principal = await this.utilsService.getCerbosPrincipal(requester);
+		const actions = ["update"];
+		/* find event and section role */
+		const performanceEvent = await this.prismaService.event.findUnique({
+			where: {
+				id: eventId,
+			},
+			include: {
+				section: true,
+			},
+		});
+		if (!performanceEvent) {
+			throw new NotFoundException("Performance event not found");
+		}
+		const sectionRoleId = performanceEvent.section.memberRoleId;
+		const superRoleIds =
+			await this.utilsService.getSuperRoles(sectionRoleId);
+
+		if (!performanceEvent) {
+			throw new NotFoundException("Performance event not found");
+		}
+		const resource = {
+			kind: "internal:applications:performances:event:approval",
+			id: "*",
+			attr: {
+				superRoleIds: superRoleIds,
+			},
+		};
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			actions: actions,
+			resource: resource,
+		};
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
+		return decision;
 	}
 
 	async updateApprovalByEventId(

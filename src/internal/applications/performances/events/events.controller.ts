@@ -96,6 +96,12 @@ export class EventsController {
 		return await this.eventsService.remove(id);
 	}
 
+	@UseGuards(JwtGuard)
+	@Get("get-approval-permissions/:id")
+	getApprovalPermissions(@Param("id", ParseIntPipe) id: number) {
+		return this.eventsService.getApprovalPermissions(id);
+	}
+
 	@ApiOperation(updateApprovalApiOperationOptions)
 	@ApiBody(updateApprovalApiBodyOptions)
 	@UseGuards(UpdateApprovalGuard)
