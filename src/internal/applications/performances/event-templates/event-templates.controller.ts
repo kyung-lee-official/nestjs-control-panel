@@ -49,9 +49,13 @@ export class EventTemplatesController {
 		return await this.eventTemplatesService.getByRoleId(roleId);
 	}
 
-	@Get("get-by-my-role-templates")
-	async getMyRoleTemplates() {
-		return await this.eventTemplatesService.getMyRoleTemplates();
+	@Get("get-templates-by-section-role-id/:sectionRoleId")
+	async getTemplatesBySectionRoleId(
+		@Param("sectionRoleId") sectionRoleId: string
+	) {
+		return await this.eventTemplatesService.getTemplatesBySectionRoleId(
+			sectionRoleId
+		);
 	}
 
 	@Get("get-by-id/:id")

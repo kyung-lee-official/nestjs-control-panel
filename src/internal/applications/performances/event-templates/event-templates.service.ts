@@ -28,26 +28,10 @@ export class EventTemplatesService {
 		});
 	}
 
-	async getMyRoleTemplates() {
-		const { requester } = this.request;
-
-		const member = await this.prismaService.member.findUnique({
-			where: {
-				id: requester.id,
-			},
-			include: {
-				memberRoles: true,
-			},
-		});
-		if (!member) {
-			throw new NotFoundException("Member not found");
-		}
-		const memberRoleIds = member.memberRoles.map((role) => role.id);
+	async getTemplatesBySectionRoleId(sectionRoleId: string) {
 		return await this.prismaService.eventTemplate.findMany({
 			where: {
-				memberRoleId: {
-					in: memberRoleIds,
-				},
+				memberRoleId: sectionRoleId,
 			},
 			include: {
 				memberRole: true,
