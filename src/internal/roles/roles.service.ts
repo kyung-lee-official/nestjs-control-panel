@@ -12,11 +12,9 @@ import { MemberRole, Prisma } from "@prisma/client";
 import { FindRolesByIdsDto } from "./dto/find-roles-by-ids.dto";
 import { UpdateRoleByIdDto } from "./dto/update-role-by-id.dto";
 import { CreateRoleDto } from "./dto/create-role.dto";
-import { GRPC as Cerbos } from "@cerbos/grpc";
 import { CheckResourceRequest } from "@cerbos/core";
 import { UtilsService } from "src/utils/utils.service";
-
-const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
+import { CerbosService } from "src/cerbos/cerbos.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class RolesService {
@@ -24,7 +22,8 @@ export class RolesService {
 		@Inject(REQUEST)
 		private request: any,
 		private readonly prismaService: PrismaService,
-		private readonly utilsService: UtilsService
+		private readonly utilsService: UtilsService,
+		private readonly cerbosService: CerbosService
 	) {}
 
 	async permissions() {
@@ -41,7 +40,8 @@ export class RolesService {
 			resource: resource,
 			actions: actions,
 		};
-		const decision = await cerbos.checkResource(checkResourceRequest);
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
 
 		return { ...decision };
 	}

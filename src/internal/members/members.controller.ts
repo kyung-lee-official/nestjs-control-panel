@@ -61,6 +61,14 @@ import { verifyMemberOperationOptions } from "./swagger/verify-member.swagger";
 export class MembersController {
 	constructor(private readonly membersService: MembersService) {}
 
+	@ApiBearerAuth()
+	@ApiOperation({ summary: "Get members permissions" })
+	@UseGuards(JwtGuard)
+	@Get("permissions")
+	async permissions() {
+		return await this.membersService.permissions();
+	}
+
 	@ApiOperation(createMemberOperationOptions)
 	@ApiBody(createMemberBodyOptions)
 	@UseInterceptors(ExcludePasswordInterceptor)

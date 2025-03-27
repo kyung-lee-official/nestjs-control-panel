@@ -4,18 +4,17 @@ import {
 	ExecutionContext,
 	Injectable,
 } from "@nestjs/common";
-import { GRPC as Cerbos } from "@cerbos/grpc";
 import { CheckResourceRequest, Principal, Resource } from "@cerbos/core";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UtilsService } from "src/utils/utils.service";
-
-const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
+import { CerbosService } from "src/cerbos/cerbos.service";
 
 @Injectable()
 export class SearchStatGuard implements CanActivate {
 	constructor(
 		private readonly prismaService: PrismaService,
-		private readonly utilsService: UtilsService
+		private readonly utilsService: UtilsService,
+		private readonly cerbosService: CerbosService
 	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -52,7 +51,8 @@ export class SearchStatGuard implements CanActivate {
 			actions: actions,
 		};
 
-		const decision = await cerbos.checkResource(checkResourceRequest);
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
 
 		const result = !!decision.isAllowed("read");
 

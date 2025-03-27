@@ -17,6 +17,8 @@ import { MemberWithoutPassword } from "../../utils/types";
 import { EmailService } from "../email/email.service";
 import { UpdateMemberProfileDto } from "./dto/update-member-profile.dto";
 import { UtilsService } from "src/utils/utils.service";
+import { CheckResourceRequest } from "@cerbos/core";
+import { CerbosService } from "src/cerbos/cerbos.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class MembersService {
@@ -25,8 +27,29 @@ export class MembersService {
 		private readonly request: any,
 		private readonly emailService: EmailService,
 		private readonly prismaService: PrismaService,
-		private readonly utilsService: UtilsService
+		private readonly utilsService: UtilsService,
+		private readonly cerbosService: CerbosService
 	) {}
+
+	async permissions() {
+		const { requester } = this.request;
+
+		const principal = await this.utilsService.getCerbosPrincipal(requester);
+		const actions = ["*", "read", "update-profile", "delete", "freeze"];
+		const resource = {
+			kind: "internal:members",
+			id: "*",
+		};
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			resource: resource,
+			actions: actions,
+		};
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
+
+		return { ...decision };
+	}
 
 	async create(createMemberDto: CreateMemberDto) {
 		let { email, name } = createMemberDto;

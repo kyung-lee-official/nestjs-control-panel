@@ -12,12 +12,10 @@ import { PrismaService } from "src/prisma/prisma.service";
 import bcrypt from "bcrypt";
 import { MemberServerSetting } from "@prisma/client";
 import { UpdateServerSettingsDto } from "./dto/update-server-settings.dto";
-import { GRPC as Cerbos } from "@cerbos/grpc";
 import { REQUEST } from "@nestjs/core";
 import { CheckResourceRequest } from "@cerbos/core";
 import { UtilsService } from "src/utils/utils.service";
-
-const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
+import { CerbosService } from "src/cerbos/cerbos.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class ServerService {
@@ -26,7 +24,8 @@ export class ServerService {
 		private readonly request: any,
 		private readonly prismaService: PrismaService,
 		private readonly emailService: EmailService,
-		private readonly utilsService: UtilsService
+		private readonly utilsService: UtilsService,
+		private readonly cerbosService: CerbosService
 	) {}
 
 	async permissions() {
@@ -43,7 +42,8 @@ export class ServerService {
 			resource: resource,
 			actions: actions,
 		};
-		const decision = await cerbos.checkResource(checkResourceRequest);
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
 
 		return { ...decision };
 	}

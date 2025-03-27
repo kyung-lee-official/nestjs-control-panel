@@ -6,17 +6,16 @@ import {
 	BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { GRPC as Cerbos } from "@cerbos/grpc";
 import { CheckResourceRequest } from "@cerbos/core";
 import { UtilsService } from "src/utils/utils.service";
-
-const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
+import { CerbosService } from "src/cerbos/cerbos.service";
 
 @Injectable()
 export class UpdateApprovalGuard implements CanActivate {
 	constructor(
 		private readonly prismaService: PrismaService,
-		private readonly utilsService: UtilsService
+		private readonly utilsService: UtilsService,
+		private readonly cerbosService: CerbosService
 	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -64,7 +63,8 @@ export class UpdateApprovalGuard implements CanActivate {
 			actions: actions,
 			resource: resource,
 		};
-		const decision = await cerbos.checkResource(checkResourceRequest);
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
 
 		const result = !!decision.isAllowed("update");
 

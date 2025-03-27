@@ -1,17 +1,16 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { PrismaService } from "../../../prisma/prisma.service";
-import { GRPC as Cerbos } from "@cerbos/grpc";
 import { Prisma } from "@prisma/client";
 import { CheckResourcesRequest } from "@cerbos/core";
 import { UtilsService } from "src/utils/utils.service";
-
-const cerbos = new Cerbos(process.env.CERBOS_HOST as string, { tls: false });
+import { CerbosService } from "src/cerbos/cerbos.service";
 
 @Injectable()
 export class FindRolesByIdsGuard implements CanActivate {
 	constructor(
 		private readonly prismaService: PrismaService,
-		private readonly utilsService: UtilsService
+		private readonly utilsService: UtilsService,
+		private readonly cerbosService: CerbosService
 	) {}
 
 	async canActivate(context: ExecutionContext) {
@@ -42,7 +41,9 @@ export class FindRolesByIdsGuard implements CanActivate {
 			principal: principal,
 			resources: resources,
 		};
-		const decision = await cerbos.checkResources(checkResourcesRequest);
+		const decision = await this.cerbosService.cerbos.checkResources(
+			checkResourcesRequest
+		);
 
 		const result = decision.results.every(
 			(result) => result.actions.read === "EFFECT_ALLOW"

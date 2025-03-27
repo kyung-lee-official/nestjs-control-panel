@@ -6,6 +6,7 @@ import { EmailModule } from "../email/email.module";
 import { JwtModule } from "@nestjs/jwt";
 import { LogModule } from "../log/log.module";
 import { UtilsModule } from "src/utils/utils.module";
+import { CerbosModule } from "src/cerbos/cerbos.module";
 
 @Module({
 	imports: [
@@ -18,6 +19,7 @@ import { UtilsModule } from "src/utils/utils.module";
 		EmailModule,
 		LogModule,
 		UtilsModule,
+		CerbosModule
 	],
 	controllers: [AuthenticationController],
 	providers: [AuthenticationService],
