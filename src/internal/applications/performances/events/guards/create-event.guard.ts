@@ -62,7 +62,7 @@ export class CreateEventGuard implements CanActivate {
 		if (!section) {
 			throw new NotFoundException("Section not found");
 		}
-		const sectionSuperRoles = await this.utilsService.getSuperRoles(
+		const sectionSuperRoleIds = await this.utilsService.getSuperRoles(
 			section.memberRoleId
 		);
 		if (template && template.memberRoleId !== section.memberRoleId) {
@@ -85,7 +85,7 @@ export class CreateEventGuard implements CanActivate {
 			attr: {
 				performanceStatOwnerId: performanceStat.ownerId,
 				sectionMemberRoleId: section.memberRoleId,
-				sectionSuperRoles: sectionSuperRoles,
+				sectionSuperRoleIds: sectionSuperRoleIds,
 			},
 		};
 
