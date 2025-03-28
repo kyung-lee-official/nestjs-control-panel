@@ -15,7 +15,7 @@ export class GetEventGuard implements CanActivate {
 	constructor(
 		private readonly prismaService: PrismaService,
 		private readonly utilsService: UtilsService,
-		private readonly cerbosService: CerbosService,
+		private readonly cerbosService: CerbosService
 	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -48,7 +48,7 @@ export class GetEventGuard implements CanActivate {
 		}
 		const performanceStatOwnerId = performanceEvent.section.stat.ownerId;
 		const sectionRoleId = performanceEvent.section.memberRoleId;
-		const superRoleIds =
+		const sectionSuperRoleIds =
 			await this.utilsService.getSuperRoles(sectionRoleId);
 		if (!performanceEvent) {
 			throw new NotFoundException("Performance event not found");
@@ -58,7 +58,7 @@ export class GetEventGuard implements CanActivate {
 			id: "*",
 			attr: {
 				performanceStatOwnerId: performanceStatOwnerId,
-				superRoleIds: superRoleIds,
+				sectionSuperRoleIds: sectionSuperRoleIds,
 			},
 		};
 
@@ -67,7 +67,8 @@ export class GetEventGuard implements CanActivate {
 			actions: actions,
 			resource: resource,
 		};
-		const decision = await this.cerbosService.cerbos.checkResource(checkResourceRequest);
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
 
 		const result = !!decision.isAllowed("read");
 
