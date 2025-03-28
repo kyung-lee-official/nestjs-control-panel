@@ -48,7 +48,7 @@ export class UpdateEventGuard implements CanActivate {
 		}
 		const performanceStatOwnerId = performanceEvent.section.stat.ownerId;
 		const sectionRoleId = performanceEvent.section.memberRoleId;
-		const superRoleIds =
+		const sectionSuperRoleIds =
 			await this.utilsService.getSuperRoles(sectionRoleId);
 		if (!performanceEvent) {
 			throw new NotFoundException("Performance event not found");
@@ -58,7 +58,7 @@ export class UpdateEventGuard implements CanActivate {
 			id: "*",
 			attr: {
 				performanceStatOwnerId: performanceStatOwnerId,
-				superRoleIds: superRoleIds,
+				sectionSuperRoleIds: sectionSuperRoleIds,
 			},
 		};
 
