@@ -28,17 +28,6 @@ export class EventTemplatesService {
 		});
 	}
 
-	async getTemplatesBySectionRoleId(sectionRoleId: string) {
-		return await this.prismaService.eventTemplate.findMany({
-			where: {
-				memberRoleId: sectionRoleId,
-			},
-			include: {
-				memberRole: true,
-			},
-		});
-	}
-
 	async getById(id: number) {
 		return await this.prismaService.eventTemplate.findUnique({
 			where: {

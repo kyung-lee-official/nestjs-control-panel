@@ -22,6 +22,8 @@ import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 import { CreateTemplateGuard } from "./guards/create-template.guard";
 import { GetTemplatesByRoleIdGuard } from "./guards/get-templates-by-role-id.guard";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
+import { DeleteTemplateGuard } from "./guards/delete-template.guard";
+import { GetTemplateByIdGuard } from "./guards/get-template-by-id.guard";
 
 @ApiTags("Performance Event Template")
 @ApiBearerAuth()
@@ -43,24 +45,16 @@ export class EventTemplatesController {
 		return await this.eventTemplatesService.create(createEventTemplateDto);
 	}
 
-	@Get("get-by-role-id/:roleId")
-	@UseGuards(GetTemplatesByRoleIdGuard)
-	async getByRoleId(@Param("roleId") roleId: string) {
-		return await this.eventTemplatesService.getByRoleId(roleId);
-	}
-
-	@Get("get-templates-by-section-role-id/:sectionRoleId")
-	async getTemplatesBySectionRoleId(
-		@Param("sectionRoleId") sectionRoleId: string
-	) {
-		return await this.eventTemplatesService.getTemplatesBySectionRoleId(
-			sectionRoleId
-		);
-	}
-
+	@UseGuards(GetTemplateByIdGuard)
 	@Get("get-by-id/:id")
 	async getById(@Param("id", ParseIntPipe) id: number) {
 		return await this.eventTemplatesService.getById(id);
+	}
+
+	@UseGuards(GetTemplatesByRoleIdGuard)
+	@Get("get-by-role-id/:roleId")
+	async getByRoleId(@Param("roleId") roleId: string) {
+		return await this.eventTemplatesService.getByRoleId(roleId);
 	}
 
 	// @Patch(":id")
@@ -71,6 +65,7 @@ export class EventTemplatesController {
 	// 	return this.eventTemplatesService.update(+id, updateEventTemplateDto);
 	// }
 
+	@UseGuards(DeleteTemplateGuard)
 	@Delete(":id")
 	async deleteById(@Param("id", ParseIntPipe) id: number) {
 		return await this.eventTemplatesService.deleteById(id);
