@@ -4,6 +4,7 @@ import {
 	ExecutionContext,
 	NotFoundException,
 	BadRequestException,
+	ForbiddenException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CheckResourceRequest } from "@cerbos/core";
@@ -45,6 +46,11 @@ export class UpdateEventGuard implements CanActivate {
 		});
 		if (!performanceEvent) {
 			throw new NotFoundException("Performance event not found");
+		}
+		if (performanceEvent.approval === "APPROVED") {
+			throw new ForbiddenException(
+				"Performance event is already approved, cannot update"
+			);
 		}
 		const performanceStatOwnerId = performanceEvent.section.stat.ownerId;
 		const sectionRoleId = performanceEvent.section.memberRoleId;
