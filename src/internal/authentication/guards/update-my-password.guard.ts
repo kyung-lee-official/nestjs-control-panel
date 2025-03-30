@@ -36,7 +36,7 @@ export class UpdateMyPasswordGuard implements CanActivate {
 			throw new NotFoundException("Member not found");
 		}
 		const resource = {
-			kind: "internal:members",
+			kind: "internal:authentication",
 			id: member.id,
 			attr: {
 				...member,
