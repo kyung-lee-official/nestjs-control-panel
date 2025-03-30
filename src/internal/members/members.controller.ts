@@ -61,7 +61,6 @@ import { verifyMemberOperationOptions } from "./swagger/verify-member.swagger";
 export class MembersController {
 	constructor(private readonly membersService: MembersService) {}
 
-	@ApiBearerAuth()
 	@ApiOperation({ summary: "Get members permissions" })
 	@Get("permissions")
 	async permissions() {

@@ -28,11 +28,19 @@ import { GetTemplateByIdGuard } from "./guards/get-template-by-id.guard";
 @ApiTags("Performance Event Template")
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
-@Controller("performance/event-templates")
+@Controller("internal/performance/event-templates")
 export class EventTemplatesController {
 	constructor(
 		private readonly eventTemplatesService: EventTemplatesService
 	) {}
+
+	@ApiOperation({
+		summary: "Get my permissions for a specific performance event template",
+	})
+	@Get("permissions/:templateId")
+	async permissions(@Param("templateId", ParseIntPipe) templateId: number) {
+		return await this.eventTemplatesService.permissions(templateId);
+	}
 
 	@ApiOperation(createEventTemplateApiOperationOptions)
 	@ApiBody(createEventTemplateApiBodyOptions)

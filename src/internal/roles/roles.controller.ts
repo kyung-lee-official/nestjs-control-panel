@@ -66,7 +66,6 @@ import {
 export class RolesController {
 	constructor(private readonly rolesService: RolesService) {}
 
-	@ApiBearerAuth()
 	@ApiOperation({ summary: "Get roles permissions" })
 	@Get("permissions")
 	async permissions() {
