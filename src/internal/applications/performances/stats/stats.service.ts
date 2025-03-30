@@ -198,13 +198,21 @@ export class StatsService {
 			const requestSectionForUpdate = requestSections.find(
 				(s) => s.id === sec.id
 			);
+			if (!requestSectionForUpdate) {
+				throw new BadRequestException("Section not found in request");
+			}
+			if (requestSectionForUpdate.memberRoleId !== sec.memberRoleId) {
+				throw new BadRequestException(
+					"Cannot change role of a created section"
+				);
+			}
 			await this.prismaService.statSection.update({
 				where: {
 					id: sec.id,
 				},
 				data: {
 					weight: requestSectionForUpdate!.weight,
-					memberRoleId: requestSectionForUpdate!.memberRoleId,
+					// memberRoleId: requestSectionForUpdate!.memberRoleId,
 					title: requestSectionForUpdate!.title,
 					description:
 						requestSectionForUpdate?.description ?? Prisma.skip,
