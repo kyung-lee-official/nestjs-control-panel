@@ -53,7 +53,7 @@ export class RolesService {
 				id: id,
 				name: name,
 				superRole: {
-					connect: superRoleId ? { id: superRoleId } : Prisma.skip,
+					connect: { id: superRoleId },
 				},
 			},
 		});
@@ -120,6 +120,13 @@ export class RolesService {
 			if (superRoleId) {
 				throw new BadRequestException(
 					'"admin" can not have a super role'
+				);
+			}
+		} else {
+			/* roles other than admin must have a super role */
+			if (!superRoleId) {
+				throw new BadRequestException(
+					"roles other than admin must have a super role"
 				);
 			}
 		}
