@@ -37,7 +37,13 @@ export class AuthenticationService {
 
 	async signUp(signUpDto: SignUpDto) {
 		const { email, name, password } = signUpDto;
-
+		/* check if email is already signed up */
+		const isEmailExists = await this.prismaService.member.findUnique({
+			where: { email: email },
+		});
+		if (isEmailExists) {
+			throw new BadRequestException("Email already exists");
+		}
 		const salt = await bcrypt.genSalt();
 		const hashedPassword = await bcrypt.hash(password, salt);
 		const member = this.prismaService.member.create({
