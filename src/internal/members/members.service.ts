@@ -125,9 +125,10 @@ export class MembersService {
 			throw new NotFoundException("Member not found");
 		}
 		const memberRoleIds = requester.memberRoles.map((role) => role.id);
-		/* find all subroles of the requester recursively */
 		const prismaService = this.prismaService;
-		async function findSubRoles(roleIds: string[]): Promise<string[]> {
+		const allSubRoleIds: string[] = [];
+		/* find all subroles of the requester recursively */
+		async function findSubRolesRecursively(roleIds: string[]) {
 			const roles = await prismaService.memberRole.findMany({
 				where: {
 					superRoleId: {
@@ -136,18 +137,19 @@ export class MembersService {
 				},
 			});
 			if (roles.length === 0) {
-				return roleIds;
+				return;
 			}
-			const subRoleIds = roles.map((role) => role.id);
-			return findSubRoles(subRoleIds);
+			const ids = roles.map((role) => role.id);
+			allSubRoleIds.push(...ids);
+			await findSubRolesRecursively(ids);
 		}
-		const subRoleIds = await findSubRoles(memberRoleIds);
+		await findSubRolesRecursively(memberRoleIds);
 		const members = await this.prismaService.member.findMany({
 			where: {
 				memberRoles: {
 					some: {
 						id: {
-							in: subRoleIds,
+							in: allSubRoleIds,
 						},
 					},
 				},
@@ -156,7 +158,16 @@ export class MembersService {
 				memberRoles: true,
 			},
 		});
-		return [me, ...members];
+		/* remove duplicates */
+		const uniqueMembers = [me, ...members].filter((member, index, self) => {
+			return (
+				index ===
+				self.findIndex(
+					(m) => m.id === member.id && m.email === member.email
+				)
+			);
+		});
+		return uniqueMembers;
 	}
 
 	async findMe(): Promise<MemberWithoutPassword> {
