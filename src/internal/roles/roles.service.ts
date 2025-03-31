@@ -107,7 +107,30 @@ export class RolesService {
 	async updateRoleById(
 		updateRoleDto: UpdateRoleByIdDto
 	): Promise<MemberRole> {
-		const { id, name, superRoleId, memberIds } = updateRoleDto;
+		const { oldId, id, name, superRoleId, memberIds } = updateRoleDto;
+		if (oldId !== id) {
+			const role = await this.prismaService.memberRole.findUnique({
+				where: { id: oldId },
+			});
+			if (!role) {
+				throw new NotFoundException("role not found");
+			}
+			/* check if the new id is already taken */
+			const existingRole = await this.prismaService.memberRole.findUnique(
+				{
+					where: { id: id },
+				}
+			);
+			if (existingRole) {
+				throw new BadRequestException("role id already taken");
+			}
+			/* update id */
+			await this.prismaService.memberRole.update({
+				where: { id: oldId },
+				data: { id: id },
+			});
+		}
+
 		if (id === "admin") {
 			if (name !== "Admin") {
 				throw new BadRequestException('Can\'t rename "admin" role');
