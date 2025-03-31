@@ -53,6 +53,7 @@ import {
 	searchMemberOperationOptions,
 } from "./swagger/search-members.swagger";
 import { verifyMemberOperationOptions } from "./swagger/verify-member.swagger";
+import { getMeAndMembersOfMySubRoles } from "./swagger/get-me-and-members-of-my-subroles.swagger";
 
 @ApiTags("Members")
 @ApiBearerAuth()
@@ -101,6 +102,13 @@ export class MembersController {
 		findMembersByIdsDto: FindMembersByIdsDto
 	): Promise<Member[]> {
 		return this.membersService.findMembersByIds(findMembersByIdsDto);
+	}
+
+	@ApiOperation(getMeAndMembersOfMySubRoles)
+	@UseInterceptors(ExcludePasswordInterceptor)
+	@Get("get-me-and-members-of-my-subroles")
+	async getMeAndMembersOfMySubRoles() {
+		return await this.membersService.getMeAndMembersOfMySubRoles();
 	}
 
 	@ApiOperation({ summary: "Find me by token" })
