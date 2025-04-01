@@ -15,6 +15,7 @@ import { CreateRoleDto } from "./dto/create-role.dto";
 import { CheckResourceRequest } from "@cerbos/core";
 import { UtilsService } from "src/utils/utils.service";
 import { CerbosService } from "src/cerbos/cerbos.service";
+import { rm } from "fs/promises";
 
 @Injectable({ scope: Scope.REQUEST })
 export class RolesService {
@@ -227,6 +228,40 @@ export class RolesService {
 			}
 
 			/* delete corresponding resources for the current role */
+			const sectionsToDelete = await tx.statSection.findMany({
+				where: {
+					memberRoleId: roleId,
+				},
+			});
+			for (const section of sectionsToDelete) {
+				const eventsToDelete = await tx.event.findMany({
+					where: {
+						sectionId: section.id,
+					},
+				});
+				for (const event of eventsToDelete) {
+					/* delete event attachments */
+					await rm(
+						`./storage/internal/apps/performances/event-attachments/${id}`,
+						{
+							recursive: true,
+							force: true,
+						}
+					);
+					/* delete event comments */
+					await tx.eventComment.deleteMany({
+						where: {
+							eventId: event.id,
+						},
+					});
+					/* delete event */
+					await tx.event.delete({
+						where: {
+							id: event.id,
+						},
+					});
+				}
+			}
 			await tx.statSection.deleteMany({
 				where: {
 					memberRoleId: roleId,
