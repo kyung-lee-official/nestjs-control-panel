@@ -10,7 +10,7 @@ import { UtilsService } from "src/utils/utils.service";
 import { CerbosService } from "src/cerbos/cerbos.service";
 
 @Injectable()
-export class GetSectionGuard implements CanActivate {
+export class DeleteSectionGuard implements CanActivate {
 	constructor(
 		private readonly prismaService: PrismaService,
 		private readonly utilsService: UtilsService,
@@ -23,7 +23,7 @@ export class GetSectionGuard implements CanActivate {
 
 		const principal = await this.utilsService.getCerbosPrincipal(requester);
 
-		const actions = ["read"];
+		const actions = ["delete"];
 
 		const sectionId: number = parseInt(req.params.sectionId);
 		const section = await this.prismaService.statSection.findUnique({
@@ -50,18 +50,12 @@ export class GetSectionGuard implements CanActivate {
 			await this.utilsService.getSuperRolesOfRoles(
 				section.stat.owner.memberRoles.map((role) => role.id)
 			);
-		const sectionSuperRoleIds = await this.utilsService.getSuperRoles(
-			section.memberRole.id
-		);
-		const statOwnerId = section.stat.owner.id;
 
 		const resource = {
 			kind: "internal:applications:performances:section",
 			id: "*",
 			attr: {
 				statOwnerSuperRoleIds: statOwnerSuperRoleIds,
-				sectionSuperRoleIds: sectionSuperRoleIds,
-				statOwnerId: statOwnerId,
 			},
 		};
 
@@ -73,7 +67,7 @@ export class GetSectionGuard implements CanActivate {
 		const decision =
 			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
 
-		const result = !!decision.isAllowed("read");
+		const result = !!decision.isAllowed("delete");
 
 		return result;
 	}

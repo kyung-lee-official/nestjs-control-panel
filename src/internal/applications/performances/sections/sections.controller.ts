@@ -1,6 +1,7 @@
 import {
 	Body,
 	Controller,
+	Delete,
 	Get,
 	Param,
 	ParseIntPipe,
@@ -21,6 +22,7 @@ import {
 } from "./swagger/create-section.swagger";
 import { CreateSectionGuard } from "./guards/create-section.guard";
 import { GetSectionGuard } from "./guards/get-section.guard";
+import { DeleteSectionGuard } from "./guards/delete-section.guard";
 
 @ApiTags("Performance Sections")
 @ApiBearerAuth()
@@ -47,5 +49,14 @@ export class SectionsController {
 		sectionId: number
 	) {
 		return await this.sectionsService.getSectionById(sectionId);
+	}
+
+	@UseGuards(DeleteSectionGuard)
+	@Delete(":sectionId")
+	async deleteSectionById(
+		@Param("sectionId", ParseIntPipe)
+		sectionId: number
+	) {
+		return await this.sectionsService.deleteSectionById(sectionId);
 	}
 }
