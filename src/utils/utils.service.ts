@@ -32,6 +32,29 @@ export class UtilsService {
 		return superRolesIdList;
 	}
 
+	async getSubRoles(roleIds: string[]): Promise<string[]> {
+		const allSubRoleIds: string[] = [];
+		/* find all subroles of the requester recursively */
+		const prismaService = this.prismaService;
+		async function findSubRolesRecursively(roleIds: string[]) {
+			const roles = await prismaService.memberRole.findMany({
+				where: {
+					superRoleId: {
+						in: roleIds,
+					},
+				},
+			});
+			if (roles.length === 0) {
+				return;
+			}
+			const ids = roles.map((role) => role.id);
+			allSubRoleIds.push(...ids);
+			await findSubRolesRecursively(ids);
+		}
+		await findSubRolesRecursively(roleIds);
+		return allSubRoleIds;
+	}
+
 	async getCerbosPrincipal(requester: any): Promise<Principal> {
 		return {
 			id: requester.id,

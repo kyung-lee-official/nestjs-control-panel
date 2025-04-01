@@ -125,25 +125,8 @@ export class MembersService {
 			throw new NotFoundException("Member not found");
 		}
 		const memberRoleIds = requester.memberRoles.map((role) => role.id);
-		const prismaService = this.prismaService;
-		const allSubRoleIds: string[] = [];
-		/* find all subroles of the requester recursively */
-		async function findSubRolesRecursively(roleIds: string[]) {
-			const roles = await prismaService.memberRole.findMany({
-				where: {
-					superRoleId: {
-						in: roleIds,
-					},
-				},
-			});
-			if (roles.length === 0) {
-				return;
-			}
-			const ids = roles.map((role) => role.id);
-			allSubRoleIds.push(...ids);
-			await findSubRolesRecursively(ids);
-		}
-		await findSubRolesRecursively(memberRoleIds);
+		const allSubRoleIds =
+			await this.utilsService.getSubRoles(memberRoleIds);
 		const members = await this.prismaService.member.findMany({
 			where: {
 				memberRoles: {
