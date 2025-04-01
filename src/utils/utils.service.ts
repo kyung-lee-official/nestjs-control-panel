@@ -32,7 +32,17 @@ export class UtilsService {
 		return superRolesIdList;
 	}
 
-	async getSubRoles(roleIds: string[]): Promise<string[]> {
+	async getSuperRolesOfRoles(roleIds: string[]): Promise<string[]> {
+		const allSuperRoleIds: string[] = [];
+		for (const id of roleIds) {
+			const superRoles = await this.getSuperRoles(id);
+			allSuperRoleIds.push(...superRoles);
+		}
+		const uniqueSuperRoleIds = [...new Set(allSuperRoleIds)];
+		return uniqueSuperRoleIds;
+	}
+
+	async getSubRolesOfRoles(roleIds: string[]): Promise<string[]> {
 		const allSubRoleIds: string[] = [];
 		/* find all subroles of the requester recursively */
 		const prismaService = this.prismaService;

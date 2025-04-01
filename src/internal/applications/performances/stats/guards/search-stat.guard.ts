@@ -27,6 +27,9 @@ export class SearchStatGuard implements CanActivate {
 		if (!owner) {
 			throw new BadRequestException("owner not found");
 		}
+		const ownerRoleIds = owner.memberRoles.map((role) => role.id);
+		const ownerSuperRoleIds =
+			await this.utilsService.getSuperRolesOfRoles(ownerRoleIds);
 
 		const requester = req.requester;
 		const principal: Principal =
@@ -42,17 +45,19 @@ export class SearchStatGuard implements CanActivate {
 				ownerRoles: {
 					ownerRoleIds: owner.memberRoles.map((role) => role.id),
 				},
+				ownerSuperRoleIds: ownerSuperRoleIds,
 			},
 		};
 
 		const checkResourceRequest: CheckResourceRequest = {
 			principal: principal,
-			resource: resource,
 			actions: actions,
+			resource: resource,
 		};
 
 		const decision =
 			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
+		console.log(decision.outputs);
 
 		const result = !!decision.isAllowed("read");
 

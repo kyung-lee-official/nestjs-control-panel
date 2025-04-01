@@ -126,7 +126,7 @@ export class MembersService {
 		}
 		const memberRoleIds = requester.memberRoles.map((role) => role.id);
 		const allSubRoleIds =
-			await this.utilsService.getSubRoles(memberRoleIds);
+			await this.utilsService.getSubRolesOfRoles(memberRoleIds);
 		const members = await this.prismaService.member.findMany({
 			where: {
 				memberRoles: {

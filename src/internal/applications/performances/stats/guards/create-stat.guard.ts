@@ -32,6 +32,9 @@ export class CreateStatGuard implements CanActivate {
 		if (!owner) {
 			throw new BadRequestException("owner not found");
 		}
+		const ownerRoleIds = owner.memberRoles.map((role) => role.id);
+		const ownerSuperRoleIds =
+			await this.utilsService.getSuperRolesOfRoles(ownerRoleIds);
 
 		const requester = req.requester;
 		const principal: Principal =
@@ -47,6 +50,7 @@ export class CreateStatGuard implements CanActivate {
 				ownerRoles: {
 					ownerRoleIds: owner.memberRoles.map((role) => role.id),
 				},
+				ownerSuperRoleIds: ownerSuperRoleIds,
 			},
 		};
 
