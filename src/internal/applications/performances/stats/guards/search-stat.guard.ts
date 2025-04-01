@@ -57,7 +57,6 @@ export class SearchStatGuard implements CanActivate {
 
 		const decision =
 			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
-		console.log(decision.outputs);
 
 		const result = !!decision.isAllowed("read");
 
