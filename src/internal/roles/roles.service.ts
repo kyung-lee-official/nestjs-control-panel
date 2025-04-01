@@ -211,9 +211,17 @@ export class RolesService {
 		if (id === "default") {
 			throw new BadRequestException("Cannot delete default roles");
 		}
-		const deletedRole = await this.prismaService.memberRole.delete({
-			where: { id: id },
+		const subRoleIds = await this.utilsService.getSubRolesOfRoles([id]);
+		const deleteRole = await this.prismaService.$transaction(async (tx) => {
+			const deletedRole = await tx.memberRole.deleteMany({
+				where: {
+					id: {
+						in: [id, ...subRoleIds],
+					},
+				},
+			});
+			return deletedRole;
 		});
-		return deletedRole;
+		return deleteRole;
 	}
 }
