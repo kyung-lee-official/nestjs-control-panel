@@ -54,6 +54,18 @@ export class RolesService {
 				"Cannot set default role as super role"
 			);
 		}
+		/* prevent same name for Admin and Default roles */
+		if (name === "Admin") {
+			throw new BadRequestException(
+				"Cannot use preserved name 'Admin' for other roles"
+			);
+		}
+		if (name === "Default") {
+			throw new BadRequestException(
+				"Cannot use preserved name 'Default' for other roles"
+			);
+		}
+
 		const role = await this.prismaService.memberRole.create({
 			data: {
 				id: id,
