@@ -145,6 +145,18 @@ export class RolesService {
 			});
 		}
 
+		/* prevent same name for Admin and Default roles */
+		if (oldId !== "admin" && name === "Admin") {
+			throw new BadRequestException(
+				"Cannot use preserved name 'Admin' for other roles"
+			);
+		}
+		if (oldId !== "default" && name === "Default") {
+			throw new BadRequestException(
+				"Cannot use preserved name 'Default' for other roles"
+			);
+		}
+
 		if (superRoleId === "default") {
 			throw new BadRequestException(
 				"Cannot set default role as super role"
