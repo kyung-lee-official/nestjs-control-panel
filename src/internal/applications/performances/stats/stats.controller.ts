@@ -56,13 +56,6 @@ export class StatsController {
 		return await this.statsService.create(createStatDto);
 	}
 
-	@ApiOperation({ summary: "Get all performance stats, 'admin' only" })
-	@UseGuards(GetAllStatsGuard)
-	@Get()
-	async getAll() {
-		return await this.statsService.getAll();
-	}
-
 	@UseInterceptors(ExcludePasswordInterceptor)
 	@UseGuards(GetStatGuard)
 	@Get(":id")

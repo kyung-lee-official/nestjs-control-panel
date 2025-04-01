@@ -63,19 +63,6 @@ export class StatsService {
 		});
 	}
 
-	async getAll() {
-		return await this.prismaService.performanceStat.findMany({
-			include: {
-				statSections: {
-					include: {
-						memberRole: true,
-						events: true,
-					},
-				},
-			},
-		});
-	}
-
 	async getStatById(id: number) {
 		return await this.prismaService.performanceStat.findUnique({
 			where: {
