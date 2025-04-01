@@ -211,44 +211,46 @@ export class RolesService {
 		if (id === "default") {
 			throw new BadRequestException("Cannot delete default roles");
 		}
-		const subRoleIds = await this.utilsService.getSubRolesOfRoles([id]);
-		const deleteRole = await this.prismaService.$transaction(async (tx) => {
-			for (const roleId of subRoleIds) {
-				/* delete correspnding resources */
-				const deleteSections = await tx.statSection.deleteMany({
-					where: {
-						memberRoleId: roleId,
-					},
-				});
-				const deleteEventTemplates = await tx.eventTemplate.deleteMany({
-					where: {
-						memberRoleId: roleId,
-					},
-				});
-				await tx.memberRole.delete({
-					where: {
-						id: roleId,
-					},
-				});
+		/* recursive function to delete roles from bottom to top */
+		const deleteRoleRecursively = async (
+			roleId: string,
+			tx: Prisma.TransactionClient
+		) => {
+			/* get sub-roles of the current role */
+			const subRoleIds = await this.utilsService.getSubRolesOfRoles([
+				roleId,
+			]);
+
+			/* recursively delete sub-roles */
+			for (const subRoleId of subRoleIds) {
+				await deleteRoleRecursively(subRoleId, tx);
 			}
-			/* delete corresponding resources */
-			const deleteSections = await tx.statSection.deleteMany({
+
+			/* delete corresponding resources for the current role */
+			await tx.statSection.deleteMany({
 				where: {
-					memberRoleId: id,
+					memberRoleId: roleId,
 				},
 			});
-			const deleteEventTemplates = await tx.eventTemplate.deleteMany({
+			await tx.eventTemplate.deleteMany({
 				where: {
-					memberRoleId: id,
+					memberRoleId: roleId,
 				},
 			});
-			const deleteRole = await tx.memberRole.delete({
+
+			/* delete the role itself */
+			await tx.memberRole.delete({
 				where: {
-					id: id,
+					id: roleId,
 				},
 			});
-			return deleteRole;
+		};
+
+		/* use a transaction to ensure atomicity */
+		const deleteRole = await this.prismaService.$transaction(async (tx) => {
+			await deleteRoleRecursively(id, tx);
 		});
+
 		return deleteRole;
 	}
 }
