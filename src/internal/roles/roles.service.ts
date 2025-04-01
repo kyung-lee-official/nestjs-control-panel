@@ -277,7 +277,7 @@ export class RolesService {
 				for (const event of eventsToDelete) {
 					/* delete event attachments */
 					await rm(
-						`./storage/internal/apps/performances/event-attachments/${id}`,
+						`./storage/internal/apps/performances/event-attachments/${event.id}`,
 						{
 							recursive: true,
 							force: true,

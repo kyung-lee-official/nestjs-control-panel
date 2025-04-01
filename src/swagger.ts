@@ -11,6 +11,7 @@ import { EventsModule } from "./internal/applications/performances/events/events
 import { FacebookGroupModule } from "./internal/applications/sns-crawler/facebook-group/facebook-group.module";
 import { YoutubeDataCollectorModule } from "./internal/applications/sns-crawler/youtube-data-collector/youtube-data-collector.module";
 import { LogModule } from "./internal/log/log.module";
+import { SectionsModule } from "./internal/applications/performances/sections/sections.module";
 
 export function setupSwagger(app: INestApplication<any>) {
 	const membersOption = new DocumentBuilder()
@@ -43,8 +44,9 @@ export function setupSwagger(app: INestApplication<any>) {
 		{
 			include: [
 				StatsModule,
-				EventTemplatesModule,
+				SectionsModule,
 				EventsModule,
+				EventTemplatesModule,
 				FacebookGroupModule,
 				YoutubeDataCollectorModule,
 			],
