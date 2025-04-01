@@ -213,14 +213,19 @@ export class RolesService {
 		}
 		const subRoleIds = await this.utilsService.getSubRolesOfRoles([id]);
 		const deleteRole = await this.prismaService.$transaction(async (tx) => {
-			const deletedRole = await tx.memberRole.deleteMany({
-				where: {
-					id: {
-						in: [id, ...subRoleIds],
+			for (const roleId of subRoleIds) {
+				await tx.memberRole.delete({
+					where: {
+						id: roleId,
 					},
+				});
+			}
+			const deleteRole = await tx.memberRole.delete({
+				where: {
+					id: id,
 				},
 			});
-			return deletedRole;
+			return deleteRole;
 		});
 		return deleteRole;
 	}
