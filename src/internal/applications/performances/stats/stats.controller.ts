@@ -36,7 +36,6 @@ import {
 	searchStatApiBodyOptions,
 	searchStatApiOperationOptions,
 } from "./swagger/search-stat.swagger";
-import { GetAllStatsGuard } from "./guards/get-all-stats.guard";
 
 @ApiTags("Performance Stats")
 @ApiBearerAuth()

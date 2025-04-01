@@ -16,17 +16,17 @@ export class StatsService {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async create(createStatDto: CreateStatDto) {
-		const { ownerId, month, statSections } = createStatDto;
+		const { ownerId, month } = createStatDto;
 		const monthISOString = dayjs(month).startOf("month").toISOString();
 
 		/* check weight sum */
-		const weightSum = statSections.reduce(
-			(acc, curr) => acc + curr.weight,
-			0
-		);
-		if (weightSum !== 100) {
-			throw new BadRequestException("Weight sum must be 100");
-		}
+		// const weightSum = statSections.reduce(
+		// 	(acc, curr) => acc + curr.weight,
+		// 	0
+		// );
+		// if (weightSum !== 100) {
+		// 	throw new BadRequestException("Weight sum must be 100");
+		// }
 
 		/* check if the stat of this month already exists */
 		const existingStat = await this.prismaService.performanceStat.findFirst(
@@ -49,17 +49,17 @@ export class StatsService {
 					},
 				},
 				month: monthISOString,
-				statSections: {
-					create: statSections,
-				},
+				// statSections: {
+				// 	create: statSections,
+				// },
 			},
-			include: {
-				statSections: {
-					include: {
-						events: true,
-					},
-				},
-			},
+			// include: {
+			// 	statSections: {
+			// 		include: {
+			// 			events: true,
+			// 		},
+			// 	},
+			// },
 		});
 	}
 
