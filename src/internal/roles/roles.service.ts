@@ -49,6 +49,11 @@ export class RolesService {
 
 	async create(createRoleDto: CreateRoleDto): Promise<MemberRole> {
 		const { id, name, superRoleId } = createRoleDto;
+		if (superRoleId === "default") {
+			throw new BadRequestException(
+				"Cannot set default role as super role"
+			);
+		}
 		const role = await this.prismaService.memberRole.create({
 			data: {
 				id: id,
@@ -138,6 +143,12 @@ export class RolesService {
 				where: { id: oldId },
 				data: { id: id },
 			});
+		}
+
+		if (superRoleId === "default") {
+			throw new BadRequestException(
+				"Cannot set default role as super role"
+			);
 		}
 
 		if (id === "admin") {
