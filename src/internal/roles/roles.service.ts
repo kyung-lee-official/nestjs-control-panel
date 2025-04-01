@@ -109,6 +109,7 @@ export class RolesService {
 	): Promise<MemberRole> {
 		const { oldId, id, name, superRoleId, memberIds } = updateRoleDto;
 		if (oldId !== id) {
+			/* attempt to update the id of the role */
 			const role = await this.prismaService.memberRole.findUnique({
 				where: { id: oldId },
 			});
@@ -123,6 +124,13 @@ export class RolesService {
 			);
 			if (existingRole) {
 				throw new BadRequestException("role id already taken");
+			}
+			/* cannot update admin and default role id */
+			if (oldId === "admin") {
+				throw new BadRequestException("Cannot update admin role id");
+			}
+			if (oldId === "default") {
+				throw new BadRequestException("Cannot update default role id");
 			}
 			/* update id */
 			await this.prismaService.memberRole.update({
