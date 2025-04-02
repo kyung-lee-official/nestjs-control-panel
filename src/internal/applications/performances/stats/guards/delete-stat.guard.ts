@@ -42,21 +42,23 @@ export class DeleteStatGuard implements CanActivate {
 
 		const actions = ["delete"];
 
+		const ownerSuperRoleIds = await this.utilsService.getSuperRolesOfRoles(
+			owner.memberRoles.map((role) => role.id)
+		);
+
 		const resource: Resource = {
 			kind: "internal:applications:performances:stat",
 			id: id,
 			attr: {
 				ownerId: owner.id,
-				ownerRoles: {
-					ownerRoleIds: owner.memberRoles.map((role) => role.id),
-				},
+				ownerSuperRoleIds: ownerSuperRoleIds,
 			},
 		};
 
 		const checkResourceRequest: CheckResourceRequest = {
 			principal: principal,
-			resource: resource,
 			actions: actions,
+			resource: resource,
 		};
 
 		const decision =
