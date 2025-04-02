@@ -43,7 +43,7 @@ export class UpdateApprovalGuard implements CanActivate {
 			throw new NotFoundException("Performance event not found");
 		}
 		const sectionRoleId = performanceEvent.section.memberRoleId;
-		const superRoleIds =
+		const sectionSuperRoleIds =
 			await this.utilsService.getSuperRoles(sectionRoleId);
 
 		if (!performanceEvent) {
@@ -54,7 +54,7 @@ export class UpdateApprovalGuard implements CanActivate {
 			id: "*",
 			attr: {
 				// sectionRoleId: sectionRoleId,
-				superRoleIds: superRoleIds,
+				sectionSuperRoleIds: sectionSuperRoleIds,
 			},
 		};
 
