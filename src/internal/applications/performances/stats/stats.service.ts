@@ -4,9 +4,7 @@ import {
 	NotFoundException,
 } from "@nestjs/common";
 import { CreateStatDto } from "./dto/create-stat.dto";
-import { UpdateStatDto } from "./dto/update-stat.dto";
 import { PrismaService } from "src/prisma/prisma.service";
-import { Prisma } from "@prisma/client";
 import { rm } from "fs/promises";
 import { SearchStatDto } from "./dto/search-stat.dto";
 import dayjs from "dayjs";
@@ -18,15 +16,6 @@ export class StatsService {
 	async create(createStatDto: CreateStatDto) {
 		const { ownerId, month } = createStatDto;
 		const monthISOString = dayjs(month).startOf("month").toISOString();
-
-		/* check weight sum */
-		// const weightSum = statSections.reduce(
-		// 	(acc, curr) => acc + curr.weight,
-		// 	0
-		// );
-		// if (weightSum !== 100) {
-		// 	throw new BadRequestException("Weight sum must be 100");
-		// }
 
 		/* check if the stat of this month already exists */
 		const existingStat = await this.prismaService.performanceStat.findFirst(
@@ -49,17 +38,7 @@ export class StatsService {
 					},
 				},
 				month: monthISOString,
-				// statSections: {
-				// 	create: statSections,
-				// },
 			},
-			// include: {
-			// 	statSections: {
-			// 		include: {
-			// 			events: true,
-			// 		},
-			// 	},
-			// },
 		});
 	}
 
@@ -93,147 +72,6 @@ export class StatsService {
 				},
 			},
 		});
-	}
-
-	async updateStatById(id: number, updateStatDto: UpdateStatDto) {
-		/* ownerId and month cannot be updated, but we will keep them in the dto for simplicity */
-		const { ownerId, month, statSections: requestSections } = updateStatDto;
-
-		/* check weight sum */
-		const weightSum = requestSections.reduce(
-			(acc, curr) => acc + curr.weight,
-			0
-		);
-		if (weightSum !== 100) {
-			throw new BadRequestException("Weight sum must be 100");
-		}
-
-		const dbStat = await this.prismaService.performanceStat.findUnique({
-			where: {
-				id: id,
-			},
-			include: {
-				statSections: {
-					include: {
-						memberRole: true,
-						events: true,
-					},
-				},
-			},
-		});
-		if (!dbStat) {
-			throw new NotFoundException("Stat not found");
-		}
-
-		/* request sections have 'id' property */
-		const requestSectionIds = requestSections
-			.filter((s) => {
-				return s.id ? true : false;
-			})
-			.map((s) => s.id);
-
-		const dbSections = dbStat.statSections;
-		const dbSectionsToDelete = dbSections.filter(
-			(sec) => !requestSectionIds.includes(sec.id)
-		);
-		const dbSectionsToUpdate = dbSections.filter((sec) =>
-			requestSectionIds.includes(sec.id)
-		);
-		/* if section doesn't have 'id' property, it's a new section */
-		const sectionsToCreate = requestSections.filter((s) => !s.id);
-
-		/* delete related events */
-		await this.prismaService.$transaction(async (tx) => {
-			for (const section of dbSectionsToDelete) {
-				/* delete event attachments */
-				const eventIds = section.events.map((e) => e.id);
-				for (const id of eventIds) {
-					await rm(
-						`./storage/internal/apps/performances/event-attachments/${id}`,
-						{
-							recursive: true,
-							force: true,
-						}
-					);
-					/* delete event comments */
-					await tx.eventComment.deleteMany({
-						where: {
-							eventId: id,
-						},
-					});
-				}
-				/* delete events */
-				await tx.event.deleteMany({
-					where: {
-						sectionId: section.id,
-					},
-				});
-			}
-			/* delete sections */
-			await tx.statSection.deleteMany({
-				where: {
-					id: {
-						in: dbSectionsToDelete.map((s) => s.id),
-					},
-				},
-			});
-		});
-
-		/* update existing sections */
-		for (const sec of dbSectionsToUpdate) {
-			/* request sections for update */
-			const requestSectionForUpdate = requestSections.find(
-				(s) => s.id === sec.id
-			);
-			if (!requestSectionForUpdate) {
-				throw new BadRequestException("Section not found in request");
-			}
-			if (requestSectionForUpdate.memberRoleId !== sec.memberRoleId) {
-				throw new BadRequestException(
-					"Cannot change role of a created section"
-				);
-			}
-			await this.prismaService.statSection.update({
-				where: {
-					id: sec.id,
-				},
-				data: {
-					weight: requestSectionForUpdate!.weight,
-					// memberRoleId: requestSectionForUpdate!.memberRoleId,
-					title: requestSectionForUpdate!.title,
-					description:
-						requestSectionForUpdate?.description ?? Prisma.skip,
-				},
-			});
-		}
-
-		/* create new sections */
-		await this.prismaService.statSection.createMany({
-			data: sectionsToCreate.map((s) => {
-				return {
-					weight: s.weight,
-					memberRoleId: s.memberRoleId,
-					title: s.title,
-					description: s.description,
-					statId: id,
-				};
-			}),
-		});
-
-		const newStat = await this.prismaService.performanceStat.findUnique({
-			where: {
-				id: id,
-			},
-			include: {
-				owner: true,
-				statSections: {
-					include: {
-						events: true,
-					},
-				},
-			},
-		});
-		return newStat;
 	}
 
 	async remove(id: number) {

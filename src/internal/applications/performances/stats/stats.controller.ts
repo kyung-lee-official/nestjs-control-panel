@@ -3,17 +3,14 @@ import {
 	Get,
 	Post,
 	Body,
-	Patch,
 	Param,
 	Delete,
 	ParseIntPipe,
 	UseInterceptors,
 	UseGuards,
-	UsePipes,
 } from "@nestjs/common";
 import { StatsService } from "./stats.service";
 import { CreateStatDto, createStatDtoSchema } from "./dto/create-stat.dto";
-import { UpdateStatDto, updateStatDtoSchema } from "./dto/update-stat.dto";
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
 	createStatApiBodyOptions,
@@ -22,14 +19,10 @@ import {
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { ExcludePasswordInterceptor } from "src/interceptors/exclude-password.interceptor";
-import {
-	updateStatApiBodyOptions,
-	updateStatApiOperationOptions,
-} from "./swagger/update-stat.swagger";
+
 import { SearchStatDto, searchStatDtoSchema } from "./dto/search-stat.dto";
 import { CreateStatGuard } from "./guards/create-stat.guard";
 import { DeleteStatGuard } from "./guards/delete-stat.guard";
-import { UpdateStatGuard } from "./guards/update-stat.guard";
 import { GetStatGuard } from "./guards/get-stat.guard";
 import { SearchStatGuard } from "./guards/search-stat.guard";
 import {
@@ -71,18 +64,6 @@ export class StatsController {
 		searchStatDto: SearchStatDto
 	) {
 		return await this.statsService.searchStats(searchStatDto);
-	}
-
-	@ApiOperation(updateStatApiOperationOptions)
-	@ApiBody(updateStatApiBodyOptions)
-	@UseGuards(UpdateStatGuard)
-	@Patch(":id")
-	async updateStatById(
-		@Param("id", ParseIntPipe) id: number,
-		@Body(new ZodValidationPipe(updateStatDtoSchema))
-		updateStatDto: UpdateStatDto
-	) {
-		return await this.statsService.updateStatById(id, updateStatDto);
 	}
 
 	@ApiOperation({ summary: "Delete a performance stat" })
