@@ -6,6 +6,7 @@ import { UtilsService } from "src/utils/utils.service";
 import { CerbosService } from "src/cerbos/cerbos.service";
 import { REQUEST } from "@nestjs/core";
 import { CheckResourceRequest } from "@cerbos/core";
+import { UpdateSectionDto } from "./dto/update-section.dto";
 
 @Injectable()
 export class SectionsService {
@@ -98,6 +99,21 @@ export class SectionsService {
 				},
 				memberRole: true,
 				events: true,
+			},
+		});
+		return section;
+	}
+
+	async updateSectionById(updateSectionDto: UpdateSectionDto) {
+		const { sectionId, weight, title, description } = updateSectionDto;
+		const section = await this.prismaService.statSection.update({
+			where: {
+				id: sectionId,
+			},
+			data: {
+				weight: weight,
+				title: title,
+				description: description,
 			},
 		});
 		return section;

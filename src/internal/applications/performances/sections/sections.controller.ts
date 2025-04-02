@@ -5,6 +5,7 @@ import {
 	Get,
 	Param,
 	ParseIntPipe,
+	Patch,
 	Post,
 	UseGuards,
 } from "@nestjs/common";
@@ -23,6 +24,11 @@ import {
 import { CreateSectionGuard } from "./guards/create-section.guard";
 import { GetSectionGuard } from "./guards/get-section.guard";
 import { DeleteSectionGuard } from "./guards/delete-section.guard";
+import { UpdateSectionGuard } from "./guards/update-section.guard";
+import {
+	UpdateSectionDto,
+	updateSectionDtoSchema,
+} from "./dto/update-section.dto";
 
 @ApiTags("Performance Sections")
 @ApiBearerAuth()
@@ -58,6 +64,15 @@ export class SectionsController {
 		sectionId: number
 	) {
 		return await this.sectionsService.getSectionById(sectionId);
+	}
+
+	@UseGuards(UpdateSectionGuard)
+	@Patch()
+	async updateSectionById(
+		@Body(new ZodValidationPipe(updateSectionDtoSchema))
+		updateSectionDto: UpdateSectionDto
+	) {
+		return await this.sectionsService.updateSectionById(updateSectionDto);
 	}
 
 	@UseGuards(DeleteSectionGuard)
