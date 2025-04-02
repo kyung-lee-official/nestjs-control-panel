@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const createEventTemplateDtoSchema = z.object({
-	score: z.number().int().min(0).max(100),
-	description: z.string(),
+	score: z.number(),
+	description: z.string().min(1),
 	memberRoleId: z.string(),
 });
 
