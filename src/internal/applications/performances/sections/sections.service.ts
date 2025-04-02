@@ -1,11 +1,74 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateSectionDto } from "./dto/create-section.dto";
 import { rm } from "fs/promises";
+import { UtilsService } from "src/utils/utils.service";
+import { CerbosService } from "src/cerbos/cerbos.service";
+import { REQUEST } from "@nestjs/core";
+import { CheckResourceRequest } from "@cerbos/core";
 
 @Injectable()
 export class SectionsService {
-	constructor(private readonly prismaService: PrismaService) {}
+	constructor(
+		@Inject(REQUEST)
+		private readonly request: any,
+		private readonly prismaService: PrismaService,
+		private readonly utilsService: UtilsService,
+		private readonly cerbosService: CerbosService
+	) {}
+
+	async permissions(sectionId: number) {
+		const { requester } = this.request;
+		const principal = await this.utilsService.getCerbosPrincipal(requester);
+		const actions = ["*", "create", "read", "update", "delete"];
+
+		const section = await this.prismaService.statSection.findUnique({
+			where: {
+				id: sectionId,
+			},
+			include: {
+				memberRole: true,
+				stat: {
+					include: {
+						owner: {
+							include: {
+								memberRoles: true,
+							},
+						},
+					},
+				},
+			},
+		});
+		if (!section) {
+			throw new Error("Section not found");
+		}
+		const statOwnerSuperRoleIds =
+			await this.utilsService.getSuperRolesOfRoles(
+				section.stat.owner.memberRoles.map((role) => role.id)
+			);
+		const sectionSuperRoleIds = await this.utilsService.getSuperRoles(
+			section.memberRole.id
+		);
+		const statOwnerId = section.stat.owner.id;
+		const resource = {
+			kind: "internal:applications:performances:section",
+			id: sectionId.toString(),
+			attr: {
+				statOwnerSuperRoleIds: statOwnerSuperRoleIds,
+				sectionSuperRoleIds: sectionSuperRoleIds,
+				statOwnerId: statOwnerId,
+			},
+		};
+
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			actions: actions,
+			resource: resource,
+		};
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
+		return decision;
+	}
 
 	async create(createSectionDto: CreateSectionDto) {
 		const { statId, weight, memberRoleId, title, description } =

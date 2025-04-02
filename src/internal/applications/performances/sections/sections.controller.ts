@@ -31,6 +31,15 @@ import { DeleteSectionGuard } from "./guards/delete-section.guard";
 export class SectionsController {
 	constructor(private readonly sectionsService: SectionsService) {}
 
+	@ApiOperation({ summary: "Get my permissions of a specific section" })
+	@Get("permissions/:sectionId")
+	async permissions(
+		@Param("sectionId", ParseIntPipe)
+		sectionId: number
+	) {
+		return await this.sectionsService.permissions(sectionId);
+	}
+
 	@ApiOperation(createSectionApiOperationOptions)
 	@ApiBody(createSectionApiBodyOptions)
 	@UseGuards(CreateSectionGuard)
