@@ -141,7 +141,7 @@ export class EventsService {
 			throw new NotFoundException("Performance event not found");
 		}
 		const sectionRoleId = performanceEvent.section.memberRoleId;
-		const superRoleIds =
+		const sectionSuperRoleIds =
 			await this.utilsService.getSuperRoles(sectionRoleId);
 
 		if (!performanceEvent) {
@@ -151,7 +151,7 @@ export class EventsService {
 			kind: "internal:applications:performances:event:approval",
 			id: "*",
 			attr: {
-				superRoleIds: superRoleIds,
+				sectionSuperRoleIds: sectionSuperRoleIds,
 			},
 		};
 		const checkResourceRequest: CheckResourceRequest = {
