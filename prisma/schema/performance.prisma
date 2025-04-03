@@ -24,7 +24,7 @@ model StatSection {
 
 model EventTemplate {
     id           Int        @id @default(autoincrement())
-    score        Int
+    score        Float
     description  String
     memberRole   MemberRole @relation(fields: [memberRoleId], references: [id])
     memberRoleId String
@@ -37,12 +37,12 @@ model EventTemplate {
 model Event {
     id                  Int            @id @default(autoincrement())
     templateId          Int?
-    templateScore       Int?
+    templateScore       Float?
     templateDescription String?
     section             StatSection    @relation(fields: [sectionId], references: [id])
     sectionId           Int
     approval            ApprovalType   @default(PENDING)
-    score               Int
+    score               Float
     amount              Int
     description         String
     attachments         String[]
