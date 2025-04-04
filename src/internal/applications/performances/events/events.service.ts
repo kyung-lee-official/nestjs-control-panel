@@ -13,7 +13,7 @@ import { mkdir, readdir, rm, unlink, writeFile } from "fs/promises";
 import { existsSync } from "fs";
 import { UpdateApprovalDto } from "./dto/update-event-approval";
 import { UtilsService } from "src/utils/utils.service";
-import { CheckResourceRequest } from "@cerbos/core";
+import { CheckResourceRequest, Resource } from "@cerbos/core";
 import { CerbosService } from "src/cerbos/cerbos.service";
 
 @Injectable()
@@ -41,7 +41,11 @@ export class EventsService {
 						memberRole: true,
 						stat: {
 							include: {
-								owner: true,
+								owner: {
+									include: {
+										memberRoles: true,
+									},
+								},
 							},
 						},
 					},
@@ -51,20 +55,27 @@ export class EventsService {
 		if (!event) {
 			throw new NotFoundException("Event not found");
 		}
+		const statOwnerSuperRoleIds =
+			await this.utilsService.getSuperRolesOfRoles(
+				event.section.stat.owner.memberRoles.map((role) => role.id)
+			);
 		const statOwnerId = event.section.stat.ownerId;
 		const sectionSuperRoleIds = await this.utilsService.getSuperRoles(
 			event.section.memberRoleId
 		);
-		const resource = {
+		const resource: Resource = {
 			kind: "internal:applications:performances:event",
 			id: eventId.toString(),
-			statOwnerId: statOwnerId,
-			sectionSuperRoleIds: sectionSuperRoleIds,
+			attr: {
+				statOwnerSuperRoleIds: statOwnerSuperRoleIds,
+				statOwnerId: statOwnerId,
+				sectionSuperRoleIds: sectionSuperRoleIds,
+			},
 		};
 		const checkResourceRequest: CheckResourceRequest = {
 			principal: principal,
-			resource: resource,
 			actions: actions,
+			resource: resource,
 		};
 		const decision =
 			await this.cerbosService.cerbos.checkResource(checkResourceRequest);

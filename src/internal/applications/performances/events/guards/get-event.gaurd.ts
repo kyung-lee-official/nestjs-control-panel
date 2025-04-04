@@ -6,7 +6,7 @@ import {
 	BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { CheckResourceRequest } from "@cerbos/core";
+import { CheckResourceRequest, Resource } from "@cerbos/core";
 import { UtilsService } from "src/utils/utils.service";
 import { CerbosService } from "src/cerbos/cerbos.service";
 
@@ -31,13 +31,14 @@ export class GetEventGuard implements CanActivate {
 		const actions = ["read"];
 
 		/* find event and section role */
-		const performanceEvent = await this.prismaService.event.findUnique({
+		const event = await this.prismaService.event.findUnique({
 			where: {
 				id: eventId,
 			},
 			include: {
 				section: {
 					include: {
+						memberRole: true,
 						stat: {
 							include: {
 								owner: {
@@ -51,32 +52,26 @@ export class GetEventGuard implements CanActivate {
 				},
 			},
 		});
-		if (!performanceEvent) {
+		if (!event) {
 			throw new NotFoundException("Performance event not found");
 		}
 		const statOwnerSuperRoleIds =
 			await this.utilsService.getSuperRolesOfRoles(
-				performanceEvent.section.stat.owner.memberRoles.map(
-					(role) => role.id
-				)
+				event.section.stat.owner.memberRoles.map((role) => role.id)
 			);
-		const statOwnerId = performanceEvent.section.stat.ownerId;
-		const sectionRoleId = performanceEvent.section.memberRoleId;
-		const sectionSuperRoleIds =
-			await this.utilsService.getSuperRoles(sectionRoleId);
-		if (!performanceEvent) {
-			throw new NotFoundException("Performance event not found");
-		}
-		const resource = {
+		const statOwnerId = event.section.stat.ownerId;
+		const sectionSuperRoleIds = await this.utilsService.getSuperRoles(
+			event.section.memberRoleId
+		);
+		const resource: Resource = {
 			kind: "internal:applications:performances:event",
-			id: "*",
+			id: eventId.toString(),
 			attr: {
 				statOwnerSuperRoleIds: statOwnerSuperRoleIds,
 				statOwnerId: statOwnerId,
 				sectionSuperRoleIds: sectionSuperRoleIds,
 			},
 		};
-
 		const checkResourceRequest: CheckResourceRequest = {
 			principal: principal,
 			actions: actions,
