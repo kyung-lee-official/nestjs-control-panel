@@ -52,7 +52,7 @@ export class UpdateEventGuard implements CanActivate {
 				"Performance event is already approved, cannot update"
 			);
 		}
-		const performanceStatOwnerId = performanceEvent.section.stat.ownerId;
+		const statOwnerId = performanceEvent.section.stat.ownerId;
 		const sectionRoleId = performanceEvent.section.memberRoleId;
 		const sectionSuperRoleIds =
 			await this.utilsService.getSuperRoles(sectionRoleId);
@@ -63,7 +63,7 @@ export class UpdateEventGuard implements CanActivate {
 			kind: "internal:applications:performances:event",
 			id: "*",
 			attr: {
-				performanceStatOwnerId: performanceStatOwnerId,
+				statOwnerId: statOwnerId,
 				sectionSuperRoleIds: sectionSuperRoleIds,
 			},
 		};

@@ -83,7 +83,7 @@ export class CreateEventGuard implements CanActivate {
 			kind: "internal:applications:performances:event",
 			id: "*",
 			attr: {
-				performanceStatOwnerId: performanceStat.ownerId,
+				statOwnerId: performanceStat.ownerId,
 				sectionMemberRoleId: section.memberRoleId,
 				sectionSuperRoleIds: sectionSuperRoleIds,
 			},

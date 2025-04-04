@@ -54,9 +54,15 @@ import { updateEventByIdApiOperationOptions } from "./swagger/update-event-by-id
 @ApiTags("Events")
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
-@Controller("performance/events")
+@Controller("internal/performance/events")
 export class EventsController {
 	constructor(private readonly eventsService: EventsService) {}
+
+	@ApiOperation({ summary: "Get my permissions of an event" })
+	@Get("permissions/:eventId")
+	async permissions(@Param("eventId", ParseIntPipe) eventId: number) {
+		return await this.eventsService.permissions(eventId);
+	}
 
 	@ApiOperation(createEventApiOperationOptions)
 	@ApiBody(createEventApiBodyOptions)

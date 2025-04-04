@@ -21,7 +21,14 @@ export class SectionsService {
 	async permissions(sectionId: number) {
 		const { requester } = this.request;
 		const principal = await this.utilsService.getCerbosPrincipal(requester);
-		const actions = ["*", "create", "read", "update", "delete"];
+		const actions = [
+			"*",
+			"create",
+			"create-event",
+			"read",
+			"update",
+			"delete",
+		];
 
 		const section = await this.prismaService.statSection.findUnique({
 			where: {

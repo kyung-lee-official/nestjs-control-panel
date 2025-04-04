@@ -38,7 +38,15 @@ export class GetEventGuard implements CanActivate {
 			include: {
 				section: {
 					include: {
-						stat: true,
+						stat: {
+							include: {
+								owner: {
+									include: {
+										memberRoles: true,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -46,7 +54,13 @@ export class GetEventGuard implements CanActivate {
 		if (!performanceEvent) {
 			throw new NotFoundException("Performance event not found");
 		}
-		const performanceStatOwnerId = performanceEvent.section.stat.ownerId;
+		const statOwnerSuperRoleIds =
+			await this.utilsService.getSuperRolesOfRoles(
+				performanceEvent.section.stat.owner.memberRoles.map(
+					(role) => role.id
+				)
+			);
+		const statOwnerId = performanceEvent.section.stat.ownerId;
 		const sectionRoleId = performanceEvent.section.memberRoleId;
 		const sectionSuperRoleIds =
 			await this.utilsService.getSuperRoles(sectionRoleId);
@@ -57,7 +71,8 @@ export class GetEventGuard implements CanActivate {
 			kind: "internal:applications:performances:event",
 			id: "*",
 			attr: {
-				performanceStatOwnerId: performanceStatOwnerId,
+				statOwnerSuperRoleIds: statOwnerSuperRoleIds,
+				statOwnerId: statOwnerId,
 				sectionSuperRoleIds: sectionSuperRoleIds,
 			},
 		};

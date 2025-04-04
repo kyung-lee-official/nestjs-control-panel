@@ -46,7 +46,7 @@ export class DeleteEventGuard implements CanActivate {
 		if (!performanceEvent) {
 			throw new NotFoundException("Performance event not found");
 		}
-		const performanceStatOwnerId = performanceEvent.section.stat.ownerId;
+		const statOwnerId = performanceEvent.section.stat.ownerId;
 		const sectionRoleId = performanceEvent.section.memberRoleId;
 		const sectionSuperRoleIds =
 			await this.utilsService.getSuperRoles(sectionRoleId);
@@ -57,7 +57,7 @@ export class DeleteEventGuard implements CanActivate {
 			kind: "internal:applications:performances:event",
 			id: "*",
 			attr: {
-				performanceStatOwnerId: performanceStatOwnerId,
+				statOwnerId: statOwnerId,
 				sectionSuperRoleIds: sectionSuperRoleIds,
 			},
 		};

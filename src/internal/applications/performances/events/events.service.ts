@@ -26,6 +26,52 @@ export class EventsService {
 		private readonly cerbosService: CerbosService
 	) {}
 
+	async permissions(eventId: number) {
+		const { requester } = this.request;
+
+		const principal = await this.utilsService.getCerbosPrincipal(requester);
+		const actions = ["*", "create", "read", "update", "delete"];
+		const event = await this.prismaService.event.findUnique({
+			where: {
+				id: eventId,
+			},
+			include: {
+				section: {
+					include: {
+						memberRole: true,
+						stat: {
+							include: {
+								owner: true,
+							},
+						},
+					},
+				},
+			},
+		});
+		if (!event) {
+			throw new NotFoundException("Event not found");
+		}
+		const statOwnerId = event.section.stat.ownerId;
+		const sectionSuperRoleIds = await this.utilsService.getSuperRoles(
+			event.section.memberRoleId
+		);
+		const resource = {
+			kind: "internal:applications:performances:event",
+			id: eventId.toString(),
+			statOwnerId: statOwnerId,
+			sectionSuperRoleIds: sectionSuperRoleIds,
+		};
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			resource: resource,
+			actions: actions,
+		};
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
+
+		return decision;
+	}
+
 	async create(createEventDto: CreateEventDto) {
 		const { templateId, sectionId, score, amount, description } =
 			createEventDto;
@@ -76,7 +122,16 @@ export class EventsService {
 				id,
 			},
 			include: {
-				section: true,
+				section: {
+					include: {
+						memberRole: true,
+						stat: {
+							include: {
+								owner: true,
+							},
+						},
+					},
+				},
 				comments: true,
 			},
 		});
