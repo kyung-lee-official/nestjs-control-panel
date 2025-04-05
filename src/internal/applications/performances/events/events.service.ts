@@ -70,6 +70,7 @@ export class EventsService {
 				statOwnerSuperRoleIds: statOwnerSuperRoleIds,
 				statOwnerId: statOwnerId,
 				sectionSuperRoleIds: sectionSuperRoleIds,
+				score: event.score,
 			},
 		};
 		const checkResourceRequest: CheckResourceRequest = {
@@ -195,7 +196,7 @@ export class EventsService {
 		const principal = await this.utilsService.getCerbosPrincipal(requester);
 		const actions = ["update"];
 		/* find event and section role */
-		const performanceEvent = await this.prismaService.event.findUnique({
+		const event = await this.prismaService.event.findUnique({
 			where: {
 				id: eventId,
 			},
@@ -203,14 +204,14 @@ export class EventsService {
 				section: true,
 			},
 		});
-		if (!performanceEvent) {
+		if (!event) {
 			throw new NotFoundException("Performance event not found");
 		}
-		const sectionRoleId = performanceEvent.section.memberRoleId;
+		const sectionRoleId = event.section.memberRoleId;
 		const sectionSuperRoleIds =
 			await this.utilsService.getSuperRoles(sectionRoleId);
 
-		if (!performanceEvent) {
+		if (!event) {
 			throw new NotFoundException("Performance event not found");
 		}
 		const resource = {

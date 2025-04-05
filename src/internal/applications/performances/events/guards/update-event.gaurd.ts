@@ -32,31 +32,40 @@ export class UpdateEventGuard implements CanActivate {
 		const actions = ["update"];
 
 		/* find event and section role */
-		const performanceEvent = await this.prismaService.event.findUnique({
+		const event = await this.prismaService.event.findUnique({
 			where: {
 				id: eventId,
 			},
 			include: {
 				section: {
 					include: {
-						stat: true,
+						memberRole: true,
+						stat: {
+							include: {
+								owner: {
+									include: {
+										memberRoles: true,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
 		});
-		if (!performanceEvent) {
+		if (!event) {
 			throw new NotFoundException("Performance event not found");
 		}
-		if (performanceEvent.approval === "APPROVED") {
+		if (event.approval === "APPROVED") {
 			throw new ForbiddenException(
 				"Performance event is already approved, cannot update"
 			);
 		}
-		const statOwnerId = performanceEvent.section.stat.ownerId;
-		const sectionRoleId = performanceEvent.section.memberRoleId;
+		const statOwnerId = event.section.stat.ownerId;
+		const sectionRoleId = event.section.memberRoleId;
 		const sectionSuperRoleIds =
 			await this.utilsService.getSuperRoles(sectionRoleId);
-		if (!performanceEvent) {
+		if (!event) {
 			throw new NotFoundException("Performance event not found");
 		}
 		const resource = {
@@ -65,6 +74,7 @@ export class UpdateEventGuard implements CanActivate {
 			attr: {
 				statOwnerId: statOwnerId,
 				sectionSuperRoleIds: sectionSuperRoleIds,
+				score: event.score,
 			},
 		};
 
