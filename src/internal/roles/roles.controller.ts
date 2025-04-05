@@ -40,6 +40,7 @@ import {
 	findRolesByIdsBodyOptions,
 	findRolesByIdsOperationOptions,
 } from "./swagger/find-roles-by-ids.swagger";
+import { getMyRoleAndSubRolesOperationOptions } from "./swagger/get-my-role-and-subroles.swagger";
 import {
 	createRoleBodyOptions,
 	createRoleOperationOptions,
@@ -88,6 +89,18 @@ export class RolesController {
 	@Get()
 	async getAllRoles() {
 		return await this.rolesService.getAllRoles();
+	}
+
+	@ApiOperation(getMyRoleAndSubRolesOperationOptions)
+	@Get("my-role-and-sub-roles")
+	async getMyRoleAndSubRoles() {
+		return await this.rolesService.getMyRoleAndSubRoles();
+	}
+
+	@ApiOperation({ summary: "Get my sub-roles" })
+	@Get("my-sub-roles")
+	async getMySubRoles() {
+		return await this.rolesService.getMySubRoles();
 	}
 
 	@ApiOperation(findRolesByIdsOperationOptions)

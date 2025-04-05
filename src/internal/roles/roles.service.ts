@@ -88,6 +88,55 @@ export class RolesService {
 		return roles;
 	}
 
+	async getMyRoleAndSubRoles() {
+		const { requester } = this.request;
+		const dbRequester = await this.prismaService.member.findUnique({
+			where: { id: requester.id },
+			include: {
+				memberRoles: true,
+			},
+		});
+		if (!dbRequester) {
+			throw new NotFoundException("member not found");
+		}
+		const roleIds = dbRequester.memberRoles.map((role) => role.id);
+		const subRoleIds = await this.utilsService.getSubRolesOfRoles(roleIds);
+		const allRoleIds = [...roleIds, ...subRoleIds];
+		const uniqueRoleIds = [...new Set(allRoleIds)];
+		const roles = await this.prismaService.memberRole.findMany({
+			where: {
+				id: {
+					in: uniqueRoleIds,
+				},
+			},
+		});
+		return roles;
+	}
+
+	async getMySubRoles() {
+		const { requester } = this.request;
+		const dbRequester = await this.prismaService.member.findUnique({
+			where: { id: requester.id },
+			include: {
+				memberRoles: true,
+			},
+		});
+		if (!dbRequester) {
+			throw new NotFoundException("member not found");
+		}
+		const roleIds = dbRequester.memberRoles.map((role) => role.id);
+		const subRoleIds = await this.utilsService.getSubRolesOfRoles(roleIds);
+		const uniqueRoleIds = [...new Set(subRoleIds)];
+		const roles = await this.prismaService.memberRole.findMany({
+			where: {
+				id: {
+					in: uniqueRoleIds,
+				},
+			},
+		});
+		return roles;
+	}
+
 	async findRolesByIds(findRolesByIdsDto: FindRolesByIdsDto) {
 		const { roleIds } = findRolesByIdsDto;
 		const roles = await this.prismaService.memberRole.findMany({
