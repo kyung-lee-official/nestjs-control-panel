@@ -1,5 +1,6 @@
 import {
 	BadRequestException,
+	Inject,
 	Injectable,
 	NotFoundException,
 } from "@nestjs/common";
@@ -8,10 +9,67 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { rm } from "fs/promises";
 import { SearchStatDto } from "./dto/search-stat.dto";
 import dayjs from "dayjs";
+import { REQUEST } from "@nestjs/core";
+import { UtilsService } from "src/utils/utils.service";
+import { CerbosService } from "src/cerbos/cerbos.service";
+import { CheckResourceRequest, Resource } from "@cerbos/core";
 
 @Injectable()
 export class StatsService {
-	constructor(private readonly prismaService: PrismaService) {}
+	constructor(
+		@Inject(REQUEST)
+		private readonly request: any,
+		private readonly prismaService: PrismaService,
+		private readonly utilsService: UtilsService,
+		private readonly cerbosService: CerbosService
+	) {}
+
+	async permissions(statId: number) {
+		const { requester } = this.request;
+		const principal = await this.utilsService.getCerbosPrincipal(requester);
+		const actions = ["*", "create", "create-section", "read", "delete"];
+
+		const stat = await this.prismaService.performanceStat.findUnique({
+			where: {
+				id: statId,
+			},
+			include: {
+				owner: {
+					include: {
+						memberRoles: true,
+					},
+				},
+			},
+		});
+		if (!stat) {
+			throw new Error("Stat not found");
+		}
+		const statOwnerSuperRoleIds =
+			await this.utilsService.getSuperRolesOfRoles(
+				stat.owner.memberRoles.map((role) => role.id)
+			);
+
+		const statOwnerId = stat.owner.id;
+		const resource: Resource = {
+			kind: "internal:applications:performances:stat",
+			id: statId.toString(),
+			attr: {
+				statOwnerId: statOwnerId,
+				statOwnerSuperRoleIds: statOwnerSuperRoleIds,
+			},
+		};
+
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			actions: actions,
+			resource: resource,
+		};
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
+		console.log(decision.outputs);
+
+		return decision;
+	}
 
 	async create(createStatDto: CreateStatDto) {
 		const { ownerId, month } = createStatDto;

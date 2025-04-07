@@ -33,9 +33,18 @@ import {
 @ApiTags("Performance Stats")
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
-@Controller("performance/stats")
+@Controller("internal/performance/stats")
 export class StatsController {
 	constructor(private readonly statsService: StatsService) {}
+
+	@ApiOperation({ summary: "Get my permissions of a specific stat" })
+	@Get("permissions/:statId")
+	async permissions(
+		@Param("statId", ParseIntPipe)
+		statId: number
+	) {
+		return await this.statsService.permissions(statId);
+	}
 
 	@ApiOperation(createStatApiOperationOptions)
 	@ApiBody(createStatApiBodyOptions)

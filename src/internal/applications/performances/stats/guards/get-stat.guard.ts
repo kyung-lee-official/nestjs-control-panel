@@ -36,7 +36,7 @@ export class GetStatGuard implements CanActivate {
 			throw new BadRequestException("owner not found");
 		}
 		const ownerRoleIds = owner.memberRoles.map((role) => role.id);
-		const ownerSuperRoleIds =
+		const statOwnerSuperRoleIds =
 			await this.utilsService.getSuperRolesOfRoles(ownerRoleIds);
 
 		const requester = req.requester;
@@ -49,11 +49,8 @@ export class GetStatGuard implements CanActivate {
 			kind: "internal:applications:performances:stat",
 			id: id,
 			attr: {
-				ownerId: owner.id,
-				ownerRoles: {
-					ownerRoleIds: owner.memberRoles.map((role) => role.id),
-				},
-				ownerSuperRoleIds: ownerSuperRoleIds,
+				statOwnerId: owner.id,
+				statOwnerSuperRoleIds: statOwnerSuperRoleIds,
 			},
 		};
 
