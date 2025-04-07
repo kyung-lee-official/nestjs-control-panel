@@ -5,7 +5,7 @@ import { rm } from "fs/promises";
 import { UtilsService } from "src/utils/utils.service";
 import { CerbosService } from "src/cerbos/cerbos.service";
 import { REQUEST } from "@nestjs/core";
-import { CheckResourceRequest } from "@cerbos/core";
+import { CheckResourceRequest, Resource } from "@cerbos/core";
 import { UpdateSectionDto } from "./dto/update-section.dto";
 
 @Injectable()
@@ -58,7 +58,7 @@ export class SectionsService {
 			section.memberRole.id
 		);
 		const statOwnerId = section.stat.owner.id;
-		const resource = {
+		const resource: Resource = {
 			kind: "internal:applications:performances:section",
 			id: sectionId.toString(),
 			attr: {
