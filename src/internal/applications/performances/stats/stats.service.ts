@@ -66,7 +66,6 @@ export class StatsService {
 		};
 		const decision =
 			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
-		console.log(decision.outputs);
 
 		return decision;
 	}
