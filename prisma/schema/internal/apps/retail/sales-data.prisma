@@ -1,4 +1,4 @@
-model SalesData {
+model RetailSalesData {
     id                   BigInt   @id @default(autoincrement())
     batchId              Int
     date                 DateTime
