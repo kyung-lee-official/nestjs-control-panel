@@ -1,0 +1,18 @@
+model SalesData {
+    id                   BigInt   @id @default(autoincrement())
+    batchId              Int
+    date                 DateTime
+    receiptType          String
+    client               String
+    department           String
+    sku                  String
+    nameZhCn             String
+    salesVolume          Float
+    platformAddress      String?
+    platformOrderId      String
+    storehouse           String
+    category             String?
+    taxInclusivePriceCny Float?
+    priceCny             Float?
+    unitPriceCny         Float?
+}
