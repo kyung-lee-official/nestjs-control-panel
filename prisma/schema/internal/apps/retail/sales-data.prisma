@@ -1,5 +1,12 @@
+model RetailSalesDataBatch {
+    id        Int               @id @default(autoincrement())
+    salesData RetailSalesData[]
+    createdAt DateTime          @default(now())
+}
+
 model RetailSalesData {
-    id                   BigInt   @id @default(autoincrement())
+    id                   BigInt               @id @default(autoincrement())
+    retailSalesDataBatch RetailSalesDataBatch @relation(fields: [batchId], references: [id])
     batchId              Int
     date                 DateTime
     receiptType          String
