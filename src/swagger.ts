@@ -12,6 +12,8 @@ import { FacebookGroupModule } from "./internal/applications/sns-crawler/faceboo
 import { YoutubeDataCollectorModule } from "./internal/applications/sns-crawler/youtube-data-collector/youtube-data-collector.module";
 import { LogModule } from "./internal/log/log.module";
 import { SectionsModule } from "./internal/applications/performances/sections/sections.module";
+import { RetailModule } from "./internal/applications/retail/retail.module";
+import { SalesDataModule } from "./internal/applications/retail/sales-data/sales-data.module";
 
 export function setupSwagger(app: INestApplication<any>) {
 	const membersOption = new DocumentBuilder()
@@ -49,6 +51,7 @@ export function setupSwagger(app: INestApplication<any>) {
 				EventTemplatesModule,
 				FacebookGroupModule,
 				YoutubeDataCollectorModule,
+				SalesDataModule,
 			],
 		}
 	);
