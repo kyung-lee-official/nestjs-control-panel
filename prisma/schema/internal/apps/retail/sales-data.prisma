@@ -1,7 +1,7 @@
 model RetailSalesDataBatch {
-    id        Int               @id @default(autoincrement())
-    salesData RetailSalesData[]
-    createdAt DateTime          @default(now())
+    id              Int               @id @default(autoincrement())
+    retailSalesData RetailSalesData[]
+    createdAt       DateTime          @default(now())
 }
 
 model RetailSalesData {
