@@ -1,6 +1,7 @@
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable } from "@nestjs/common";
 import { Queue } from "bullmq";
+import { RetailSalesReqData } from "./dto/create-sales-data.dto";
 
 @Injectable()
 export class ImportRetailSalesDataQueueService {
@@ -9,7 +10,14 @@ export class ImportRetailSalesDataQueueService {
 		private readonly importRetailSalesDataQueue: Queue
 	) {}
 
-	async addJob(data) {
+	async addJob(data: {
+		meta: {
+			batchId: number;
+			currenJobIndex: number;
+			totalJobs: number;
+		};
+		payload: RetailSalesReqData[];
+	}) {
 		const job = await this.importRetailSalesDataQueue.add(
 			"import-retail-sales-data-job",
 			data,

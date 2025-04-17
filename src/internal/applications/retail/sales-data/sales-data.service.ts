@@ -2,7 +2,10 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { ImportRetailSalesDataQueueService } from "./import-retail-sales-data-queue.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import * as zlib from "zlib";
-import { retailSalesDataDtoSchema } from "./dto/create-sales-data.dto";
+import {
+	RetailSalesReqData,
+	retailSalesReqDataArraySchema,
+} from "./dto/create-sales-data.dto";
 
 @Injectable()
 export class SalesDataService {
@@ -19,10 +22,12 @@ export class SalesDataService {
 		try {
 			/* convert binary data to JSON */
 			const decompressedData = zlib.gunzipSync(data.buffer);
-			const parsedData = JSON.parse(decompressedData.toString("utf-8"));
+			const parsedData: RetailSalesReqData[] = JSON.parse(
+				decompressedData.toString("utf-8")
+			);
 
 			/* validate JSON data */
-			retailSalesDataDtoSchema.parse(parsedData);
+			retailSalesReqDataArraySchema.parse(parsedData);
 
 			/* create batch */
 			const batch = await this.prismaService.retailSalesDataBatch.create(

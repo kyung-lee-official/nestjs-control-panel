@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const retailSalesDataSchema = z.object({
+export const retailSalesDataReqSchema = z.object({
 	date: z.string().datetime(),
 	receiptType: z.string({ message: "Receipt Type is required" }),
 	client: z.string({ message: "Client is required" }),
@@ -18,8 +18,14 @@ export const retailSalesDataSchema = z.object({
 	priceCny: z.number().nullable(),
 	unitPriceCny: z.number().nullable(),
 });
+export type RetailSalesReqData = z.infer<typeof retailSalesDataReqSchema>;
+export const retailSalesReqDataArraySchema = z.array(retailSalesDataReqSchema);
 
-export type RetailSalesData = z.infer<typeof retailSalesDataSchema>;
-
-export const retailSalesDataDtoSchema = z.array(retailSalesDataSchema);
-export type RetailSalesDataDto = z.infer<typeof retailSalesDataDtoSchema>;
+export const retailSalesDataWithBatchIdSchema = retailSalesDataReqSchema.extend(
+	{
+		batchId: z.number(),
+	}
+);
+export type RetailSalesDataWithBatchId = z.infer<
+	typeof retailSalesDataWithBatchIdSchema
+>;
