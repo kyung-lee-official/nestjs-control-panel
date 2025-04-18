@@ -59,13 +59,12 @@ export class ImportRetailSalesDataWorkerService extends WorkerHost {
 								create: { department: d.department },
 							},
 						},
-						sku: {
+						product: {
 							connectOrCreate: {
-								where: { sku: d.sku },
-								create: { sku: d.sku },
+								where: { sku: d.sku, nameZhCn: d.nameZhCn },
+								create: { sku: d.sku, nameZhCn: d.nameZhCn },
 							},
 						},
-						nameZhCn: d.nameZhCn,
 						salesVolume: d.salesVolume,
 						platformAddress: {
 							connectOrCreate: platformAddress

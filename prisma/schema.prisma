@@ -19,7 +19,9 @@ model Member {
     memberRoles MemberRole[]
     createdAt   DateTime          @default(now())
     updatedAt   DateTime          @updatedAt
-    /* applications/performance/stats */
+    /**
+     * applications/performance/stats
+     */
     perfStats   PerformanceStat[]
 }
 
@@ -32,7 +34,9 @@ model MemberRole {
     members       Member[]
     createdAt     DateTime        @default(now())
     updatedAt     DateTime        @updatedAt
-    /* applications/performance */
+    /**
+     * applications/performance
+     */
     statSection   StatSection[]
     eventTemplate EventTemplate[]
 }
@@ -270,9 +274,8 @@ model RetailSalesData {
     clientId             Int
     department           RetailSalesDataDepartment       @relation(fields: [departmentId], references: [id])
     departmentId         Int
-    sku                  RetailSalesDataSku              @relation(fields: [skuId], references: [id])
-    skuId                Int
-    nameZhCn             String
+    product              RetailSalesDataProduct          @relation(fields: [productId], references: [id])
+    productId            Int
     salesVolume          Float
     platformAddress      RetailSalesDataPlatformAddress? @relation(fields: [platformAddressId], references: [id])
     platformAddressId    Int?
@@ -293,7 +296,7 @@ model RetailSalesData {
     @@index([receiptTypeId])
     @@index([clientId])
     @@index([departmentId])
-    @@index([skuId, nameZhCn])
+    @@index([productId])
     @@index([salesVolume])
     @@index([platformAddressId])
     @@index([platformOrderId])
@@ -322,9 +325,10 @@ model RetailSalesDataDepartment {
     retailSalesData RetailSalesData[]
 }
 
-model RetailSalesDataSku {
+model RetailSalesDataProduct {
     id              Int               @id @default(autoincrement())
     sku             String            @unique
+    nameZhCn        String
     retailSalesData RetailSalesData[]
 }
 
