@@ -135,11 +135,6 @@ export class SalesDataService {
 		const { dateMode, ...rest } = filterSalesDataDto;
 		switch (dateMode) {
 			case "range":
-				console.log(
-					"===filterSalesDataDto.dateRange",
-					filterSalesDataDto.dateRange
-				);
-
 				const { start, end } = filterSalesDataDto.dateRange;
 				const data = await this.prismaService.retailSalesData.findMany({
 					where: {
@@ -173,9 +168,11 @@ export class SalesDataService {
 					include: {
 						receiptType: true,
 						client: true,
+						// department: true,
+						product: true,
 						storehouse: true,
 						category: true,
-						product: true,
+						sourceAttribute: true,
 					},
 				});
 				const mappedData = data.map((item) => {

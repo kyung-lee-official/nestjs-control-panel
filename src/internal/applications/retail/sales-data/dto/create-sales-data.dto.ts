@@ -17,6 +17,7 @@ export const retailSalesDataReqSchema = z.object({
 	taxInclusivePriceCny: z.number().nullable(),
 	priceCny: z.number().nullable(),
 	unitPriceCny: z.number().nullable(),
+	sourceAttribute: z.string().nullable(),
 });
 export type RetailSalesReqData = z.infer<typeof retailSalesDataReqSchema>;
 export const retailSalesReqDataArraySchema = z.array(retailSalesDataReqSchema);

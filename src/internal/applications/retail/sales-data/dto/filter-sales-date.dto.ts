@@ -11,7 +11,7 @@ export const skuSchema = z.object(
 
 export type Sku = z.infer<typeof skuSchema>;
 
-const SharedkanbanFilterStateSchema = z.object({
+const sharedkanbanFilterStateSchema = z.object({
 	clients: z.array(z.string()),
 	storehouses: z.array(z.string()),
 	categories: z.array(z.string()),
@@ -27,14 +27,14 @@ export const kanbanFilterStateSchema = z.discriminatedUnion("dateMode", [
 				end: z.string().datetime("Invalid end datetime"),
 			}),
 		})
-		.merge(SharedkanbanFilterStateSchema),
+		.merge(sharedkanbanFilterStateSchema),
 	z
 		.object({
 			dateMode: z.literal("month"),
 			/* restrict to 0-11 */
 			months: z.array(z.number().int().min(0).max(11)),
 		})
-		.merge(SharedkanbanFilterStateSchema),
+		.merge(sharedkanbanFilterStateSchema),
 ]);
 
 export type FilterSalesDataDto = z.infer<typeof kanbanFilterStateSchema>;

@@ -32,7 +32,7 @@ export class ImportRetailSalesDataWorkerService extends WorkerHost {
 		await this.prismaService.$transaction(async (tx) => {
 			for (const d of payload) {
 				/* extract nullable fields */
-				const { platformAddress, category } = d;
+				const { platformAddress, category, sourceAttribute } = d;
 				await tx.retailSalesData.create({
 					data: {
 						retailSalesDataBatch: {
@@ -90,6 +90,18 @@ export class ImportRetailSalesDataWorkerService extends WorkerHost {
 									connectOrCreate: {
 										where: { category: category },
 										create: { category: category },
+									},
+								}
+							: Prisma.skip,
+						sourceAttribute: sourceAttribute
+							? {
+									connectOrCreate: {
+										where: {
+											sourceAttribute: sourceAttribute,
+										},
+										create: {
+											sourceAttribute: sourceAttribute,
+										},
 									},
 								}
 							: Prisma.skip,
