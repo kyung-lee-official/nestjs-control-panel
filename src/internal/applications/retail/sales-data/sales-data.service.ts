@@ -84,6 +84,18 @@ export class SalesDataService {
 			await tx.retailSalesDataBatch.delete({
 				where: { id: batchId },
 			});
+			/* delete associated skus (products) */
+			const allSkus = await tx.retailSalesDataProduct.findMany();
+			for (const sku of allSkus) {
+				const retailSalesData = await tx.retailSalesData.findFirst({
+					where: { productId: sku.id },
+				});
+				if (!retailSalesData) {
+					await tx.retailSalesDataProduct.delete({
+						where: { id: sku.id },
+					});
+				}
+			}
 		});
 		return { success: true };
 	}
@@ -157,6 +169,13 @@ export class SalesDataService {
 								),
 							},
 						},
+					},
+					include: {
+						receiptType: true,
+						client: true,
+						storehouse: true,
+						category: true,
+						product: true,
 					},
 				});
 				const mappedData = data.map((item) => {
