@@ -6,6 +6,7 @@ import {
 	RetailSalesReqData,
 	retailSalesReqDataArraySchema,
 } from "./dto/create-sales-data.dto";
+import { FilterSalesDataDto, Sku } from "./dto/filter-sales-date.dto";
 
 @Injectable()
 export class SalesDataService {
@@ -77,7 +78,7 @@ export class SalesDataService {
 		await this.prismaService.$transaction(async (tx) => {
 			/* delete all sales data for the batch */
 			await tx.retailSalesData.deleteMany({
-				where: { batchId },
+				where: { batchId: batchId },
 			});
 			/* delete the batch */
 			await tx.retailSalesDataBatch.delete({
@@ -85,6 +86,119 @@ export class SalesDataService {
 			});
 		});
 		return { success: true };
+	}
+
+	async getClients() {
+		const clients =
+			await this.prismaService.retailSalesDataClient.findMany();
+		return clients;
+	}
+
+	async getStorehouses() {
+		const storehouses =
+			await this.prismaService.retailSalesDataStorehouse.findMany();
+		return storehouses;
+	}
+
+	async getCategories() {
+		const categories =
+			await this.prismaService.retailSalesDataCategory.findMany();
+		return categories;
+	}
+
+	async searchSku(term: string) {
+		const sku = await this.prismaService.retailSalesDataProduct.findMany({
+			where: {
+				OR: [
+					{ sku: { contains: term, mode: "insensitive" } },
+					{ nameZhCn: { contains: term, mode: "insensitive" } },
+				],
+			},
+			take: 20,
+		});
+		return sku;
+	}
+
+	async filterSalesData(filterSalesDataDto: FilterSalesDataDto) {
+		const { dateMode, ...rest } = filterSalesDataDto;
+		switch (dateMode) {
+			case "range":
+				console.log(
+					"===filterSalesDataDto.dateRange",
+					filterSalesDataDto.dateRange
+				);
+
+				const { start, end } = filterSalesDataDto.dateRange;
+				const data = await this.prismaService.retailSalesData.findMany({
+					where: {
+						date: {
+							gte: start,
+							lte: end,
+						},
+						client: {
+							client: {
+								in: filterSalesDataDto.clients,
+							},
+						},
+						storehouse: {
+							storehouse: {
+								in: filterSalesDataDto.storehouses,
+							},
+						},
+						category: {
+							category: {
+								in: filterSalesDataDto.categories,
+							},
+						},
+						product: {
+							sku: {
+								in: (filterSalesDataDto.skus as Sku[]).map(
+									(sku) => sku.sku
+								),
+							},
+						},
+					},
+				});
+				const mappedData = data.map((item) => {
+					return {
+						...item,
+						id: item.id.toString(),
+					};
+				});
+				return mappedData;
+			case "month":
+				const { months } = filterSalesDataDto;
+				const filteredSalesData: any[] = [];
+				for (const m of months) {
+					const salesData =
+						await this.prismaService.retailSalesData.findMany({
+							where: {
+								date: {
+									gte: new Date(
+										new Date().getFullYear(),
+										m,
+										1
+									),
+									lte: new Date(
+										new Date().getFullYear(),
+										m + 1,
+										0
+									),
+								},
+								...rest,
+							},
+						});
+					filteredSalesData.push({
+						...salesData,
+						data: salesData.map((item) => ({
+							...item,
+							id: item.id.toString(),
+						})),
+					});
+				}
+			default:
+				throw new BadRequestException("Invalid date mode");
+		}
 	}
 
 	chunkifyArray<T>(array: T[], chunkSize: number): T[][] {
