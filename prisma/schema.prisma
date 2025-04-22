@@ -278,7 +278,7 @@ model RetailSalesData {
     platformOrderId      String
     storehouse           String
     category             String?
-    sourceAttribute      String
+    sourceAttribute      String?
     taxInclusivePriceCny Float?
     priceCny             Float?
     unitPriceCny         Float?
