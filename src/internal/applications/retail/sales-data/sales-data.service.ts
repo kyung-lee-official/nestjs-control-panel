@@ -118,6 +118,18 @@ export class SalesDataService {
 		return categories;
 	}
 
+	async getReceiptTypes() {
+		const receiptTypes =
+			await this.prismaService.retailSalesDataReceiptType.findMany();
+		return receiptTypes;
+	}
+
+	async getSourceAttributes() {
+		const sourceAttributes =
+			await this.prismaService.retailSalesDataSourceAttribute.findMany();
+		return sourceAttributes;
+	}
+
 	async searchSku(term: string) {
 		const sku = await this.prismaService.retailSalesDataProduct.findMany({
 			where: {
@@ -164,6 +176,11 @@ export class SalesDataService {
 								),
 							},
 						},
+						// receiptType: {
+						// 	receiptType: {
+						// 		in: filterSalesDataDto.receiptTypes,
+						// 	},
+						// },
 					},
 					include: {
 						receiptType: true,
@@ -201,7 +218,7 @@ export class SalesDataService {
 										0
 									),
 								},
-								...rest,
+								// ...rest,
 							},
 						});
 					filteredSalesData.push({

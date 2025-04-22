@@ -54,6 +54,16 @@ export class SalesDataController {
 		return await this.salesDataService.getCategories();
 	}
 
+	@Get("get-receipt-types")
+	async getReceiptTypes() {
+		return await this.salesDataService.getReceiptTypes();
+	}
+
+	@Get("get-source-attributes")
+	async getSourceAttributes() {
+		return await this.salesDataService.getSourceAttributes();
+	}
+
 	@Get("search-sku/:term")
 	async searchSku(@Param("term") term: string) {
 		return await this.salesDataService.searchSku(term);
