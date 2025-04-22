@@ -7,6 +7,7 @@ import {
 	retailSalesReqDataArraySchema,
 } from "./dto/create-sales-data.dto";
 import { FilterSalesDataDto, Sku } from "./dto/filter-sales-date.dto";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class SalesDataService {
@@ -144,6 +145,7 @@ export class SalesDataService {
 	}
 
 	async filterSalesData(filterSalesDataDto: FilterSalesDataDto) {
+		console.log(filterSalesDataDto);
 		const { dateMode, ...rest } = filterSalesDataDto;
 		switch (dateMode) {
 			case "range":
@@ -154,38 +156,51 @@ export class SalesDataService {
 							gte: start,
 							lte: end,
 						},
-						client: {
-							client: {
-								in: filterSalesDataDto.clients,
-							},
-						},
-						storehouse: {
-							storehouse: {
-								in: filterSalesDataDto.storehouses,
-							},
-						},
-						category: {
-							category: {
-								in: filterSalesDataDto.categories,
-							},
-						},
-						product: {
-							sku: {
-								in: (filterSalesDataDto.skus as Sku[]).map(
-									(sku) => sku.sku
-								),
-							},
-						},
-						receiptType: {
-							receiptType: {
-								in: filterSalesDataDto.receiptTypes,
-							},
-						},
-						sourceAttribute: {
-							sourceAttribute: {
-								in: filterSalesDataDto.sourceAttributes,
-							},
-						},
+						client: filterSalesDataDto.clients.length
+							? {
+									client: {
+										in: filterSalesDataDto.clients,
+									},
+								}
+							: Prisma.skip,
+						storehouse: filterSalesDataDto.storehouses.length
+							? {
+									storehouse: {
+										in: filterSalesDataDto.storehouses,
+									},
+								}
+							: Prisma.skip,
+						category: filterSalesDataDto.categories.length
+							? {
+									category: {
+										in: filterSalesDataDto.categories,
+									},
+								}
+							: Prisma.skip,
+						product: (filterSalesDataDto.skus as Sku[]).length
+							? {
+									sku: {
+										in: (
+											filterSalesDataDto.skus as Sku[]
+										).map((sku) => sku.sku),
+									},
+								}
+							: Prisma.skip,
+						receiptType: filterSalesDataDto.receiptTypes.length
+							? {
+									receiptType: {
+										in: filterSalesDataDto.receiptTypes,
+									},
+								}
+							: Prisma.skip,
+						sourceAttribute: filterSalesDataDto.sourceAttributes
+							.length
+							? {
+									sourceAttribute: {
+										in: filterSalesDataDto.sourceAttributes,
+									},
+								}
+							: Prisma.skip,
 					},
 					include: {
 						receiptType: true,
