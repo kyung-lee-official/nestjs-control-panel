@@ -264,28 +264,21 @@ model RetailSalesDataBatch {
 }
 
 model RetailSalesData {
-    id                   BigInt                          @id @default(autoincrement())
-    retailSalesDataBatch RetailSalesDataBatch            @relation(fields: [batchId], references: [id])
+    id                   BigInt                 @id @default(autoincrement())
+    retailSalesDataBatch RetailSalesDataBatch   @relation(fields: [batchId], references: [id])
     batchId              Int
     date                 DateTime
-    receiptType          RetailSalesDataReceiptType      @relation(fields: [receiptTypeId], references: [id])
-    receiptTypeId        Int
-    client               RetailSalesDataClient           @relation(fields: [clientId], references: [id])
-    clientId             Int
-    department           RetailSalesDataDepartment       @relation(fields: [departmentId], references: [id])
-    departmentId         Int
-    product              RetailSalesDataProduct          @relation(fields: [productId], references: [id])
+    receiptType          String
+    client               String
+    department           String
+    product              RetailSalesDataProduct @relation(fields: [productId], references: [id])
     productId            Int
     salesVolume          Float
-    platformAddress      RetailSalesDataPlatformAddress? @relation(fields: [platformAddressId], references: [id])
-    platformAddressId    Int?
+    platformAddress      String?
     platformOrderId      String
-    storehouse           RetailSalesDataStorehouse       @relation(fields: [storehouseId], references: [id])
-    storehouseId         Int
-    category             RetailSalesDataCategory?        @relation(fields: [categoryId], references: [id])
-    categoryId           Int?
-    sourceAttribute      RetailSalesDataSourceAttribute? @relation(fields: [sourceAttributeId], references: [id])
-    sourceAttributeId    Int?
+    storehouse           String
+    category             String
+    sourceAttribute      String
     taxInclusivePriceCny Float?
     priceCny             Float?
     unitPriceCny         Float?
@@ -295,38 +288,38 @@ model RetailSalesData {
      */
     @@index([batchId])
     @@index([date])
-    @@index([receiptTypeId])
-    @@index([clientId])
-    @@index([departmentId])
+    @@index([receiptType])
+    @@index([client])
+    @@index([department])
     @@index([productId])
     @@index([salesVolume])
-    @@index([platformAddressId])
+    @@index([platformAddress])
     @@index([platformOrderId])
-    @@index([storehouseId])
-    @@index([categoryId])
-    @@index([sourceAttributeId])
+    @@index([storehouse])
+    @@index([category])
+    @@index([sourceAttribute])
     @@index([taxInclusivePriceCny])
     @@index([priceCny])
     @@index([unitPriceCny])
 }
 
-model RetailSalesDataReceiptType {
-    id              Int               @id @default(autoincrement())
-    receiptType     String            @unique
-    retailSalesData RetailSalesData[]
-}
+// model RetailSalesDataReceiptType {
+//     id              Int               @id @default(autoincrement())
+//     receiptType     String            @unique
+//     retailSalesData RetailSalesData[]
+// }
 
-model RetailSalesDataClient {
-    id              Int               @id @default(autoincrement())
-    client          String            @unique
-    retailSalesData RetailSalesData[]
-}
+// model RetailSalesDataClient {
+//     id              Int               @id @default(autoincrement())
+//     client          String            @unique
+//     retailSalesData RetailSalesData[]
+// }
 
-model RetailSalesDataDepartment {
-    id              Int               @id @default(autoincrement())
-    department      String            @unique
-    retailSalesData RetailSalesData[]
-}
+// model RetailSalesDataDepartment {
+//     id              Int               @id @default(autoincrement())
+//     department      String            @unique
+//     retailSalesData RetailSalesData[]
+// }
 
 model RetailSalesDataProduct {
     id              Int               @id @default(autoincrement())
@@ -335,26 +328,26 @@ model RetailSalesDataProduct {
     retailSalesData RetailSalesData[]
 }
 
-model RetailSalesDataPlatformAddress {
-    id              Int               @id @default(autoincrement())
-    platformAddress String            @unique
-    retailSalesData RetailSalesData[]
-}
+// model RetailSalesDataPlatformAddress {
+//     id              Int               @id @default(autoincrement())
+//     platformAddress String            @unique
+//     retailSalesData RetailSalesData[]
+// }
 
-model RetailSalesDataStorehouse {
-    id              Int               @id @default(autoincrement())
-    storehouse      String            @unique
-    retailSalesData RetailSalesData[]
-}
+// model RetailSalesDataStorehouse {
+//     id              Int               @id @default(autoincrement())
+//     storehouse      String            @unique
+//     retailSalesData RetailSalesData[]
+// }
 
-model RetailSalesDataCategory {
-    id              Int               @id @default(autoincrement())
-    category        String            @unique
-    retailSalesData RetailSalesData[]
-}
+// model RetailSalesDataCategory {
+//     id              Int               @id @default(autoincrement())
+//     category        String            @unique
+//     retailSalesData RetailSalesData[]
+// }
 
-model RetailSalesDataSourceAttribute {
-    id              Int               @id @default(autoincrement())
-    sourceAttribute String            @unique
-    retailSalesData RetailSalesData[]
-}
+// model RetailSalesDataSourceAttribute {
+//     id              Int               @id @default(autoincrement())
+//     sourceAttribute String            @unique
+//     retailSalesData RetailSalesData[]
+// }
