@@ -176,11 +176,16 @@ export class SalesDataService {
 								),
 							},
 						},
-						// receiptType: {
-						// 	receiptType: {
-						// 		in: filterSalesDataDto.receiptTypes,
-						// 	},
-						// },
+						receiptType: {
+							receiptType: {
+								in: filterSalesDataDto.receiptTypes,
+							},
+						},
+						sourceAttribute: {
+							sourceAttribute: {
+								in: filterSalesDataDto.sourceAttributes,
+							},
+						},
 					},
 					include: {
 						receiptType: true,
