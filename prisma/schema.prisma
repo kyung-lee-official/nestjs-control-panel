@@ -284,7 +284,7 @@ model RetailSalesData {
     storehouseId         Int
     category             RetailSalesDataCategory?        @relation(fields: [categoryId], references: [id])
     categoryId           Int?
-    sourceAttribute      SourceAttribute?                @relation(fields: [sourceAttributeId], references: [id])
+    sourceAttribute      RetailSalesDataSourceAttribute? @relation(fields: [sourceAttributeId], references: [id])
     sourceAttributeId    Int?
     taxInclusivePriceCny Float?
     priceCny             Float?
@@ -304,7 +304,7 @@ model RetailSalesData {
     @@index([platformOrderId])
     @@index([storehouseId])
     @@index([categoryId])
-	@@index([sourceAttributeId])
+    @@index([sourceAttributeId])
     @@index([taxInclusivePriceCny])
     @@index([priceCny])
     @@index([unitPriceCny])
@@ -353,7 +353,7 @@ model RetailSalesDataCategory {
     retailSalesData RetailSalesData[]
 }
 
-model SourceAttribute {
+model RetailSalesDataSourceAttribute {
     id              Int               @id @default(autoincrement())
     sourceAttribute String            @unique
     retailSalesData RetailSalesData[]
