@@ -41,24 +41,9 @@ export class ImportRetailSalesDataWorkerService extends WorkerHost {
 							},
 						},
 						date: d.date,
-						receiptType: {
-							connectOrCreate: {
-								where: { receiptType: d.receiptType },
-								create: { receiptType: d.receiptType },
-							},
-						},
-						client: {
-							connectOrCreate: {
-								where: { client: d.client },
-								create: { client: d.client },
-							},
-						},
-						department: {
-							connectOrCreate: {
-								where: { department: d.department },
-								create: { department: d.department },
-							},
-						},
+						receiptType: d.receiptType,
+						client: d.client,
+						department: d.department,
 						product: {
 							connectOrCreate: {
 								where: { sku: d.sku },
@@ -66,45 +51,11 @@ export class ImportRetailSalesDataWorkerService extends WorkerHost {
 							},
 						},
 						salesVolume: d.salesVolume,
-						platformAddress: {
-							connectOrCreate: platformAddress
-								? {
-										where: {
-											platformAddress: platformAddress,
-										},
-										create: {
-											platformAddress: platformAddress,
-										},
-									}
-								: Prisma.skip,
-						},
+						platformAddress: platformAddress ?? null,
 						platformOrderId: d.platformOrderId,
-						storehouse: {
-							connectOrCreate: {
-								where: { storehouse: d.storehouse },
-								create: { storehouse: d.storehouse },
-							},
-						},
-						category: category
-							? {
-									connectOrCreate: {
-										where: { category: category },
-										create: { category: category },
-									},
-								}
-							: Prisma.skip,
-						sourceAttribute: sourceAttribute
-							? {
-									connectOrCreate: {
-										where: {
-											sourceAttribute: sourceAttribute,
-										},
-										create: {
-											sourceAttribute: sourceAttribute,
-										},
-									},
-								}
-							: Prisma.skip,
+						storehouse: d.storehouse,
+						category: category ?? null,
+						sourceAttribute: sourceAttribute ?? null,
 						taxInclusivePriceCny: d.taxInclusivePriceCny,
 						priceCny: d.priceCny,
 						unitPriceCny: d.unitPriceCny,

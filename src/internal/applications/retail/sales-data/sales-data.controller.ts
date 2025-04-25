@@ -34,34 +34,9 @@ export class SalesDataController {
 		return await this.salesDataService.getBatches(pageId);
 	}
 
-	@Delete(":batchId")
+	@Delete("delete-batch-by-id/:batchId")
 	async delete(@Param("batchId", ParseIntPipe) batchId: number) {
 		return await this.salesDataService.delete(batchId);
-	}
-
-	@Get("get-clients")
-	async getClients() {
-		return await this.salesDataService.getClients();
-	}
-
-	@Get("get-storehouses")
-	async getStorehouses() {
-		return await this.salesDataService.getStorehouses();
-	}
-
-	@Get("get-categories")
-	async getCategories() {
-		return await this.salesDataService.getCategories();
-	}
-
-	@Get("get-receipt-types")
-	async getReceiptTypes() {
-		return await this.salesDataService.getReceiptTypes();
-	}
-
-	@Get("get-source-attributes")
-	async getSourceAttributes() {
-		return await this.salesDataService.getSourceAttributes();
 	}
 
 	@Get("search-sku/:term")

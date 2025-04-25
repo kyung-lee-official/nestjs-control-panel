@@ -101,36 +101,6 @@ export class SalesDataService {
 		return { success: true };
 	}
 
-	async getClients() {
-		const clients =
-			await this.prismaService.retailSalesDataClient.findMany();
-		return clients;
-	}
-
-	async getStorehouses() {
-		const storehouses =
-			await this.prismaService.retailSalesDataStorehouse.findMany();
-		return storehouses;
-	}
-
-	async getCategories() {
-		const categories =
-			await this.prismaService.retailSalesDataCategory.findMany();
-		return categories;
-	}
-
-	async getReceiptTypes() {
-		const receiptTypes =
-			await this.prismaService.retailSalesDataReceiptType.findMany();
-		return receiptTypes;
-	}
-
-	async getSourceAttributes() {
-		const sourceAttributes =
-			await this.prismaService.retailSalesDataSourceAttribute.findMany();
-		return sourceAttributes;
-	}
-
 	async searchSku(term: string) {
 		const sku = await this.prismaService.retailSalesDataProduct.findMany({
 			where: {
@@ -145,7 +115,6 @@ export class SalesDataService {
 	}
 
 	async filterSalesData(filterSalesDataDto: FilterSalesDataDto) {
-		console.log(filterSalesDataDto);
 		const { dateMode, ...rest } = filterSalesDataDto;
 		switch (dateMode) {
 			case "range":
@@ -158,23 +127,17 @@ export class SalesDataService {
 						},
 						client: filterSalesDataDto.clients.length
 							? {
-									client: {
-										in: filterSalesDataDto.clients,
-									},
+									in: filterSalesDataDto.clients,
 								}
 							: Prisma.skip,
 						storehouse: filterSalesDataDto.storehouses.length
 							? {
-									storehouse: {
-										in: filterSalesDataDto.storehouses,
-									},
+									in: filterSalesDataDto.storehouses,
 								}
 							: Prisma.skip,
 						category: filterSalesDataDto.categories.length
 							? {
-									category: {
-										in: filterSalesDataDto.categories,
-									},
+									in: filterSalesDataDto.categories,
 								}
 							: Prisma.skip,
 						product: (filterSalesDataDto.skus as Sku[]).length
@@ -188,28 +151,18 @@ export class SalesDataService {
 							: Prisma.skip,
 						receiptType: filterSalesDataDto.receiptTypes.length
 							? {
-									receiptType: {
-										in: filterSalesDataDto.receiptTypes,
-									},
+									in: filterSalesDataDto.receiptTypes,
 								}
 							: Prisma.skip,
 						sourceAttribute: filterSalesDataDto.sourceAttributes
 							.length
 							? {
-									sourceAttribute: {
-										in: filterSalesDataDto.sourceAttributes,
-									},
+									in: filterSalesDataDto.sourceAttributes,
 								}
 							: Prisma.skip,
 					},
 					include: {
-						receiptType: true,
-						client: true,
-						// department: true,
 						product: true,
-						storehouse: true,
-						category: true,
-						sourceAttribute: true,
 					},
 				});
 				const mappedData = data.map((item) => {
@@ -218,7 +171,92 @@ export class SalesDataService {
 						id: item.id.toString(),
 					};
 				});
-				return mappedData;
+
+				/* clients */
+				const availableClients = [
+					...new Set(mappedData.map((d) => d.client)),
+				];
+				const dbClients =
+					await this.prismaService.retailSalesData.findMany({
+						where: {},
+						distinct: ["client"],
+						select: { client: true },
+					});
+				const allClients = dbClients.map((c) => c.client);
+				/* storehouses */
+				const availableStorehouses = [
+					...new Set(mappedData.map((d) => d.storehouse)),
+				];
+				const dbStorehousesRes =
+					await this.prismaService.retailSalesData.findMany({
+						where: {},
+						distinct: ["storehouse"],
+						select: { storehouse: true },
+					});
+				const allStorehouses = dbStorehousesRes.map(
+					(s) => s.storehouse
+				);
+				/* categories */
+				const availableCategories = [
+					...new Set(mappedData.map((d) => d.category)),
+				];
+				const dbCategories =
+					await this.prismaService.retailSalesData.findMany({
+						where: {},
+						distinct: ["category"],
+						select: { category: true },
+					});
+				const allCategories = dbCategories.map((c) => c.category);
+				/* receipt types */
+				const availableReceiptTypes = [
+					...new Set(mappedData.map((d) => d.receiptType)),
+				];
+				const dbReceiptTypes =
+					await this.prismaService.retailSalesData.findMany({
+						where: {},
+						distinct: ["receiptType"],
+						select: { receiptType: true },
+					});
+				const allReceiptTypes = dbReceiptTypes.map(
+					(r) => r.receiptType
+				);
+				/* source attributes */
+				const availableSourceAttributes = [
+					...new Set(mappedData.map((d) => d.sourceAttribute)),
+				];
+				const dbSourceAttributes =
+					await this.prismaService.retailSalesData.findMany({
+						where: {},
+						distinct: ["sourceAttribute"],
+						select: { sourceAttribute: true },
+					});
+				const allSourceAttributes = dbSourceAttributes.map(
+					(s) => s.sourceAttribute
+				);
+
+				return {
+					retailSalesData: mappedData,
+					clients: {
+						availableClients,
+						allClients,
+					},
+					storehouses: {
+						availableStorehouses,
+						allStorehouses,
+					},
+					categories: {
+						availableCategories,
+						allCategories,
+					},
+					receiptTypes: {
+						availableReceiptTypes,
+						allReceiptTypes,
+					},
+					sourceAttributes: {
+						availableSourceAttributes,
+						allSourceAttributes,
+					},
+				};
 			case "month":
 				const { months } = filterSalesDataDto;
 				const filteredSalesData: any[] = [];
