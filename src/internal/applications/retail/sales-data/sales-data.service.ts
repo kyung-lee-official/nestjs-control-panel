@@ -170,6 +170,7 @@ export class SalesDataService {
 				// });
 				// console.timeEnd("findManyQuery");
 
+				console.time("queryRaw"); /* 2.469s */
 				const data = await this.prismaService.$queryRaw<
 					{
 						id: bigint;
@@ -205,77 +206,77 @@ export class SalesDataService {
 						${filterSalesDataDto.sourceAttributes.length ? Prisma.sql`AND "retailSalesData"."sourceAttribute" IN (${Prisma.join(filterSalesDataDto.sourceAttributes)})` : Prisma.empty}
 					`
 				);
+				console.timeEnd("queryRaw");
 
-				/* mapData: 129.535ms */
+				console.time("mapData"); /* 146.048ms */
 				const mappedData = data.map((item) => {
 					return {
 						...item,
 						id: item.id.toString(),
 					};
 				});
+				console.timeEnd("mapData");
 
-				/* availableData: 998.051ms */
-				/* clients */
+				console.time("columnQuery"); /* 367.966ms */
+				const result = await this.prismaService.$queryRaw<
+					{ column: string; value: string | null }[]
+				>(Prisma.sql`
+				SELECT 'client' AS column, "client" AS value FROM "RetailSalesData" GROUP BY "client"
+				UNION ALL
+				SELECT 'storehouse' AS column, "storehouse" AS value FROM "RetailSalesData" GROUP BY "storehouse"
+				UNION ALL
+				SELECT 'category' AS column, "category" AS value FROM "RetailSalesData" GROUP BY "category"
+				UNION ALL
+				SELECT 'receiptType' AS column, "receiptType" AS value FROM "RetailSalesData" GROUP BY "receiptType"
+				UNION ALL
+				SELECT 'sourceAttribute' AS column, "sourceAttribute" AS value FROM "RetailSalesData" GROUP BY "sourceAttribute"
+				`);
+				const allClients: string[] = [];
+				const allStorehouses: string[] = [];
+				const allCategories: string[] = [];
+				const allReceiptTypes: string[] = [];
+				const allSourceAttributes: string[] = [];
+				for (const r of result) {
+					if (r.column === "client" && r.value) {
+						allClients.push(r.value);
+					}
+					if (r.column === "storehouse" && r.value) {
+						allStorehouses.push(r.value);
+					}
+					if (r.column === "category" && r.value) {
+						allCategories.push(r.value);
+					}
+					if (r.column === "receiptType" && r.value) {
+						allReceiptTypes.push(r.value);
+					}
+					if (r.column === "sourceAttribute" && r.value) {
+						allSourceAttributes.push(r.value);
+					}
+				}
+				console.timeEnd("columnQuery");
+
+				console.time("map set"); /* 30.577ms */
 				const availableClients = [
 					...new Set(mappedData.map((d) => d.client)),
 				];
-				const dbClients =
-					await this.prismaService.retailSalesData.findMany({
-						where: {},
-						distinct: ["client"],
-						select: { client: true },
-					});
-				const allClients = dbClients.map((c) => c.client);
 				/* storehouses */
 				const availableStorehouses = [
 					...new Set(mappedData.map((d) => d.storehouse)),
 				];
-				const dbStorehousesRes =
-					await this.prismaService.retailSalesData.findMany({
-						where: {},
-						distinct: ["storehouse"],
-						select: { storehouse: true },
-					});
-				const allStorehouses = dbStorehousesRes.map(
-					(s) => s.storehouse
-				);
 				/* categories */
 				const availableCategories = [
 					...new Set(mappedData.map((d) => d.category)),
 				];
-				const dbCategories =
-					await this.prismaService.retailSalesData.findMany({
-						where: {},
-						distinct: ["category"],
-						select: { category: true },
-					});
-				const allCategories = dbCategories.map((c) => c.category);
 				/* receipt types */
 				const availableReceiptTypes = [
 					...new Set(mappedData.map((d) => d.receiptType)),
 				];
-				const dbReceiptTypes =
-					await this.prismaService.retailSalesData.findMany({
-						where: {},
-						distinct: ["receiptType"],
-						select: { receiptType: true },
-					});
-				const allReceiptTypes = dbReceiptTypes.map(
-					(r) => r.receiptType
-				);
 				/* source attributes */
 				const availableSourceAttributes = [
 					...new Set(mappedData.map((d) => d.sourceAttribute)),
 				];
-				const dbSourceAttributes =
-					await this.prismaService.retailSalesData.findMany({
-						where: {},
-						distinct: ["sourceAttribute"],
-						select: { sourceAttribute: true },
-					});
-				const allSourceAttributes = dbSourceAttributes.map(
-					(s) => s.sourceAttribute
-				);
+				console.timeEnd("map set");
+
 				return {
 					retailSalesData: mappedData,
 					clients: {
