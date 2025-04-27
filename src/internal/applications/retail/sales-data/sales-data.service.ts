@@ -198,12 +198,66 @@ export class SalesDataService {
 					WHERE 
 						"retailSalesData"."date" >= CAST(${start} AS timestamp without time zone) AND
 						"retailSalesData"."date" <= CAST(${end} AS timestamp without time zone)
-						${filterSalesDataDto.clients.length ? Prisma.sql`AND "retailSalesData"."client" IN (${Prisma.join(filterSalesDataDto.clients)})` : Prisma.empty}
-						${filterSalesDataDto.storehouses.length ? Prisma.sql`AND "retailSalesData"."storehouse" IN (${Prisma.join(filterSalesDataDto.storehouses)})` : Prisma.empty}
-						${filterSalesDataDto.categories.length ? Prisma.sql`AND "retailSalesData"."category" IN (${Prisma.join(filterSalesDataDto.categories)})` : Prisma.empty}
-						${filterSalesDataDto.skus.length ? Prisma.sql`AND "product"."sku" IN (${Prisma.join(filterSalesDataDto.skus.map((sku) => sku.sku))})` : Prisma.empty}
-						${filterSalesDataDto.receiptTypes.length ? Prisma.sql`AND "retailSalesData"."receiptType" IN (${Prisma.join(filterSalesDataDto.receiptTypes)})` : Prisma.empty}
-						${filterSalesDataDto.sourceAttributes.length ? Prisma.sql`AND "retailSalesData"."sourceAttribute" IN (${Prisma.join(filterSalesDataDto.sourceAttributes)})` : Prisma.empty}
+						${
+							filterSalesDataDto.clients.length
+								? Prisma.sql`
+						AND EXISTS (
+							SELECT 1
+							FROM "RetailSalesData" AS sub
+							WHERE sub."client" = "retailSalesData"."client"
+							AND sub."client" IN (${Prisma.join(filterSalesDataDto.clients)})
+						)
+						`
+													: Prisma.empty
+											}
+						${
+							filterSalesDataDto.storehouses.length
+								? Prisma.sql`
+						AND EXISTS (
+							SELECT 1
+							FROM "RetailSalesData" AS sub
+							WHERE sub."storehouse" = "retailSalesData"."storehouse"
+							AND sub."storehouse" IN (${Prisma.join(filterSalesDataDto.storehouses)})
+						)
+						`
+								: Prisma.empty
+						}
+						${
+							filterSalesDataDto.categories.length
+								? Prisma.sql`
+						AND EXISTS (
+							SELECT 1
+							FROM "RetailSalesData" AS sub
+							WHERE sub."category" = "retailSalesData"."category"
+							AND sub."category" IN (${Prisma.join(filterSalesDataDto.categories)})
+						)
+						`
+								: Prisma.empty
+						}
+						${
+							filterSalesDataDto.receiptTypes.length
+								? Prisma.sql`
+						AND EXISTS (
+							SELECT 1
+							FROM "RetailSalesData" AS sub
+							WHERE sub."receiptType" = "retailSalesData"."receiptType"
+							AND sub."receiptType" IN (${Prisma.join(filterSalesDataDto.receiptTypes)})
+						)
+						`
+								: Prisma.empty
+						}
+						${
+							filterSalesDataDto.sourceAttributes.length
+								? Prisma.sql`
+						AND EXISTS (
+							SELECT 1
+							FROM "RetailSalesData" AS sub
+							WHERE sub."sourceAttribute" = "retailSalesData"."sourceAttribute"
+							AND sub."sourceAttribute" IN (${Prisma.join(filterSalesDataDto.sourceAttributes)})
+						)
+						`
+								: Prisma.empty
+						}
 					`
 				);
 				console.timeEnd("queryRaw");
