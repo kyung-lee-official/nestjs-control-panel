@@ -17,7 +17,7 @@ const sharedkanbanFilterStateSchema = z.object({
 	categories: z.array(z.string()),
 	receiptTypes: z.array(z.string()),
 	sourceAttributes: z.array(z.string()),
-	skus: z.union([skuSchema, z.array(skuSchema), z.null()]),
+	skus: z.array(skuSchema),
 });
 
 export const kanbanFilterStateSchema = z.discriminatedUnion("dateMode", [

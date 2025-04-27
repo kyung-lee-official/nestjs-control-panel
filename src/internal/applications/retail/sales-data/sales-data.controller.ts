@@ -11,12 +11,13 @@ import {
 } from "@nestjs/common";
 import { SalesDataService } from "./sales-data.service";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiTags } from "@nestjs/swagger";
 import {
 	FilterSalesDataDto,
 	kanbanFilterStateSchema,
 } from "./dto/filter-sales-date.dto";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
+import { filterSalesDataBodyOptions } from "./swagger/filter-sales-date.swagger";
 
 @ApiTags("Retail Sales Data")
 @Controller("internal/retail/sales-data")
@@ -44,6 +45,7 @@ export class SalesDataController {
 		return await this.salesDataService.searchSku(term);
 	}
 
+	@ApiBody(filterSalesDataBodyOptions)
 	@Post("filter-sales-data")
 	async filterSalesData(
 		@Body(new ZodValidationPipe(kanbanFilterStateSchema))

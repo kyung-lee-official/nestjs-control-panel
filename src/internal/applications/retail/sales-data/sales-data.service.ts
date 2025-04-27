@@ -119,52 +119,94 @@ export class SalesDataService {
 		switch (dateMode) {
 			case "range":
 				const { start, end } = filterSalesDataDto.dateRange;
-				const data = await this.prismaService.retailSalesData.findMany({
-					where: {
-						date: {
-							gte: start,
-							lte: end,
-						},
-						client: filterSalesDataDto.clients.length
-							? {
-									in: filterSalesDataDto.clients,
-								}
-							: Prisma.skip,
-						storehouse: filterSalesDataDto.storehouses.length
-							? {
-									in: filterSalesDataDto.storehouses,
-								}
-							: Prisma.skip,
-						category: filterSalesDataDto.categories.length
-							? {
-									in: filterSalesDataDto.categories,
-								}
-							: Prisma.skip,
-						product: (filterSalesDataDto.skus as Sku[]).length
-							? {
-									sku: {
-										in: (
-											filterSalesDataDto.skus as Sku[]
-										).map((sku) => sku.sku),
-									},
-								}
-							: Prisma.skip,
-						receiptType: filterSalesDataDto.receiptTypes.length
-							? {
-									in: filterSalesDataDto.receiptTypes,
-								}
-							: Prisma.skip,
-						sourceAttribute: filterSalesDataDto.sourceAttributes
-							.length
-							? {
-									in: filterSalesDataDto.sourceAttributes,
-								}
-							: Prisma.skip,
-					},
-					include: {
-						product: true,
-					},
-				});
+
+				/* findManyQuery: 5.452s */
+				// console.time("findManyQuery");
+				// const data = await this.prismaService.retailSalesData.findMany({
+				// 	where: {
+				// 		date: {
+				// 			gte: start,
+				// 			lte: end,
+				// 		},
+				// 		client: filterSalesDataDto.clients.length
+				// 			? {
+				// 					in: filterSalesDataDto.clients,
+				// 				}
+				// 			: Prisma.skip,
+				// 		storehouse: filterSalesDataDto.storehouses.length
+				// 			? {
+				// 					in: filterSalesDataDto.storehouses,
+				// 				}
+				// 			: Prisma.skip,
+				// 		category: filterSalesDataDto.categories.length
+				// 			? {
+				// 					in: filterSalesDataDto.categories,
+				// 				}
+				// 			: Prisma.skip,
+				// 		product: (filterSalesDataDto.skus as Sku[]).length
+				// 			? {
+				// 					sku: {
+				// 						in: (
+				// 							filterSalesDataDto.skus as Sku[]
+				// 						).map((sku) => sku.sku),
+				// 					},
+				// 				}
+				// 			: Prisma.skip,
+				// 		receiptType: filterSalesDataDto.receiptTypes.length
+				// 			? {
+				// 					in: filterSalesDataDto.receiptTypes,
+				// 				}
+				// 			: Prisma.skip,
+				// 		sourceAttribute: filterSalesDataDto.sourceAttributes
+				// 			.length
+				// 			? {
+				// 					in: filterSalesDataDto.sourceAttributes,
+				// 				}
+				// 			: Prisma.skip,
+				// 	},
+				// 	include: {
+				// 		product: true,
+				// 	},
+				// });
+				// console.timeEnd("findManyQuery");
+
+				const data = await this.prismaService.$queryRaw<
+					{
+						id: bigint;
+						date: string;
+						client: string;
+						storehouse: string;
+						category: string;
+						receiptType: string;
+						sourceAttribute: string;
+						productId: number;
+					}[]
+				>(
+					Prisma.sql`
+					SELECT 
+						CAST("retailSalesData"."id" AS TEXT) AS "id", -- convert id to string
+						"retailSalesData".*,
+						"product"."sku" AS "productSku",
+						"product"."nameZhCn" AS "productNameZhCn"
+					FROM 
+						"RetailSalesData" AS "retailSalesData"
+					LEFT JOIN 
+						"RetailSalesDataProduct" AS "product"
+					ON 
+						"retailSalesData"."productId" = "product"."id"
+					WHERE 
+						"retailSalesData"."date" >= CAST(${start} AS timestamp without time zone) AND
+						"retailSalesData"."date" <= CAST(${end} AS timestamp without time zone)
+						${filterSalesDataDto.clients.length ? Prisma.sql`AND "retailSalesData"."client" IN (${Prisma.join(filterSalesDataDto.clients)})` : Prisma.empty}
+						${filterSalesDataDto.storehouses.length ? Prisma.sql`AND "retailSalesData"."storehouse" IN (${Prisma.join(filterSalesDataDto.storehouses)})` : Prisma.empty}
+						${filterSalesDataDto.categories.length ? Prisma.sql`AND "retailSalesData"."category" IN (${Prisma.join(filterSalesDataDto.categories)})` : Prisma.empty}
+						${filterSalesDataDto.skus.length ? Prisma.sql`AND "product"."sku" IN (${Prisma.join(filterSalesDataDto.skus.map((sku) => sku.sku))})` : Prisma.empty}
+						${filterSalesDataDto.receiptTypes.length ? Prisma.sql`AND "retailSalesData"."receiptType" IN (${Prisma.join(filterSalesDataDto.receiptTypes)})` : Prisma.empty}
+						${filterSalesDataDto.sourceAttributes.length ? Prisma.sql`AND "retailSalesData"."sourceAttribute" IN (${Prisma.join(filterSalesDataDto.sourceAttributes)})` : Prisma.empty}
+					`
+				);
+
+				/* mapData: 129.535ms */
 				const mappedData = data.map((item) => {
 					return {
 						...item,
@@ -172,6 +214,7 @@ export class SalesDataService {
 					};
 				});
 
+				/* availableData: 998.051ms */
 				/* clients */
 				const availableClients = [
 					...new Set(mappedData.map((d) => d.client)),
@@ -233,7 +276,6 @@ export class SalesDataService {
 				const allSourceAttributes = dbSourceAttributes.map(
 					(s) => s.sourceAttribute
 				);
-
 				return {
 					retailSalesData: mappedData,
 					clients: {
