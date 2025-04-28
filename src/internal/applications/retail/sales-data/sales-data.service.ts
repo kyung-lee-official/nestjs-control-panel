@@ -208,8 +208,8 @@ export class SalesDataService {
 							AND sub."client" IN (${Prisma.join(filterSalesDataDto.clients)})
 						)
 						`
-													: Prisma.empty
-											}
+								: Prisma.empty
+						}
 						${
 							filterSalesDataDto.storehouses.length
 								? Prisma.sql`
@@ -395,5 +395,23 @@ export class SalesDataService {
 			result.push(array.slice(i, i + chunkSize));
 		}
 		return result;
+	}
+
+	async performanceTest() {
+		if (process.env.ENV !== "DEV") {
+			return;
+		}
+		console.time("performanceTest");
+		const data = await this.prismaService.$queryRaw(
+			Prisma.sql`
+			SELECT
+				CAST("RetailSalesData"."id" AS TEXT) AS "id", -- convert id to string
+				"RetailSalesData".*
+			FROM
+				"RetailSalesData"
+			`
+		);
+		console.timeEnd("performanceTest");
+		return null;
 	}
 }

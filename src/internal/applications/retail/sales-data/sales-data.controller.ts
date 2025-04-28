@@ -53,4 +53,9 @@ export class SalesDataController {
 	) {
 		return await this.salesDataService.filterSalesData(filterSalesDataDto);
 	}
+
+	@Get("performance-test")
+	async performanceTest() {
+		return await this.salesDataService.performanceTest();
+	}
 }
