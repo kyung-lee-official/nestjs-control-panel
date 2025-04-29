@@ -45,6 +45,11 @@ export class SalesDataController {
 		return await this.salesDataService.searchSku(term);
 	}
 
+	@Get("get-all-skus")
+	async getAllSkus() {
+		return await this.salesDataService.getAllSkus();
+	}
+
 	@ApiBody(filterSalesDataBodyOptions)
 	@Post("filter-sales-data")
 	async filterSalesData(

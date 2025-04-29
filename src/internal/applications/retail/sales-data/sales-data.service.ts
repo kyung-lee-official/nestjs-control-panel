@@ -114,6 +114,11 @@ export class SalesDataService {
 		return sku;
 	}
 
+	async getAllSkus() {
+		const skus = await this.prismaService.retailSalesDataProduct.findMany();
+		return skus;
+	}
+
 	async filterSalesData(filterSalesDataDto: FilterSalesDataDto) {
 		const { dateMode, ...rest } = filterSalesDataDto;
 		switch (dateMode) {
