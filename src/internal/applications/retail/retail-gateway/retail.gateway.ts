@@ -4,11 +4,18 @@ import { Injectable } from "@nestjs/common";
 
 @Injectable() /* make it injectable */
 @WebSocketGateway({ namespace: "retail", cors: true })
-export class ProgressTrackingGateway {
+export class RetailGateway {
 	@WebSocketServer()
 	server!: Server;
 
-	sendProgress(data: { progress: number }) {
+	afterInit() {
+		console.log("retail Websockets initialized");
+	}
+
+	sendRatailSalesDataSavingProgress(data: {
+		batchId: number;
+		percentage: number;
+	}) {
 		this.server.emit("retail-sales-data-saving-progress", data);
 	}
 

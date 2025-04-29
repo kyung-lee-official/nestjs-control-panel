@@ -1,14 +1,13 @@
 import { Processor, WorkerHost, OnWorkerEvent } from "@nestjs/bullmq";
 import { Job } from "bullmq";
-import { ProgressTrackingGateway } from "./progress-tracking.gateway";
 import { PrismaService } from "src/prisma/prisma.service";
 import { RetailSalesReqData } from "./dto/create-sales-data.dto";
-import { Prisma } from "@prisma/client";
+import { RetailGateway } from "../retail-gateway/retail.gateway";
 
 @Processor("import-retail-sales-data")
 export class ImportRetailSalesDataWorkerService extends WorkerHost {
 	constructor(
-		private readonly progressTrackingGateway: ProgressTrackingGateway,
+		private readonly retailGateway: RetailGateway,
 		private readonly prismaService: PrismaService
 	) {
 		/* inject the gateway */
@@ -64,8 +63,9 @@ export class ImportRetailSalesDataWorkerService extends WorkerHost {
 			}
 		});
 
-		this.progressTrackingGateway.sendProgress({
-			progress: (currenJobIndex / totalJobs) * 100,
+		this.retailGateway.sendRatailSalesDataSavingProgress({
+			batchId,
+			percentage: (currenJobIndex / totalJobs) * 100,
 		});
 		return { success: true };
 	}
@@ -76,7 +76,7 @@ export class ImportRetailSalesDataWorkerService extends WorkerHost {
 		const { meta, payload } = data;
 		/* disconnect if all jobs are done */
 		if (meta.currenJobIndex === meta.totalJobs) {
-			this.progressTrackingGateway.disconnect();
+			this.retailGateway.disconnect();
 		}
 	}
 }

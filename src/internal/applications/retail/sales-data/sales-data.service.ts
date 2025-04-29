@@ -36,7 +36,7 @@ export class SalesDataService {
 				{}
 			);
 
-			const chunkifiedData = this.chunkifyArray(parsedData, 10);
+			const chunkifiedData = this.chunkifyArray(parsedData, 200);
 			for (const [i, chunk] of chunkifiedData.entries()) {
 				await this.importRetailSalesDataQueueService.addJob({
 					meta: {

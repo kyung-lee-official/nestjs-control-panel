@@ -5,7 +5,7 @@ import { BullModule } from "@nestjs/bullmq";
 import { PrismaModule } from "src/prisma/prisma.module";
 import { ImportRetailSalesDataQueueService } from "./import-retail-sales-data-queue.service";
 import { ImportRetailSalesDataWorkerService } from "./import-retail-sales-data-worker.service";
-import { ProgressTrackingGateway } from "./progress-tracking.gateway";
+import { RetailGatewayModule } from "../retail-gateway/retail-gateway.module";
 
 @Module({
 	imports: [
@@ -13,13 +13,13 @@ import { ProgressTrackingGateway } from "./progress-tracking.gateway";
 			name: "import-retail-sales-data",
 		}),
 		PrismaModule,
+		RetailGatewayModule,
 	],
 	controllers: [SalesDataController],
 	providers: [
 		SalesDataService,
 		ImportRetailSalesDataQueueService,
 		ImportRetailSalesDataWorkerService,
-		ProgressTrackingGateway,
 	],
 })
 export class SalesDataModule {}
