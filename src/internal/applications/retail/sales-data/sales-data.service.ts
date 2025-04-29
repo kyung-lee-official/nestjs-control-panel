@@ -263,6 +263,22 @@ export class SalesDataService {
 						`
 								: Prisma.empty
 						}
+						${
+							(filterSalesDataDto.skus as Sku[]).length
+								? Prisma.sql`
+						AND EXISTS (
+							SELECT 1
+							FROM "RetailSalesDataProduct" AS sub
+							WHERE sub."id" = "retailSalesData"."productId"
+							AND sub."sku" IN (${Prisma.join(
+								(filterSalesDataDto.skus as Sku[]).map(
+									(sku) => sku.sku
+								)
+							)})
+						)
+						`
+								: Prisma.empty
+						}
 					`
 				);
 				console.timeEnd("queryRaw");
