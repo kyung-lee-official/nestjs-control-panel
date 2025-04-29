@@ -419,9 +419,6 @@ export class SalesDataService {
 	}
 
 	async performanceTest() {
-		if (process.env.ENV !== "DEV") {
-			return;
-		}
 		console.time("performanceTest");
 		const data = await this.prismaService.$queryRaw(
 			Prisma.sql`

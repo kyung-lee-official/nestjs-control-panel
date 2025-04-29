@@ -61,6 +61,11 @@ export class SalesDataController {
 
 	@Get("performance-test")
 	async performanceTest() {
+		if (process.env.ENV !== "DEV") {
+			return {
+				message: "This endpoint is only available in development mode.",
+			};
+		}
 		return await this.salesDataService.performanceTest();
 	}
 }
