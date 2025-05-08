@@ -7,6 +7,7 @@ import { JwtModule } from "@nestjs/jwt";
 import { LogModule } from "../log/log.module";
 import { UtilsModule } from "src/utils/utils.module";
 import { CerbosModule } from "src/cerbos/cerbos.module";
+import { ResendModule } from "src/resend/resend.module";
 
 @Module({
 	imports: [
@@ -16,10 +17,11 @@ import { CerbosModule } from "src/cerbos/cerbos.module";
 			signOptions: { expiresIn: "24h" },
 		}),
 		PrismaModule,
+		ResendModule,
 		EmailModule,
 		LogModule,
 		UtilsModule,
-		CerbosModule
+		CerbosModule,
 	],
 	controllers: [AuthenticationController],
 	providers: [AuthenticationService],

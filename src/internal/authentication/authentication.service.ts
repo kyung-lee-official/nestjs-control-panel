@@ -22,6 +22,7 @@ import { UpdateMyPasswordDto } from "./dto/update-my-password.dto";
 import { REQUEST } from "@nestjs/core";
 import { LogService } from "../log/log.service";
 import { UtilsService } from "src/utils/utils.service";
+import { ResendService } from "src/resend/resend.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthenticationService {
@@ -32,7 +33,8 @@ export class AuthenticationService {
 		private readonly jwtService: JwtService,
 		private readonly utilsService: UtilsService,
 		private readonly logService: LogService,
-		private readonly emailService: EmailService
+		private readonly emailService: EmailService,
+		private readonly resendService: ResendService
 	) {}
 
 	async signUp(signUpDto: SignUpDto) {
@@ -61,7 +63,30 @@ export class AuthenticationService {
 				memberRoles: true,
 			},
 		});
-		await this.emailService.sendVerificationEmail(email);
+
+		/* send verification email */
+		const payload = { email };
+		const token: string = this.jwtService.sign(payload, {
+			secret: process.env.SMTP_JWT_SECRET,
+			expiresIn: "1d",
+		});
+		const htmlTemplate = (url: string) => `
+			<div style="text-align: center; font-family: sans-serif; border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f5f5f5; max-width: 500px; margin: 0 auto;">
+				<h1>Verify your email 📧</h1>
+				<p>Please verify your email by clicking on the following link:</p>
+				<a href="${url}">👉🏼 Click here</a>
+			</div>
+		`;
+		const html = htmlTemplate(
+			`${process.env.FRONTEND_HOST}/sign-up/email-verification?token=${token}`
+		);
+
+		await this.resendService.sendEmail(
+			email,
+			"Please verify your email address 📧",
+			html
+		);
+
 		return member;
 	}
 
