@@ -14,18 +14,18 @@ import { PrismaService } from "../../prisma/prisma.service";
 import { Member, Prisma } from "@prisma/client";
 import { FindMembersDto } from "./dto/find-members.dto";
 import { MemberWithoutPassword } from "../../utils/types";
-import { EmailService } from "../email/email.service";
 import { UpdateMemberProfileDto } from "./dto/update-member-profile.dto";
 import { UtilsService } from "src/utils/utils.service";
 import { CheckResourceRequest } from "@cerbos/core";
 import { CerbosService } from "src/cerbos/cerbos.service";
+import { ResendService } from "src/resend/resend.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class MembersService {
 	constructor(
 		@Inject(REQUEST)
 		private readonly request: any,
-		private readonly emailService: EmailService,
+		private readonly resendService: ResendService,
 		private readonly prismaService: PrismaService,
 		private readonly utilsService: UtilsService,
 		private readonly cerbosService: CerbosService
@@ -71,7 +71,18 @@ export class MembersService {
 				memberRoles: true,
 			},
 		});
-		this.emailService.sendInitialPasswordEmail(email, password);
+		/* send initial password email */
+		const htmlTemplate = (password: string) => `
+						<div style="text-align: center; font-family: sans-serif; border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f5f5f5; max-width: 500px; margin: 0 auto;">
+							<h1>Hi, this is your initial password: 🗝️</h1>
+							<p>${password}</p>
+						</div>
+					`;
+		await this.resendService.sendEmail(
+			email,
+			"Your initial password 🗝️",
+			htmlTemplate(password)
+		);
 		return member;
 	}
 

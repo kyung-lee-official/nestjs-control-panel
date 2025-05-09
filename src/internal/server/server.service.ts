@@ -7,7 +7,6 @@ import {
 	Scope,
 } from "@nestjs/common";
 import { SeedServerDto } from "./dto/seed-server.dto";
-import { EmailService } from "../email/email.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import bcrypt from "bcrypt";
 import { MemberServerSetting } from "@prisma/client";
@@ -16,6 +15,8 @@ import { REQUEST } from "@nestjs/core";
 import { CheckResourceRequest } from "@cerbos/core";
 import { UtilsService } from "src/utils/utils.service";
 import { CerbosService } from "src/cerbos/cerbos.service";
+import { JwtService } from "@nestjs/jwt";
+import { ResendService } from "src/resend/resend.service";
 
 @Injectable({ scope: Scope.REQUEST })
 export class ServerService {
@@ -23,9 +24,10 @@ export class ServerService {
 		@Inject(REQUEST)
 		private readonly request: any,
 		private readonly prismaService: PrismaService,
-		private readonly emailService: EmailService,
+		private readonly jwtService: JwtService,
 		private readonly utilsService: UtilsService,
-		private readonly cerbosService: CerbosService
+		private readonly cerbosService: CerbosService,
+		private readonly resendService: ResendService
 	) {}
 
 	async permissions() {
@@ -107,7 +109,29 @@ export class ServerService {
 			},
 		});
 
-		await this.emailService.sendVerificationEmail(email);
+		/* send verification email */
+		const payload = { email };
+		const token: string = this.jwtService.sign(payload, {
+			secret: process.env.SMTP_JWT_SECRET,
+			expiresIn: "1d",
+		});
+		const htmlTemplate = (url: string) => `
+			<div style="text-align: center; font-family: sans-serif; border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f5f5f5; max-width: 500px; margin: 0 auto;">
+				<h1>Verify your email 📧</h1>
+				<p>Please verify your email by clicking on the following link:</p>
+				<a href="${url}">👉🏼 Click here</a>
+			</div>
+		`;
+		const html = htmlTemplate(
+			`${process.env.FRONTEND_HOST}/sign-up/email-verification?token=${token}`
+		);
+
+		await this.resendService.sendEmail(
+			email,
+			"Please verify your email address 📧",
+			html
+		);
+
 		return member;
 	}
 

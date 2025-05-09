@@ -4,7 +4,6 @@ import { MembersModule } from "./internal/members/members.module";
 import { RolesModule as InternalRolesModule } from "./internal/roles/roles.module";
 import { AuthenticationModule } from "./internal/authentication/authentication.module";
 import { ServerModule } from "./internal/server/server.module";
-import { EmailModule } from "./internal/email/email.module";
 import { EventTemplatesModule } from "./internal/applications/performances/event-templates/event-templates.module";
 import { StatsModule } from "./internal/applications/performances/stats/stats.module";
 import { EventsModule } from "./internal/applications/performances/events/events.module";
@@ -13,6 +12,7 @@ import { YoutubeDataCollectorModule } from "./internal/applications/sns-crawler/
 import { LogModule } from "./internal/log/log.module";
 import { SectionsModule } from "./internal/applications/performances/sections/sections.module";
 import { SalesDataModule } from "./internal/applications/retail/sales-data/sales-data.module";
+import { ResendModule } from "./resend/resend.module";
 
 export function setupSwagger(app: INestApplication<any>) {
 	const membersOption = new DocumentBuilder()
@@ -25,7 +25,7 @@ export function setupSwagger(app: INestApplication<any>) {
 		include: [
 			ServerModule,
 			AuthenticationModule,
-			EmailModule,
+			ResendModule,
 			MembersModule,
 			InternalRolesModule,
 			LogModule,

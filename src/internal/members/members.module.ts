@@ -6,6 +6,7 @@ import { AuthenticationModule } from "../authentication/authentication.module";
 import { EmailModule } from "../email/email.module";
 import { UtilsModule } from "src/utils/utils.module";
 import { CerbosModule } from "src/cerbos/cerbos.module";
+import { ResendModule } from "src/resend/resend.module";
 
 @Module({
 	imports: [
@@ -14,6 +15,7 @@ import { CerbosModule } from "src/cerbos/cerbos.module";
 		EmailModule,
 		UtilsModule,
 		CerbosModule,
+		ResendModule,
 	],
 	controllers: [MembersController],
 	providers: [MembersService],

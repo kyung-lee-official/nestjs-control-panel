@@ -34,7 +34,7 @@ import {
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 
 @ApiTags("Email")
-@Controller("email")
+@Controller("email-smtp")
 export class EmailController {
 	constructor(private readonly emailService: EmailService) {}
 

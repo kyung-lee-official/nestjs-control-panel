@@ -13,11 +13,9 @@ import { SignInDto } from "./dto/signin.dto";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "src/prisma/prisma.service";
 import bcrypt from "bcrypt";
-import { EmailService } from "../email/email.service";
 import axios from "axios";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { CredentialData, getCredential } from "qcloud-cos-sts";
-import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { UpdateMyPasswordDto } from "./dto/update-my-password.dto";
 import { REQUEST } from "@nestjs/core";
 import { LogService } from "../log/log.service";
@@ -33,7 +31,6 @@ export class AuthenticationService {
 		private readonly jwtService: JwtService,
 		private readonly utilsService: UtilsService,
 		private readonly logService: LogService,
-		private readonly emailService: EmailService,
 		private readonly resendService: ResendService
 	) {}
 
@@ -88,39 +85,6 @@ export class AuthenticationService {
 		);
 
 		return member;
-	}
-
-	async verifyEmail(verifyEmailDto: VerifyEmailDto) {
-		const { verificationToken } = verifyEmailDto;
-		let payload: any;
-		try {
-			payload = this.jwtService.verify(verificationToken, {
-				secret: process.env.SMTP_JWT_SECRET,
-			});
-		} catch (error) {
-			if (error instanceof Error) {
-				throw new UnauthorizedException(error.message);
-			} else {
-				throw new UnauthorizedException("Unknown error");
-			}
-		}
-		const member = await this.prismaService.member.findUnique({
-			where: {
-				email: payload.email,
-			},
-		});
-		if (!member) {
-			throw new BadRequestException("Member not found");
-		}
-		await this.prismaService.member.update({
-			where: {
-				email: payload.email,
-			},
-			data: {
-				isVerified: true,
-			},
-		});
-		return { isVerified: true };
 	}
 
 	async signIn(signInDto: SignInDto) {
@@ -276,7 +240,18 @@ export class AuthenticationService {
 					});
 					const payload = { email: email };
 					const accessToken: string = this.jwtService.sign(payload);
-					this.emailService.sendInitialPasswordEmail(email, password);
+					/* send initial password email */
+					const htmlTemplate = (password: string) => `
+						<div style="text-align: center; font-family: sans-serif; border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f5f5f5; max-width: 500px; margin: 0 auto;">
+							<h1>Hi, this is your initial password: 🗝️</h1>
+							<p>${password}</p>
+						</div>
+					`;
+					await this.resendService.sendEmail(
+						email,
+						"Your initial password 🗝️",
+						htmlTemplate(password)
+					);
 					return {
 						isSeedMember: false,
 						isNewMember: true,
@@ -324,7 +299,19 @@ export class AuthenticationService {
 				});
 				const payload = { email: email };
 				const accessToken: string = this.jwtService.sign(payload);
-				this.emailService.sendInitialPasswordEmail(email, password);
+				/* send initial password email */
+				const htmlTemplate = (password: string) => `
+						<div style="text-align: center; font-family: sans-serif; border: 1px solid #ccc; border-radius: 5px; padding: 20px; background-color: #f5f5f5; max-width: 500px; margin: 0 auto;">
+							<h1>Hi, this is your initial password: 🗝️</h1>
+							<p>${password}</p>
+						</div>
+					`;
+				await this.resendService.sendEmail(
+					email,
+					"Your initial password 🗝️",
+					htmlTemplate(password)
+				);
+
 				return {
 					isSeedMember: true,
 					isNewMember: true,

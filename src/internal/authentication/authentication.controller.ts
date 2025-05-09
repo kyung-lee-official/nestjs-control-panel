@@ -66,12 +66,6 @@ import {
 	getTencentCosTempCredentialApiOperationOptions,
 } from "./swagger/tencent-cos-temp-credential.swagger";
 import { CredentialData } from "qcloud-cos-sts";
-import {
-	verifyEmailBodyOptions,
-	verifyEmailOkResponseOptions,
-	verifyEmailOperationOptions,
-} from "./swagger/verify-email.swagger";
-import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import {
 	UpdateMyPasswordDto,
@@ -101,16 +95,6 @@ export class AuthenticationController {
 	@Post("sign-up")
 	async signUp(@Body() signUpDto: SignUpDto) {
 		return await this.authenticationService.signUp(signUpDto);
-	}
-
-	@ApiOperation(verifyEmailOperationOptions)
-	@ApiBody(verifyEmailBodyOptions)
-	@ApiOkResponse(verifyEmailOkResponseOptions)
-	@Post("/verify-email")
-	async verifyEmail(
-		@Body() verifyEmailDto: VerifyEmailDto
-	): Promise<{ isVerified: boolean }> {
-		return await this.authenticationService.verifyEmail(verifyEmailDto);
 	}
 
 	@ApiOperation(signInOperationOptions)

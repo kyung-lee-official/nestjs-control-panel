@@ -4,13 +4,12 @@ import {
 	ApiResponseOptions,
 } from "@nestjs/swagger";
 
-export const verifyEmailOperationOptions: ApiOperationOptions = {
-	description: `# Verify the Member's Email
-Verify the member's email with the verification token sent to the member's email
-`,
+export const verifyNewEmailApiOperationOptions: ApiOperationOptions = {
+	description: `# Verify the Member's New Email
+Verify the member's new email with the verification token sent to the member's new email`,
 };
 
-export const verifyEmailBodyOptions: ApiBodyOptions = {
+export const verifyNewEmailApiBodyOptions: ApiBodyOptions = {
 	description: "Verification token",
 	examples: {
 		"Verification token": {
@@ -22,7 +21,7 @@ export const verifyEmailBodyOptions: ApiBodyOptions = {
 	},
 };
 
-export const verifyEmailOkResponseOptions: ApiResponseOptions = {
+export const verifyNewEmailOkResponseOptions: ApiResponseOptions = {
 	description: "Return true if the email is verified",
 	content: {
 		"application/json": {
