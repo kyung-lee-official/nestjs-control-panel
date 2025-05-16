@@ -147,9 +147,10 @@ export class FacebookGroupService {
 					},
 					data: {
 						status: crawlRes.data.crawledDatum.status,
-						memberCount: crawlRes.data.crawledDatum.memberCount,
+						memberCount:
+							crawlRes.data.crawledDatum.memberCount ?? 0,
 						monthlyPostCount:
-							crawlRes.data.crawledDatum.monthlyPostCount,
+							crawlRes.data.crawledDatum.monthlyPostCount ?? 0,
 					},
 				});
 			} catch (error) {
@@ -237,9 +238,10 @@ export class FacebookGroupService {
 					},
 					data: {
 						status: crawlRes.data.crawledDatum.status,
-						memberCount: crawlRes.data.crawledDatum.memberCount,
+						memberCount:
+							crawlRes.data.crawledDatum.memberCount ?? 0,
 						monthlyPostCount:
-							crawlRes.data.crawledDatum.monthlyPostCount,
+							crawlRes.data.crawledDatum.monthlyPostCount ?? 0,
 					},
 				});
 			} catch (error) {
