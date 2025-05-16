@@ -52,6 +52,10 @@ export async function searchKeyword(
 			/* At least one video found */
 			const videoIds: string[] = [];
 			for (const video of pageResults.data.items) {
+				if (video.id.videoId === undefined) {
+					/* Skip if the videoId is not found */
+					continue;
+				}
 				/* Get search result of the current video */
 				const searchResult: SearchResultStruct = {
 					keyword: keyword,
