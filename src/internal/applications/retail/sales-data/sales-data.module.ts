@@ -6,6 +6,8 @@ import { PrismaModule } from "src/prisma/prisma.module";
 import { ImportRetailSalesDataQueueService } from "./import-retail-sales-data-queue.service";
 import { ImportRetailSalesDataWorkerService } from "./import-retail-sales-data-worker.service";
 import { RetailGatewayModule } from "../retail-gateway/retail-gateway.module";
+import { CerbosModule } from "src/cerbos/cerbos.module";
+import { UtilsModule } from "src/utils/utils.module";
 
 @Module({
 	imports: [
@@ -14,6 +16,8 @@ import { RetailGatewayModule } from "../retail-gateway/retail-gateway.module";
 		}),
 		PrismaModule,
 		RetailGatewayModule,
+		UtilsModule,
+		CerbosModule,
 	],
 	controllers: [SalesDataController],
 	providers: [

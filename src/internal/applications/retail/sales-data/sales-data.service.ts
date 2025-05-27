@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { ImportRetailSalesDataQueueService } from "./import-retail-sales-data-queue.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import * as zlib from "zlib";
@@ -8,13 +8,44 @@ import {
 } from "./dto/create-sales-data.dto";
 import { FilterSalesDataDto, Sku } from "./dto/filter-sales-date.dto";
 import { Prisma } from "@prisma/client";
+import { REQUEST } from "@nestjs/core";
+import { UtilsService } from "src/utils/utils.service";
+import { CheckResourceRequest, Resource } from "@cerbos/core";
+import { CerbosService } from "src/cerbos/cerbos.service";
 
 @Injectable()
 export class SalesDataService {
 	constructor(
+		@Inject(REQUEST)
+		private readonly request: any,
 		private readonly importRetailSalesDataQueueService: ImportRetailSalesDataQueueService,
-		private readonly prismaService: PrismaService
+		private readonly utilsService: UtilsService,
+		private readonly prismaService: PrismaService,
+		private readonly cerbosService: CerbosService
 	) {}
+
+	async permissions() {
+		const { requester } = this.request;
+		const principal = await this.utilsService.getCerbosPrincipal(requester);
+		const actions = ["*"];
+
+		const resource: Resource = {
+			kind: "internal:applications:retail:sales-data",
+			id: "*",
+		};
+
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			actions: actions,
+			resource: resource,
+		};
+
+		console.log(checkResourceRequest);
+
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
+		return decision;
+	}
 
 	async import(data: Express.Multer.File) {
 		if (!data) {
