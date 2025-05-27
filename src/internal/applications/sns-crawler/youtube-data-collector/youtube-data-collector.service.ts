@@ -1,5 +1,6 @@
 import {
 	BadRequestException,
+	Inject,
 	Injectable,
 	NotFoundException,
 } from "@nestjs/common";
@@ -15,6 +16,10 @@ import { SearchResultStruct } from "./utils/types";
 import { YouTubeDataGetSearchesDto } from "./dto/youtube-data-get-searches.dto";
 import { getChannelsDetail } from "./utils/getChannelsDetail";
 import { getVideosDetail } from "./utils/getVideoDetails";
+import { CheckResourceRequest, Resource } from "@cerbos/core";
+import { REQUEST } from "@nestjs/core";
+import { UtilsService } from "src/utils/utils.service";
+import { CerbosService } from "src/cerbos/cerbos.service";
 
 type Flags = {
 	tokenObj: {
@@ -46,7 +51,34 @@ export class YoutubeDataCollectorService {
 		targetResultCount: 500,
 	};
 
-	constructor(private readonly prismaService: PrismaService) {}
+	constructor(
+		@Inject(REQUEST)
+		private readonly request: any,
+		private readonly utilsService: UtilsService,
+		private readonly prismaService: PrismaService,
+		private readonly cerbosService: CerbosService
+	) {}
+
+	async permissions() {
+		const { requester } = this.request;
+		const principal = await this.utilsService.getCerbosPrincipal(requester);
+		const actions = ["*"];
+
+		const resource: Resource = {
+			kind: "internal:applications:retail:sns-crawler",
+			id: "*",
+		};
+
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			actions: actions,
+			resource: resource,
+		};
+
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
+		return decision;
+	}
 
 	async addToken(youtubeAddTokenDto: YouTubeAddTokenDto) {
 		return await this.prismaService.youTubeDataToken.create({

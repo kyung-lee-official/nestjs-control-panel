@@ -18,6 +18,7 @@ import { FacebookGroupUpdateSourceDto } from "./dto/facebook-group-update-source
 import { ZodValidationPipe } from "src/pipes/zod-validation.pipe";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
+import { SnsCrawlerGuard } from "../guards/sns-crawler.guard";
 
 @ApiTags("Facebook Group Crawler")
 @ApiBearerAuth()
@@ -26,6 +27,15 @@ import { JwtGuard } from "src/internal/authentication/guards/jwt.guard";
 export class FacebookGroupController {
 	constructor(private readonly facebookGroupService: FacebookGroupService) {}
 
+	@ApiOperation({
+		summary: "Get my permissions of SNS Crawler",
+	})
+	@Get("permissions")
+	async permissions() {
+		return await this.facebookGroupService.permissions();
+	}
+
+	@UseGuards(SnsCrawlerGuard)
 	@Patch("overwrite-source")
 	async overwriteSource(
 		@Body(new ZodValidationPipe(overwriteSourceSchema))
@@ -36,6 +46,7 @@ export class FacebookGroupController {
 		);
 	}
 
+	@UseGuards(SnsCrawlerGuard)
 	@Patch("update-source")
 	async updateSource(
 		@Body() facebookGroupUpdateSourceDto: FacebookGroupUpdateSourceDto
@@ -45,26 +56,31 @@ export class FacebookGroupController {
 		);
 	}
 
+	@UseGuards(SnsCrawlerGuard)
 	@Get("source")
 	async getSource() {
 		return await this.facebookGroupService.getSource();
 	}
 
+	@UseGuards(SnsCrawlerGuard)
 	@Post("create-task")
 	async createTask() {
 		return await this.facebookGroupService.createTask();
 	}
 
+	@UseGuards(SnsCrawlerGuard)
 	@Post("start-crawling/:taskId")
 	async crawl(@Param("taskId", ParseIntPipe) taskId: number) {
 		return await this.facebookGroupService.crawl(taskId);
 	}
 
+	@UseGuards(SnsCrawlerGuard)
 	@Post("recrawl-failed-records/:taskId")
 	async recrawlFailedRecords(@Param("taskId", ParseIntPipe) taskId: number) {
 		return await this.facebookGroupService.recrawlFailedRecords(taskId);
 	}
 
+	@UseGuards(SnsCrawlerGuard)
 	@Get("tasks")
 	async getTasks() {
 		return await this.facebookGroupService.getTasks();
@@ -73,21 +89,25 @@ export class FacebookGroupController {
 	@ApiOperation({
 		summary: "Get task by id, can be used to pool task status",
 	})
+	@UseGuards(SnsCrawlerGuard)
 	@Get("task/:taskId")
 	async getTaskById(@Param("taskId", ParseIntPipe) taskId: number) {
 		return await this.facebookGroupService.getTaskById(taskId);
 	}
 
+	@UseGuards(SnsCrawlerGuard)
 	@Post("abort-task")
 	async abortTask() {
 		return await this.facebookGroupService.abortTask();
 	}
 
+	@UseGuards(SnsCrawlerGuard)
 	@Get("status")
 	async getStatus() {
 		return await this.facebookGroupService.getStatus();
 	}
 
+	@UseGuards(SnsCrawlerGuard)
 	@Delete("delete-task/:taskId")
 	async remove(@Param("taskId", ParseIntPipe) taskId: number) {
 		return this.facebookGroupService.remove(taskId);

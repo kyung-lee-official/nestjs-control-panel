@@ -1,5 +1,6 @@
 import {
 	BadRequestException,
+	Inject,
 	Injectable,
 	InternalServerErrorException,
 	NotFoundException,
@@ -8,10 +9,41 @@ import { FacebookGroupOverwriteSourceDto } from "./dto/facebook-group-overwrite-
 import { FacebookGroupUpdateSourceDto } from "./dto/facebook-group-update-source.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import axios from "axios";
+import { REQUEST } from "@nestjs/core";
+import { UtilsService } from "src/utils/utils.service";
+import { CerbosService } from "src/cerbos/cerbos.service";
+import { CheckResourceRequest, Resource } from "@cerbos/core";
 
 @Injectable()
 export class FacebookGroupService {
-	constructor(private readonly prismaService: PrismaService) {}
+	constructor(
+		@Inject(REQUEST)
+		private readonly request: any,
+		private readonly utilsService: UtilsService,
+		private readonly prismaService: PrismaService,
+		private readonly cerbosService: CerbosService
+	) {}
+
+	async permissions() {
+		const { requester } = this.request;
+		const principal = await this.utilsService.getCerbosPrincipal(requester);
+		const actions = ["*"];
+
+		const resource: Resource = {
+			kind: "internal:applications:retail:sns-crawler",
+			id: "*",
+		};
+
+		const checkResourceRequest: CheckResourceRequest = {
+			principal: principal,
+			actions: actions,
+			resource: resource,
+		};
+
+		const decision =
+			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
+		return decision;
+	}
 
 	async overwriteSource(
 		facebookGroupOverwriteSourceDto: FacebookGroupOverwriteSourceDto
