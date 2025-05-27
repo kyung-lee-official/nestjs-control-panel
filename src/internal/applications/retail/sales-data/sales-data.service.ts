@@ -40,8 +40,6 @@ export class SalesDataService {
 			resource: resource,
 		};
 
-		console.log(checkResourceRequest);
-
 		const decision =
 			await this.cerbosService.cerbos.checkResource(checkResourceRequest);
 		return decision;
