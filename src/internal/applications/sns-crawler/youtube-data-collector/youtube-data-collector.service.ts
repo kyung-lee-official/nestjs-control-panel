@@ -749,9 +749,16 @@ export class YoutubeDataCollectorService {
 						status: YouTubeDataTaskKeywordStatus.SUCCESS,
 					},
 				});
+			const uniqufiedSearches = searches.filter((s, i, a) => {
+				return (
+					a.findIndex((d) => d.videoId === s.videoId) === i &&
+					s.videoId !== null &&
+					s.videoId !== undefined
+				);
+			});
 			const dbSearches =
 				await this.prismaService.youTubeDataApiSearch.createMany({
-					data: searches.map((s) => {
+					data: uniqufiedSearches.map((s) => {
 						return {
 							keyword: keyword.keyword,
 							videoId: s.videoId,
