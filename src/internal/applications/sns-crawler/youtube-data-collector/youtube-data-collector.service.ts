@@ -749,9 +749,20 @@ export class YoutubeDataCollectorService {
 						status: YouTubeDataTaskKeywordStatus.SUCCESS,
 					},
 				});
-			const uniqufiedSearches = searches.filter((s, i, a) => {
+
+			/* check duplicate search before inserting */
+			const existingSearches =
+				await this.prismaService.youTubeDataApiSearch.findMany({
+					where: {
+						youTubeDataTaskId: this.meta.taskId as number,
+						keyword: keyword.keyword,
+					},
+				});
+			/* filter out existing searches */
+			const existingVideoIds = existingSearches.map((s) => s.videoId);
+			const uniqufiedSearches = searches.filter((s) => {
 				return (
-					a.findIndex((d) => d.videoId === s.videoId) === i &&
+					!existingVideoIds.includes(s.videoId) &&
 					s.videoId !== null &&
 					s.videoId !== undefined
 				);
